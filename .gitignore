@@ -1,0 +1,4 @@
+
+bazel-bin/example
+bazel-out
+bazel-umbra
