@@ -1,4 +1,6 @@
 
-bazel-bin/example
+bazel-bin
 bazel-out
 bazel-umbra
+bazel-bin
+bazel-testlogs

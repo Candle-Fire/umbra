@@ -3,6 +3,7 @@ cc_binary(
     srcs = ["main.cpp"],
     deps = [
         "@sdl2",
-        "@rules_vulkan//vulkan:vulkan_cc_library"
+        "@rules_vulkan//vulkan:vulkan_cc_library",
+        "@imgui_lib"
         ],  # <----- dep cc_library.Lib
 )
