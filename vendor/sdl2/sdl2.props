@@ -1,0 +1,11 @@
+﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalIncludeDirectories>$(SolutionDir)vendor/sdl2/SDL2-2.0.22/include/; $(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        </ClCompile>
+        <Link>
+            <AdditionalLibraryDirectories>$(SolutionDir)vendor/sdl2/SDL2-2.0.22/lib/$(Platform)</AdditionalLibraryDirectories>
+            <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+</Project>
