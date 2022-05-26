@@ -1,12 +1,17 @@
-#include "SFFParser.h"
-
-#include <fstream>
-#include <iostream>
+module;
+import <string>;
+import <iostream>;
+import <string>;
 
 import shadow_utils;
 
+module Shadow.FileFormat:SFFParser;
 
-namespace ShadowEngine::SFF {
+import :SFFElement;
+import :SFFVersion;
+
+
+namespace Shadow::SFF {
 
 	SFFElement* SFFParser::ReadFromStream(std::istream& stream)
 	{
@@ -25,8 +30,6 @@ namespace ShadowEngine::SFF {
 
 		//The new node that will be a child of the context
 		auto* current = new SFFElement;
-
-
 
 
 		std::string buffer;

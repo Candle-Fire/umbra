@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src/**/*.cpp">
+    <ClCompile Include="src\SFFParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src/**/*.cpp">
@@ -24,9 +24,20 @@
     <ClCompile Include="src/**/*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src/SFFElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/SFFParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SFFElement.ixx" />
+    <ClCompile Include="Shadow.FileFormat.ixx" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src/**/*.h">
+    <ClInclude Include="src\SFFParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SFFVersion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src/**/*.h">
@@ -39,6 +50,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src/**/*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/**/*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/SFFParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/SFFVersion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

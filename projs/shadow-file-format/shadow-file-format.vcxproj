@@ -18,10 +18,22 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <CompileAs>CompileAsCppModule</CompileAs>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src/**/*.cpp" />
-    <ClInclude Include="src/**/*.h" />
+    <ClCompile Include="src/SFFElement.cpp" />
+    <ClCompile Include="src/SFFParser.cpp" />
+
+    <ClCompile Include="src/SFFElement.ixx" />
+    <ClCompile Include="src/Shadow.FileFormat.ixx" />
+    <ClCompile Include="src/SFFParser.ixx" />
+    <ClCompile Include="src/SFFVersion.ixx" />
+
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\shadow-utility\shadow-utility.vcxproj">
       <Project>{7b9e6056-e4fb-411b-9612-a2fd679c2b69}</Project>
