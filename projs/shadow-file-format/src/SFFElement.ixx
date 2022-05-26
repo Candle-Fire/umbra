@@ -1,15 +1,14 @@
 module;
 
+export module Shadow.FileFormat:SFFElement;
+
 import <string>;
 import <map>;
 import <list>;
 
-export module Shadow.FileFormat:SFFElement;
+ namespace Shadow::SFF {
 
-
-export namespace Shadow::SFF {
-
-	class SFFElement
+    export class SFFElement
 	{
 	public:
 		SFFElement* parent;
@@ -26,12 +25,29 @@ export namespace Shadow::SFF {
 
 		std::string GetStringProperty(std::string name);
 
+        SFFElement* GetFirstChild()
+        {
+            return children.size() > 0 ? children.begin()->second : nullptr;
+        }
 
-        SFFElement* GetFirstChild();
+        SFFElement* GetChildByIndex(int index)
+        {
+            ChildrenMap::iterator it = children.begin();
+            for (size_t i = 0; i < index; i++)
+            {
+                it++;
+            }
+            return it->second;
+        }
 
-		SFFElement* GetChildByIndex(int index);
-
-		SFFElement* GetChildByName(std::string name);
+        SFFElement* GetChildByName(std::string name)
+        {
+            ChildrenMap::iterator it = children.find(name);
+            if (it != children.end()) {
+                return it->second;
+            }
+            return nullptr;
+        }
 
 		~SFFElement();
 

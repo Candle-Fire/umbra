@@ -1,9 +1,9 @@
 module;
 
+module shadow_utils;
+
 import <string>;
 import <vector>;
-
-module shadow_utils;
 
 inline std::vector<std::string> explode(const std::string& s, const char& c)
 {
