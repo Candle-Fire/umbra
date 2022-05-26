@@ -15,31 +15,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src/**/*.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src/**/*.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src/**/*.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="src\string-helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src/**/*.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src/**/*.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src/**/*.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src/**/*.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src/**/*.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="shadow-utils.ixx" />
+    <ClCompile Include="string-helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
