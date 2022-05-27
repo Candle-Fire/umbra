@@ -31,6 +31,17 @@ Assets:{ \
 }, \
 ";
 
+std::string example_multi_level_content = "ShadowFileFormat_1_0_0 \n\
+Assets:{ \
+	a: { \
+		0: ContentContent0,	\
+		1: ContentContent1,	\
+		2: ContentContent2,	\
+	},						\
+	b: ContentB,			\
+}, \
+";
+
 std::stringstream streamFrom(std::string str) {
 	std::stringstream ss;
 	ss << str;
@@ -195,4 +206,44 @@ TEST(MultiRoot, RootsHaveCorrectName) {
 
 	EXPECT_NE(texture, nullptr);
 	EXPECT_EQ(texture->name, "Texture");
+}
+
+
+TEST(MultiLevelContent, RootsHaveCorrectName) {
+
+	std::stringstream ss = streamFrom(example_multi_level_content);
+
+	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
+
+	auto assets = a->GetChildByName("Assets");
+
+	EXPECT_NE(assets, nullptr);
+	EXPECT_EQ(assets->name, "Assets");
+
+	auto first = assets->GetChildByName("a");
+
+	EXPECT_NE(first, nullptr);
+	EXPECT_EQ(first->name, "a");
+	EXPECT_EQ(first->isBlock, true);
+
+	for (size_t i = 0; i < 3; i++)
+	{
+		std::string name = std::to_string(i);
+		auto element = first->GetChildByName(name);
+
+		EXPECT_NE(element, nullptr);
+		EXPECT_EQ(element->name, name);
+		EXPECT_EQ(element->isBlock, false);
+
+		EXPECT_EQ(element->value, "ContentContent" + name);
+	}
+
+
+
+	auto second = assets->GetChildByName("b");
+
+	EXPECT_NE(second, nullptr);
+	EXPECT_EQ(second->name, "b");
+	EXPECT_EQ(second->isBlock, false);
+	EXPECT_EQ(second->value, "ContentB");
 }
