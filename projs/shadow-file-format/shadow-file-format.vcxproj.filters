@@ -21,25 +21,18 @@
     <ClCompile Include="src/**/*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src/**/*.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src/SFFElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src/SFFParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SFFElement.ixx" />
-    <ClCompile Include="Shadow.FileFormat.ixx" />
+    <ClCompile Include="src/SFFElement.ixx" />
+    <ClCompile Include="src/Shadow.FileFormat.ixx" />
+    <ClCompile Include="src/SFFParser.ixx" />
+    <ClCompile Include="src/SFFVersion.ixx" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\SFFParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SFFVersion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src/**/*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,11 +48,8 @@
     <ClInclude Include="src/**/*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src/SFFParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src/SFFVersion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="SFFElement.natvis" />
   </ItemGroup>
 </Project>

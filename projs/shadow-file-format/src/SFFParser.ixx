@@ -28,12 +28,13 @@ namespace Shadow::SFF {
 
 			//The current node that we are building
 			auto* context = new SFFElement;
+			context->name = "root";
 
 			//Top level Element
 			SFFElement* base = context;
 
 			//The new node that will be a child of the context
-			auto* current = new SFFElement;
+			SFFElement* current = nullptr;
 
 
 			std::string buffer;
@@ -42,52 +43,63 @@ namespace Shadow::SFF {
 			while (!stream.eof())
 			{
 				stream.get(c);
-				if (c == ':')
-				{
+				
+				switch (c) {
+				case ':':
 					//The stuff in the buffer is a parameter name
-					std::cout << "Name: " << buffer;
+					//std::cout << "Name: " << buffer;
+					current = new SFFElement;
 					current->name = buffer;
+					current->parent = context;
+
 					buffer = "";
-				}
-				else if (c == '{')
-				{
+					break;
+
+				case '{':
 					//Start of a new block
 					current->isBlock = true;
-					current->parent = context;
-					context->children[current->name] = current;
 					context = current;
 
-					current = new SFFElement;
-				}
-				else if (c == ',')
-				{
+					current = nullptr;
+					break;
+
+				case ',':
 					// End of a property
-					//The stuff is the value
-					std::cout << "Value: " << buffer << std::endl;
-					current->value = buffer;
-					current->parent = context;
-					current->isBlock = false;
+					if (!current->isBlock) {
+						//The stuff is the value
+						current->value = buffer;
+						current->parent = context;
+						current->isBlock = false;
+					}
 					buffer = "";
 
 					context->children[current->name] = current;
 
-					current = new SFFElement();
-				}
-				else if (c == '}')
-				{
-					// End of a block
-					context = context->parent;
-				}
-				else
-				{
+					current = nullptr;
+					break;
+
+				case '}':
+					if (current != nullptr) {
+						// End of a block
+						current->parent = context;
+						context->children[current->name] = current;
+					}
+					current = context;
+					context = current->parent;
+					
+					break;
+
+				default:
 					if (std::isspace(c) == 0)
 					{
 						buffer += c;
 					}
+					break;
 				}
+
 			}
 
-			std::cout << "END" << std::endl;
+			//std::cout << "END" << std::endl;
 
 			return base;
 		}

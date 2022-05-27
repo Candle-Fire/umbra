@@ -20,8 +20,7 @@ import <list>;
 		std::string value;
 		typedef std::map<std::string, SFFElement*> ChildrenMap;
 
-		std::list<SFFElement*> properties_old;
-		std::map<std::string, SFFElement*> children;
+        ChildrenMap children;
 
 		std::string GetStringProperty(std::string name);
 
@@ -33,6 +32,9 @@ import <list>;
         SFFElement* GetChildByIndex(int index)
         {
             ChildrenMap::iterator it = children.begin();
+            if (it == children.end())
+                return nullptr;
+
             for (size_t i = 0; i < index; i++)
             {
                 it++;
