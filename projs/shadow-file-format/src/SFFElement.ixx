@@ -51,7 +51,12 @@ import <list>;
             return nullptr;
         }
 
-		~SFFElement();
+        ~SFFElement() {
+            for (auto var : children)
+            {
+                delete var.second;
+            }
+        }
 
 	};
 

@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\SFFParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src/**/*.cpp">
+    <ClCompile Include="src\SFFWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src/SFFElement.cpp">
@@ -31,6 +28,10 @@
     <ClCompile Include="src/Shadow.FileFormat.ixx" />
     <ClCompile Include="src/SFFParser.ixx" />
     <ClCompile Include="src/SFFVersion.ixx" />
+    <ClCompile Include="src\SFFWriter.ixx" />
+    <ClCompile Include="src\SFFWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src/**/*.h">

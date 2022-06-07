@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="../../Umbra.CPP.props" />
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="..\..\Umbra.CPP.props" />
+  </ImportGroup>
+
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B2E3515C-3FE0-44B9-9ABE-8584A836230F}</ProjectGuid>
@@ -15,6 +19,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
+
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -25,11 +30,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src/SFFElement.cpp" />
-    <ClCompile Include="src/SFFParser.cpp" />
+    <ClCompile Include="src/SFFParser.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
     <ClCompile Include="src/SFFElement.ixx" />
     <ClCompile Include="src/Shadow.FileFormat.ixx" />
     <ClCompile Include="src/SFFParser.ixx" />
     <ClCompile Include="src/SFFVersion.ixx" />
+    <ClCompile Include="src\SFFWriter.cpp">
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="src\SFFWriter.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\shadow-utility\shadow-utility.vcxproj">

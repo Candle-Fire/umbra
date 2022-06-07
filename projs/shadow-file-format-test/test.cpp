@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "MemoryLeakDetector.h"
 
 import Shadow.FileFormat;
 
@@ -50,56 +51,69 @@ std::stringstream streamFrom(std::string str) {
 }
 
 TEST(EmptyFile, HasHeader) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_empty);
 
-	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
+	auto root = Shadow::SFF::SFFParser::ReadFromStream(ss);
 
-	auto assets = a->GetChildByIndex(0);
+	auto assets = root->GetChildByIndex(0);
 
 	EXPECT_EQ(assets, nullptr);
+
+	delete root;
 }
 
 
 TEST(SimpleFile, SingleRoot) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_simple);
 
-	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
+	auto root = Shadow::SFF::SFFParser::ReadFromStream(ss);
 
-	EXPECT_EQ(a->children.size(), 1);
+	EXPECT_EQ(root->children.size(), 1);
 
 
-	auto assets = a->GetChildByIndex(0);
+	auto assets = root->GetChildByIndex(0);
 
 	EXPECT_NE(assets, nullptr);
 	EXPECT_STREQ(assets->name.c_str(), "Assets");
+
+	delete root;
 }
 
 TEST(SimpleFile, RootByName) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_simple);
 
-	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
+	auto root = Shadow::SFF::SFFParser::ReadFromStream(ss);
 
-	auto assets = a->GetChildByName("Assets");
+	auto assets = root->GetChildByName("Assets");
 
 	EXPECT_NE(assets, nullptr);
 	EXPECT_STREQ(assets->name.c_str(), "Assets");
+
+	delete root;
 }
 
 TEST(SimpleFile, SubChildren) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_simple);
 
-	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
+	auto root = Shadow::SFF::SFFParser::ReadFromStream(ss);
 
-	auto assets = a->GetChildByIndex(0);
+	auto assets = root->GetChildByIndex(0);
 
 	EXPECT_EQ(assets->children.size(), 3);
+
+	delete root;
 }
 
 TEST(SimpleFile, SubChildrenExist) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_simple);
 
@@ -114,9 +128,11 @@ TEST(SimpleFile, SubChildrenExist) {
 		EXPECT_NE(i9, nullptr);
 	}
 
+	delete a;
 }
 
 TEST(SimpleFile, SubChildrenContent) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_simple);
 
@@ -132,19 +148,24 @@ TEST(SimpleFile, SubChildrenContent) {
 		EXPECT_EQ(i9->value, "Content_"+ name);
 	}
 
+	delete a;
 }
 
 
 TEST(MultiLevel, SinlgeRootExists) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_level);
 
 	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
 
 	EXPECT_EQ(a->children.size(), 1);
+
+	delete a;
 }
 
 TEST(MultiLevel, SecondLevelExists) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_level);
 
@@ -153,9 +174,12 @@ TEST(MultiLevel, SecondLevelExists) {
 	auto asset = a->GetChildByIndex(0);
 
 	EXPECT_EQ(asset->children.size(), 1);
+
+	delete a;
 }
 
 TEST(MultiLevel, BlockTagIsCorrect) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_level);
 
@@ -166,9 +190,12 @@ TEST(MultiLevel, BlockTagIsCorrect) {
 
 	auto element = assets->GetChildByIndex(0);
 	EXPECT_EQ(element->isBlock, true);
+
+	delete a;
 }
 
 TEST(MultiLevel, LevelsHaveCorrectName) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_level);
 
@@ -179,19 +206,25 @@ TEST(MultiLevel, LevelsHaveCorrectName) {
 
 	auto element = assets->GetChildByIndex(0);
 	EXPECT_EQ(element->name, "9");
+
+	delete a;
 }
 
 
 TEST(MultiRoot, RootsExist) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_root);
 
 	auto a = Shadow::SFF::SFFParser::ReadFromStream(ss);
 
 	EXPECT_EQ(a->children.size(), 2);
+
+	delete a;
 }
 
 TEST(MultiRoot, RootsHaveCorrectName) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_root);
 
@@ -206,10 +239,13 @@ TEST(MultiRoot, RootsHaveCorrectName) {
 
 	EXPECT_NE(texture, nullptr);
 	EXPECT_EQ(texture->name, "Texture");
+
+	delete a;
 }
 
 
 TEST(MultiLevelContent, RootsHaveCorrectName) {
+	MemoryLeakDetector leakDetector;
 
 	std::stringstream ss = streamFrom(example_multi_level_content);
 
@@ -246,4 +282,6 @@ TEST(MultiLevelContent, RootsHaveCorrectName) {
 	EXPECT_EQ(second->name, "b");
 	EXPECT_EQ(second->isBlock, false);
 	EXPECT_EQ(second->value, "ContentB");
+
+	delete a;
 }
