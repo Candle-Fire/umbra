@@ -7,7 +7,9 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2.0.0
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
