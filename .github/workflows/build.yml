@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  ubuntu-build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: setup nuget
+      uses: NuGet/setup-nuget@v1.0.2
+
+    - name: restore project packages
+      run: nuget restore umbra.sln
+
+    - name: build
+      run: msbuild /m /p:Configuration=Debug umbra.sln
