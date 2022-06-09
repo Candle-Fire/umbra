@@ -13,7 +13,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
 
     - name: setup nuget
-      uses: NuGet/setup-nuget@latest
+      uses: NuGet/setup-nuget@v1.0.6
 
     - name: restore project packages
       run: nuget restore umbra.sln
