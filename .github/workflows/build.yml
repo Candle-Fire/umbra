@@ -3,7 +3,7 @@ name: C/C++ CI
 on: [push]
 
 jobs:
-  ubuntu-build:
+  build:
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -13,7 +13,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
 
     - name: setup nuget
-      uses: NuGet/setup-nuget@v1.0.2
+      uses: NuGet/setup-nuget@latest
 
     - name: restore project packages
       run: nuget restore umbra.sln
