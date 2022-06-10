@@ -53,4 +53,10 @@ jobs:
     - name: Test shadow-file-format
       run: ./bin/Debug/shadow-file-format-test/shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
 
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: "test-results/**/*.xml"
+
     
