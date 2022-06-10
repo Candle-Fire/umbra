@@ -43,6 +43,11 @@ jobs:
   test-sff:
     runs-on: windows-latest
     needs: build
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write
     steps:
     - name: use cache 
       uses: actions/cache@v2
