@@ -32,7 +32,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: "/bin/Debug"
-        key: ${{ runner.os }}-$GITHUB_RUN_ID    
+        key: ${{ runner.os }}-${{ github.run_id }}  
       
     - name: Upload shadow-engine artifact
       uses: actions/upload-artifact@v3
@@ -48,7 +48,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: "/bin/Debug"
-        key: ${{ runner.os }}-$GITHUB_RUN_ID  
+        key: ${{ runner.os }}-${{ github.run_id }}
     
     - name: Test shadow-file-format
       run: ./bin/Debug/shadow-file-format-test/shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
