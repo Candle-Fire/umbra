@@ -51,6 +51,6 @@ jobs:
         key: ${{ runner.os }}-$GITHUB_RUN_ID  
     
     - name: Test shadow-file-format
-      run: .\bin\Debug\shadow-file-format-test\shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
+      powershell: .\bin\Debug\shadow-file-format-test\shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
 
     
