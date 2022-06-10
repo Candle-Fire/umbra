@@ -42,7 +42,7 @@ jobs:
 
   test-sff:
     runs-on: windows-latest
-    depends-on: build
+    needs: build
     steps:
     - name: use cache 
       uses: actions/cache@v2
