@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <Import Project="../../Umbra.CPP.props" />
-    <Import Project="$(SolutionDir)vendor/sdl2/sdl2.props" />
-    <Import Project="$(SolutionDir)vendor/glm/glm.props" />
+    <ImportGroup Label="PropertySheets">
+        <Import Project="../../Umbra.CPP.props" />
+        <Import Project="$(SolutionDir)vendor/sdl2/sdl2.props" />
+        <Import Project="$(SolutionDir)vendor/glm/glm.props" />
+    </ImportGroup>
 
     <PropertyGroup Label="Globals">
         <VCProjectVersion>15.0</VCProjectVersion>

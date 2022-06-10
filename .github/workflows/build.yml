@@ -1,6 +1,11 @@
-name: C/C++ CI
+name: Build and Test
 
-on: [push]
+on: 
+  push:
+    branches: [ main ]
+    paths-ignore: 
+      - 'docs/**'
+      - 'specs/**'    
 
 jobs:
   build:
@@ -22,3 +27,30 @@ jobs:
 
     - name: build
       run: msbuild /m /p:Configuration=Debug umbra.sln
+
+    - name: use cache 
+      uses: actions/cache@v2
+      with:
+        path: "/bin/Debug"
+        key: ${{ runner.os }}-$GITHUB_RUN_ID    
+      
+    - name: Upload shadow-engine artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ needs.update.outputs.old_version_name }}-${{ needs.update.outputs.new_version_name }}-patch
+        path: './bin/Debug/shadow-engine/*'      
+
+  test-sff:
+    runs-on: windows-latest
+    depends-on: build
+    steps:
+    - name: use cache 
+      uses: actions/cache@v2
+      with:
+        path: "/bin/Debug"
+        key: ${{ runner.os }}-$GITHUB_RUN_ID  
+    
+    - name: Test shadow-file-format
+      run: .\bin\Debug\shadow-file-format-test\shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
+
+    
