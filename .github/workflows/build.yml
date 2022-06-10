@@ -38,7 +38,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ needs.update.outputs.old_version_name }}-${{ needs.update.outputs.new_version_name }}-patch
-        path: './bin/Debug/shadow-engine/*'      
+        path: './bin/Debug/shadow-engine/**/*'      
 
   test-sff:
     runs-on: windows-latest
@@ -51,6 +51,6 @@ jobs:
         key: ${{ runner.os }}-$GITHUB_RUN_ID  
     
     - name: Test shadow-file-format
-      powershell: .\bin\Debug\shadow-file-format-test\shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
+      run: ./bin/Debug/shadow-file-format-test/shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
 
     
