@@ -1,50 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="../../Umbra.CPP.props" />
   </ImportGroup>
-
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B2E3515C-3FE0-44B9-9ABE-8584A836230F}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
     <RootNamespace>shadow_file_format</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>shadow-file-format</ProjectName>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <CompileAs>CompileAsCppModule</CompileAs>
+      <AdditionalIncludeDirectories>$(SolutionDir)\projs\shadow-utility\src\; %(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src/SFFWriter.ixx" />
-    <!--<ClCompile Include="src/SFFElement.cpp" />-->
-    <!--<ClCompile Include="src/SFFParser.cpp" />-->
-    <ClCompile Include="src/SFFElement.ixx" />
-    <ClCompile Include="src/Shadow.FileFormat.ixx" />
-    <ClCompile Include="src/SFFParser.ixx" />
-    <ClCompile Include="src/SFFVersion.ixx" />
+    <ClCompile Include="src/SFFElement.cpp" />
+    <ClCompile Include="src\SFFParser.cpp" />
+    <ClCompile Include="src\SFFWriter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src/SFFElement.h" />
+    <ClInclude Include="src\SFFParser.h" />
+    <ClInclude Include="src\SFFVersion.h" />
+    <ClInclude Include="src\SFFWriter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="SFFElement.natvis" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\shadow-utility\shadow-utility.vcxproj">
       <Project>{7b9e6056-e4fb-411b-9612-a2fd679c2b69}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="SFFElement.natvis" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

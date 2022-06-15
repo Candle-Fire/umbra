@@ -15,35 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\SFFParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src/SFFElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src/SFFParser.cpp">
+    <ClCompile Include="src\SFFParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src/SFFElement.ixx" />
-    <ClCompile Include="src/Shadow.FileFormat.ixx" />
-    <ClCompile Include="src/SFFParser.ixx" />
-    <ClCompile Include="src/SFFVersion.ixx" />
-    <ClCompile Include="SFFWriter.ixx" />
+    <ClCompile Include="src\SFFWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src/**/*.h">
+    <ClInclude Include="src\SFFParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src/**/*.h">
+    <ClInclude Include="src\SFFVersion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src/**/*.h">
+    <ClInclude Include="src\SFFWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src/**/*.h">
+    <ClInclude Include="src\SFFParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src/**/*.h">
+    <ClInclude Include="src\SFFVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SFFWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/SFFElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SFFParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SFFVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SFFWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

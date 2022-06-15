@@ -10,6 +10,13 @@
         <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     </ImportGroup>
     
+    <PropertyGroup Label="Globals">
+        <VCProjectVersion>15.0</VCProjectVersion>
+        <ProjectGuid>{47591591-E091-4B88-8418-74D3CBEC5712}</ProjectGuid>
+        <Keyword>Win32Proj</Keyword>
+        <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    </PropertyGroup>
+
     <PropertyGroup Label="UserMacros" />
     <PropertyGroup>
         <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -47,8 +54,6 @@
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
             <LanguageStandard>stdcpp20</LanguageStandard>
             <EnableModules>true</EnableModules>
-            
-            <AdditionalIncludeDirectories>%(AdditionalIncludes.Split(';'));asd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>Console</SubSystem>

@@ -1,6 +1,6 @@
-export module Shadow.FileFormat:SFFVersion;
+#pragma once
 
-export namespace Shadow::SFF {
+namespace Shadow::SFF {
 
 	struct SFFVersion {
 	public:

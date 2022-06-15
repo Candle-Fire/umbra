@@ -1,11 +1,7 @@
-module;
 
-module shadow_utils;
+#include "string-helpers.h"
 
-import <string>;
-import <vector>;
-
-inline std::vector<std::string> explode(const std::string& s, const char& c)
+std::vector<std::string> explode(const std::string& s, const char& c)
 {
     std::string buff;
     std::vector<std::string> v;

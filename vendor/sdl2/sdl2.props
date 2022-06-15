@@ -8,6 +8,7 @@
                 $(SolutionDir)vendor/sdl2/SDL2-2.0.22/include/
             </Item>
         </ItemGroup>
+        
         <ClCompile>
             <AdditionalIncludeDirectories>$(SolutionDir)vendor/sdl2/SDL2-2.0.22/include/; %(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
         </ClCompile>

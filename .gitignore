@@ -3,3 +3,6 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+*.user
+projs/shadow-file-format/shadow-file-format.vcxproj.user

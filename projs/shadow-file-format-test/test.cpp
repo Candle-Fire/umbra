@@ -1,6 +1,7 @@
 #include "pch.h"
+#include "../shadow-file-format/src/SFFParser.h"
 
-import Shadow.FileFormat;
+//import Shadow.FileFormat;
 
 std::string example_empty = "ShadowFileFormat_1_0_0";
 
