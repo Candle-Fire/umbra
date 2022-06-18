@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../shadow-file-format/src/SFFParser.h"
+#include "SFFParser.h"
 
 //import Shadow.FileFormat;
 
@@ -32,16 +32,7 @@ Assets:{ \
 }, \
 ";
 
-std::string example_multi_level_content = "ShadowFileFormat_1_0_0 \n\
-Assets:{ \
-	a: { \
-		0: ContentContent0,	\
-		1: ContentContent1,	\
-		2: ContentContent2,	\
-	},						\
-	b: ContentB,			\
-}, \
-";
+
 
 std::stringstream streamFrom(std::string str) {
 	std::stringstream ss;
@@ -209,6 +200,16 @@ TEST(MultiRoot, RootsHaveCorrectName) {
 	EXPECT_EQ(texture->name, "Texture");
 }
 
+std::string example_multi_level_content = "ShadowFileFormat_1_0_0 \n\
+Assets:{ \
+	a: { \
+		0: ContentContent0,	\
+		1: ContentContent1,	\
+		2: ContentContent2,	\
+	},						\
+	b: ContentB,			\
+}, \
+";
 
 TEST(MultiLevelContent, RootsHaveCorrectName) {
 
@@ -220,6 +221,7 @@ TEST(MultiLevelContent, RootsHaveCorrectName) {
 
 	EXPECT_NE(assets, nullptr);
 	EXPECT_EQ(assets->name, "Assets");
+	EXPECT_EQ(assets->isBlock, true);
 
 	auto first = assets->GetChildByName("a");
 
