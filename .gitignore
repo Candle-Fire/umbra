@@ -6,3 +6,5 @@ riderModule.iml
 
 *.user
 projs/shadow-file-format/shadow-file-format.vcxproj.user
+
+bazel-*/

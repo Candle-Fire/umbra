@@ -1,4 +1,7 @@
-#include "pch.h"
+#include "gtest/gtest.h"
+
+#include <string>
+#include <sstream>
 #include "SFFParser.h"
 
 //import Shadow.FileFormat;
