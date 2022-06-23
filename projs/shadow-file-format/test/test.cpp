@@ -4,7 +4,6 @@
 #include <sstream>
 #include "SFFParser.h"
 
-//import Shadow.FileFormat;
 
 std::string example_empty = "ShadowFileFormat_1_0_0";
 

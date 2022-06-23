@@ -1,0 +1,16 @@
+
+
+
+
+cc_binary(
+    name = "shadow-runtime",
+    srcs = glob(["src/**/*.cpp", "src/**/*.h"]),
+    includes = [],
+    copts = [
+        "/std:c++20"
+    ],
+    deps = [
+        "//projs/shadow-engine",
+        "@sdl2"
+    ],
+)
