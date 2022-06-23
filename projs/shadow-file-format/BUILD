@@ -20,12 +20,12 @@ cc_test(
     name = "test",
     srcs = glob(["test/**/*.cpp", "test/**/*.h"]),
     includes = [],
+    defines = [ "CATCH_CONFIG_MAIN" ],
     copts = [
         "/std:c++17"
     ],
     deps = [
         "//projs/shadow-file-format",
-        "@gtest//:gtest",
-        "@gtest//:gtest_main"
-    ],
+        "@catch2"
+        ],
 )
