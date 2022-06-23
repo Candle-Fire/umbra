@@ -56,7 +56,7 @@ jobs:
         key: ${{ runner.os }}-${{ github.run_id }}
     
     - name: Test shadow-file-format
-      run: ./bazel-bin/projs/shadow-file-format/test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
+      run: ./bazel-bin/projs/shadow-file-format/test.exe -r junit -o ./test-results/shadow-file-format-test.xml
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
