@@ -2,7 +2,7 @@ name: Build and Test
 
 on: 
   push:
-    branches: [ bazel-setup ]
+    branches: [ main, bazel-setup ]
     paths-ignore: 
       - 'projs/docs/**'
       - 'specs/**'    
