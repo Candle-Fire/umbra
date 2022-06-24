@@ -1,0 +1,99 @@
+\documentclass[11pt,a4paper,oneside]{report}             % Single-side
+%\documentclass[11pt,a4paper,twoside,openright]{report}  % Duplex
+
+\input{includes/packages}
+
+%TODO Set the main variables
+\newcommand{\vikszerzoVezeteknev}{Gipsz}
+\newcommand{\vikszerzoKeresztnev}{Jakab}
+
+\newcommand{\vikkonzulensAMegszolitas}{dr.~}
+\newcommand{\vikkonzulensAVezeteknev}{Konzulens}
+\newcommand{\vikkonzulensAKeresztnev}{Egy}
+
+\newcommand{\vikkonzulensBMegszolitas}{}
+\newcommand{\vikkonzulensBVezeteknev}{Konzulens}
+\newcommand{\vikkonzulensBKeresztnev}{Kettő}
+
+\newcommand{\vikkonzulensCMegszolitas}{}
+\newcommand{\vikkonzulensCVezeteknev}{}
+\newcommand{\vikkonzulensCKeresztnev}{}
+
+\newcommand{\vikcim}{Shadow game engine} % Cím
+\newcommand{\viktanszek}{\bmemit} % Tanszék
+\newcommand{\vikdoktipus}{\bsc} % Dokumentum típusa (\bsc vagy \msc)
+\newcommand{\vikmunkatipusat}{szakdolgozatot} % a "hallgató nyilatkozat" részhez: szakdolgozatot vagy diplomatervet
+
+\input{includes/tdk-variables}
+\newcommand{\szerzoMeta}{\vikszerzoVezeteknev{} \vikszerzoKeresztnev} % egy szerző esetén
+%\newcommand{\szerzoMeta}{\vikszerzoVezeteknev{} \vikszerzoKeresztnev, \tdkszerzoB} % két szerző esetén
+
+%TODO Language configuration -- choose one
+% Beállítások magyar nyelvű dolgozathoz
+%\input{includes/thesis-hu}
+% Settings for English documents
+\input{includes/thesis-en}
+
+\input{includes/preamble}
+
+%--------------------------------------------------------------------------------------
+% Table of contents and the main text
+%--------------------------------------------------------------------------------------
+\begin{document}
+
+\pagenumbering{gobble}
+
+\selectthesislanguage
+
+%TODO Titlepage -- choose one from below
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\include{includes/titlepage}		   % Szakdolgozat/Diplomaterv címlap
+%\include{include/titlepage-tdk}	% TDK címlap
+%\include{include/titlepage-otdk}   % OTDK címlap
+
+
+% Table of Contents
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\tableofcontents\cleardoublepage
+
+
+% Declaration and Abstract
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\include{includes/declaration} %TODO Hallgatói nyilatkozat -- TDK és OTDK esetén törlendő!
+%\include{content/abstract}    %TODO Összefoglaló -- TDK és OTDK esetén nem kötelező
+
+
+% The main part of the thesis
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\pagenumbering{arabic}
+
+%TODO import your own content
+\include{content/description}
+%\include{content/latex-tools}
+%\include{content/thesis-format}
+%\include{content/template-usage}
+
+
+% Acknowledgements
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%\include{content/acknowledgement}
+
+
+% List of Figures, Tables
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%\listoffigures\addcontentsline{toc}{chapter}{\listfigurename}
+%\listoftables\addcontentsline{toc}{chapter}{\listtablename}
+
+
+% Bibliography
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%\addcontentsline{toc}{chapter}{\bibname}
+%\bibliography{bib/mybib}
+
+
+% Appendix
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%\include{content/appendices}
+
+%\label{page:last}
+\end{document}
