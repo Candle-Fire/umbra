@@ -1,4 +1,3 @@
-#include "pch.h"
 
 //import Shadow.FileFormat;
 #include "SFFWriter.h"
