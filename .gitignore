@@ -7,3 +7,4 @@ riderModule.iml
 *.user
 
 bazel-*/
+test-results

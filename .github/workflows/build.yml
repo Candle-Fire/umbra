@@ -54,7 +54,10 @@ jobs:
       with:
         path: "./bazel-bin/projs"
         key: ${{ runner.os }}-${{ github.run_id }}
-    
+
+    - name: Make output folder
+      run: mkdir ./test-results
+
     - name: Test shadow-file-format
       run: ./bazel-bin/projs/shadow-file-format/test.exe -r junit -o ./test-results/shadow-file-format-test.xml
 
