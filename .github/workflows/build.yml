@@ -2,7 +2,7 @@ name: Build and Test
 
 on: 
   push:
-    branches: [ main ]
+    branches: [ main, bazel-setup ]
     paths-ignore: 
       - 'projs/docs/**'
       - 'specs/**'    
@@ -16,29 +16,29 @@ jobs:
       with:
         submodules: recursive
 
+
+    - name: Install bazelisk
+      run: |
+        choco install bazelisk
+
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
 
-    - name: setup nuget
-      uses: NuGet/setup-nuget@v1.0.6
-
-    - name: restore project packages
-      run: nuget restore umbra.sln
-
-    - name: build
-      run: msbuild /m /p:Configuration=Debug umbra.sln
+    - name: Build
+      run: |
+        bazel build //...
 
     - name: use cache 
       uses: actions/cache@v2
       with:
-        path: "./bin/Debug"
+        path: "./bazel-bin/projs"
         key: ${{ runner.os }}-${{ github.run_id }}  
       
     - name: Upload shadow-engine artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ needs.update.outputs.old_version_name }}-${{ needs.update.outputs.new_version_name }}-patch
-        path: './bin/Debug/shadow-engine/**/*'      
+        path: './bazel-bin/projs/shadow-engine/**/*'
 
   test-sff:
     runs-on: windows-latest
@@ -52,11 +52,14 @@ jobs:
     - name: use cache 
       uses: actions/cache@v2
       with:
-        path: "./bin/Debug"
+        path: "./bazel-bin/projs"
         key: ${{ runner.os }}-${{ github.run_id }}
-    
+
+    - name: Make output folder
+      run: mkdir ./test-results
+
     - name: Test shadow-file-format
-      run: ./bin/Debug/shadow-file-format-test/shadow-file-format-test.exe --gtest_output="xml:./test-results/shadow-file-format-test.xml"
+      run: ./bazel-bin/projs/shadow-file-format/test.exe -r junit -o ./test-results/shadow-file-format-test.xml
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
@@ -64,4 +67,3 @@ jobs:
       with:
         files: "test-results/**/*.xml"
 
-    
