@@ -1,1 +1,47 @@
-\chapter*{Asd}
+\chapter{Disclaimer}
+
+This document only describes the ideas that I plan to explore in my thesis. 
+This is not the final project description for the thesis.
+
+\chapter{Overview}
+
+The idea behind the project is to establish the base for a game engine. 
+What this means is that the end product is not something that can compete with the likes of Unity and Unreal engine.
+The goal is to lay the foundation for something that could compete in the future.
+This means that the project will need to make crutial decisions on what frameworks libraries to use, and how the core of the engine should be architected.
+
+The planned engine is the spiritual successor to my old engine called ShadowEngine. 
+This means that some parts of the old codebase will be used but every line will have to be rigorously checked.
+This project is not a one person project, I'm planning on involving friends of mine. My responsibilities and the code that I write will constitute as the thesis.
+
+\section{Technical information}
+The project will be mainly written in C++, but some higher level functionality might be implemented in C# For windowing and interacting with the OS it will use SDL2.
+The rendering API is going to be Vulkan.
+Our main focus initially is Windows both for development and for running, as that is what all planned participants have access to.
+
+\chapter{Main tasks}
+\section{Build system}
+The first question that needs decision for the project is what build system to use.
+There are many different C++ build systems. The most common is Cmake and MSBuild. These are both quite capable.
+\subsection{Cmake}
+Cmake is an old powerful build system. it is capable of building almost anything. It is a generator for make files witch are even older. 
+Make files and in turn Cmake is highly organized around the actual compilation commands that get run in the end.
+This makes them harder to configure.
+(Magical strings and bad docs)
+
+\subsection{MSbuild}
+MSbuild is Microsoft's build system, it is quite powerful and has really good integration with Visual Studio. 
+It is also capable of integrating C# projects to the same workspace. 
+Sadly MSbuild can only build C++ on Windows witch means we can't support other platforms in the future.
+MSbuild is also not supported by other IDEs like Clion meaning it would be a total vendor lock in.
+
+\subsection{Bazel}
+Bazel is a little known build system as it is mostly used by large projects.
+It was developed for Google's internal repository, as they keep all of their code in a single monolithic repository.
+This means the Bazel is capable of building basically any language (C/C++, Java C# JS/TS, etc.).
+Bazel is also capable of managing project dependencies without using Git Submodules.
+
+\subsection{Decision}
+After trying both Msbuild and Bazel the decision was to use Bazel.
+Sadly the Clion Bazel plugin has problems on windows,
+but theses might be fixable with a few PRs or just shipping our own version of the plugin, as it is available on Github
