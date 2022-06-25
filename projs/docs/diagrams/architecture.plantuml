@@ -1,0 +1,26 @@
+@startuml
+
+class ShadowApplication <<Singleton>> {
+    -ModuleManager module_manager
+    ~void packagePrivateMethod()
+    #{abstract} char protectedMethod(int param)
+}
+
+class ModuleManager <<Singleton>> {
+    -vector<string, Module> moduels
+    ---
+    +void AddModule(Module* mo)
+}
+
+abstract class Module {
+    +string domain
+    ---
+    +void Init()
+    +void Update()
+    +void ShutDown()
+}
+
+
+
+
+@enduml

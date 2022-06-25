@@ -1,0 +1,54 @@
+@startuml
+!include <material/file>
+
+autoactivate on
+autonumber
+
+participant main as "int main(args)"
+
+participant app as "ShadowApplication" <<(O,#ADD1B2) singleton>>
+
+participant moduleMg as "ModuleManager" <<(O,#ADD1B2) singleton>>
+
+
+'participant gameDll as "longName" : <$ma_file{scale=0.5}> <<DLL>>
+
+participant "Game DLL" as dll <<$ma_file{scale=0.5}>> #LightGray <<DLL>>
+
+-> main
+main -> app ** : create
+activate app
+app -> moduleMg ** : create
+return app
+
+main -> app : LoadGame
+
+app -> app : load
+app -> dll ** : create
+return
+
+app -> dll : sh_main
+
+loop for each needed module
+    dll -> moduleMg : AddModule()
+    return
+end
+
+return
+
+return
+
+main -> app : Init()
+app -> moduleMg : Init()
+
+loop module in modules
+    collections module as "Module" <<(O,#ADD1B2)entity>>
+    moduleMg -> module : Init()
+    return
+end
+return
+
+return
+
+
+
