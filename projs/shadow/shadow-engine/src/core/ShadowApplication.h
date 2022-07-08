@@ -1,6 +1,8 @@
 #pragma once
 #include "ShadowWindow.h"
 
+#include <string>
+
 namespace ShadowEngine {
 
 	/// <summary>
@@ -30,6 +32,8 @@ namespace ShadowEngine {
 		bool running = true;
 
 		bool no_gui = false;
+
+        std::string game = "";
 		
 	public:
 		/// <summary>

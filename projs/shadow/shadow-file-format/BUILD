@@ -11,7 +11,7 @@ cc_library(
         "/std:c++17"
     ],
     deps = [
-        "//projs/shadow-utility"
+        "//projs/shadow/shadow-utility"
     ],
     visibility = ["//visibility:public"],
 )
@@ -25,7 +25,7 @@ cc_test(
         "/std:c++17"
     ],
     deps = [
-        "//projs/shadow-file-format",
+        "//projs/shadow/shadow-file-format",
         "@catch2"
         ],
 )

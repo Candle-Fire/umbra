@@ -1,15 +1,16 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
+
 
 cc_library(
-    name = "shadow-utility",
-    srcs = glob(["**/*.cpp", "**/*.h"]),
-    hdrs = glob(["**/*.h"]),
+    name = "shadow-reflection",
+    srcs = glob(["src/**/*.cpp", "src/**/*.h"]),
+    hdrs = glob(["src/**/*.h"]),
     strip_include_prefix = "src/",
     includes = [],
     copts = [
         "/std:c++20"
     ],
     deps = [
+        "//projs/shadow/shadow-utility"
     ],
     visibility = ["//visibility:public"],
 )

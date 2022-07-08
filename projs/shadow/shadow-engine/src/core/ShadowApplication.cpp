@@ -2,7 +2,7 @@
 
 #include "Time.h"
 
-#include <string>
+
 
 namespace ShadowEngine {
 
@@ -21,10 +21,13 @@ namespace ShadowEngine {
 				{
 					this->no_gui = true;
 				}
+                if(param == "-game")
+                {
+                    this->game = argv[i+1];
+                }
 			}
 		}
-			
-		
+
 		//game = _setupFunc();
 	}
 
