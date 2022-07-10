@@ -1,5 +1,5 @@
 load("//projs/bazel-helpers:windows_dll_library.bzl", "windows_dll_library")
-
+load("//projs/bazel-helpers:shadow-game.bzl","shadow_game")
 
 # cc_library(
 #     name = "test-game-lib",
@@ -15,20 +15,12 @@ load("//projs/bazel-helpers:windows_dll_library.bzl", "windows_dll_library")
 #     linkstatic = False,
 # )
 
-windows_dll_library(
+
+shadow_game(
   name = "test-game",
   srcs = glob(["src/**/*.cpp", "src/**/*.h"]),
   hdrs = glob(["src/**/*.h"]),
   # Define COMPILING_DLL to export symbols during compiling the DLL.
   copts = ["/DCOMPILING_DLL"],
-
 )
-
-filegroup(
-    name = "asd",
-    srcs = [],
-    data = [
-        ":test-game",
-        "//projs/shadow/shadow-runtime"
-    ]
-)
+  
