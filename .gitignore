@@ -6,5 +6,5 @@ riderModule.iml
 
 *.user
 
-bazel-*/
+/bazel-*/
 test-results
