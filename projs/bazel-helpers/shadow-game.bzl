@@ -1,5 +1,6 @@
 
 load("//projs/bazel-helpers:windows_dll_library.bzl", "windows_dll_library")
+load("//projs/bazel-helpers:copy_to_directory.bzl", "copy_to_directory")
 
 def _foo_binary_impl(ctx):
     trans_srcs = depset(transitive = [ dep[DefaultInfo].files for dep in ctx.attr.data])
@@ -22,12 +23,12 @@ def shadow_game(
         hdrs = [],
         visibility = None,
         **kwargs):
-    shadow_game_bundle(
-        name = name,
-        data = [
-            "//projs/shadow/shadow-runtime:shadow-runtime",
-            name + "_lib.dll"
-        ]
+    copy_to_directory(
+        name = name + "-game",
+        srcs = [
+            "//projs/shadow/shadow-runtime",
+            name + "_lib.dll",
+        ],
     )
 
     windows_dll_library(

@@ -1,6 +1,6 @@
 
 #include <iostream>
 
-void sh_main(){
+__declspec(dllexport) void sh_main(){
     std::cout << "HIII";
 }
