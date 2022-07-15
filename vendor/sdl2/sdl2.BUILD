@@ -50,7 +50,7 @@ alias(
 	name = "sdl2",
 	actual  = select({
 	    "//:windows": "//:sdl2_win",
-	    "//conditions:default": "//sdl2_win",
+	    "//conditions:default": "//:sdl2_win",
     }),
     visibility = ["//visibility:public"],
 )

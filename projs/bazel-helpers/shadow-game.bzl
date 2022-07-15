@@ -2,10 +2,7 @@
 load("//projs/bazel-helpers:windows_dll_library.bzl", "windows_dll_library")
 load("//projs/bazel-helpers:copy_to_directory.bzl", "copy_to_directory")
 
-load("//projs/bazel-helpers:copy_utils.bzl", "copy_paths")
-load("//projs/bazel-helpers:copy_utils.bzl", "copy_to_dir_cmd")
-load("//projs/bazel-helpers:copy_utils.bzl", "copy_to_dir_bash")
-load("//projs/bazel-helpers:copy_utils.bzl", "COPY_EXECUTION_REQUIREMENTS")
+load("//projs/bazel-helpers:copy_utils.bzl", "copy_paths", "copy_to_dir_cmd", "copy_to_dir_bash")
 load("@bazel_skylib//lib:paths.bzl", _paths = "paths")
 
 script_template = """\
@@ -13,6 +10,7 @@ Game: {{
     dll: {game_name}_lib.dll
 }}
 """
+
 
 def _foo_binary_impl(ctx):
     
@@ -23,7 +21,7 @@ def _foo_binary_impl(ctx):
     #if not ctx.attr.srcs and not ctx.attr.prefix_mapped_srcs:
     #    fail("srcs and prefix_mapped_srcs must not be empty in copy_to_directory %s" % ctx.label)
 
-    output = ctx.actions.declare_directory(ctx.attr.name)
+    output = ctx.actions.declare_directory(ctx.attr.name+"-package")
 
     # Gather a list of src_path, dst_path pairs
     copy_paths_list = []
@@ -51,15 +49,17 @@ def _foo_binary_impl(ctx):
             dst_path = _paths.normalize("/".join([output.path, output_path]))
             copy_paths_list.append((src_path, dst_path, src_file))
 
-    
+    #exe = ctx.actions.declare_file(ctx.attr.name+"/shadow-runtime.exe")
+
+    res = []
 
     if ctx.attr.is_windows:
-        copy_to_dir_cmd(ctx, copy_paths_list, output)
+        res = copy_to_dir_cmd(ctx, copy_paths_list, output)
     else:
-        copy_to_dir_bash(ctx, copy_paths_list, output, ctx.attr.allow_symlink)
+        res = copy_to_dir_bash(ctx, copy_paths_list, output, ctx.attr.allow_symlink)
 
 
-
+    
 
 
     script = ctx.actions.declare_file("%s-start" % ctx.label.name)
@@ -69,7 +69,7 @@ def _foo_binary_impl(ctx):
     ctx.actions.write(script, script_content, is_executable = True)
 
     return [
-        DefaultInfo(files = depset([output]), executable = ctx.files._engine_exe),
+        DefaultInfo(files = depset([output]), executable = res[0]["file"]),
     ]
     
 
@@ -87,8 +87,8 @@ shadow_game_bundle = rule(
         "srcs": attr.label_list(allow_files = True),
 
         "_engine": attr.label(default = Label("//projs/shadow/shadow-runtime")),
-        "_engine_exe": attr.label(default = Label("//projs/shadow/shadow-runtime:shadow-runtime.exe")),
-        "lib": attr.label(default = Label("//projs/shadow/shadow-runtime")),
+        #"_engine_exe": attr.label(default = Label("//projs/shadow/shadow-runtime:shadow-runtime.exe")),
+        #"lib": attr.label(default = Label("//projs/shadow/shadow-runtime")),
     },
 )
 
