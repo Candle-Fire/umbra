@@ -180,9 +180,9 @@ mkdir "%s" >NUL 2>NUL
     for src_path, dst_path, src_file in copy_paths_list:
         inputs.append(src_file)
 
-        out = ctx.actions.declare_file(ctx.attr.name + "-package/" + src_file.basename)
-        results.append({"path":src_file, "file": out})
-        output.append(out)
+        #out = ctx.actions.declare_file(ctx.attr.name + "-package/" + src_file.basename)
+        #results.append({"path":src_file, "file": out})
+        #output.append(out)
 
         # copy & xcopy flags are documented at
         # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/copy
@@ -219,7 +219,7 @@ if exist "{src}\\*" (
     ctx.actions.run(
         inputs = inputs,
         tools = [bat],
-        outputs = [dst_dir]+output,
+        outputs = [dst_dir],#+output,
         executable = "cmd.exe",
         arguments = ["/C", bat.path.replace("/", "\\")],
         mnemonic = "CopyToDirectory",
