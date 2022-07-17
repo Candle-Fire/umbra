@@ -16,9 +16,15 @@
 #define _execvp execvp
 #endif
 
-#include "dotnet/tools/common/manifest.h"
+
+#include <stdbool.h>
+//#include "dotnet/tools/common/manifest.h"
 
 const char *Exe = NULL;
+
+static BOOL IsVerbose(){
+	return true;
+}
 
 static void Execute(int argc, char *argv[], const char *manifestDir)
 {

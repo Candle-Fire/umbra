@@ -24,6 +24,7 @@ def wrap(ctx):
         arguments = [launcher.path, ctx.attr._launcher.files.to_list()[0].path],
         mnemonic = "CopyLauncher",
     )
+    return launcher
 
 def _foo_binary_impl(ctx):
     
@@ -73,24 +74,24 @@ def _foo_binary_impl(ctx):
 
 
 
-    
+    exe = wrap(ctx)
 
 
     script = ctx.actions.declare_file("%s-start" % ctx.label.name)
     script_content = script_template.format(
         game_name = ctx.label.name,
     )
-    ctx.actions.write(script, script_content, is_executable = True)
+    ctx.actions.write(script, script_content)
 
     # executable = res[0]["file"]
     return [
-        DefaultInfo(files = depset([output]), ),
+        DefaultInfo(files = depset([output]), executable = exe ),
     ]
     
 
 shadow_game_bundle = rule(
     implementation = _foo_binary_impl,
-    #executable = True,
+    executable = True,
     attrs = {
         "deps": attr.label_list(),
 
@@ -102,7 +103,7 @@ shadow_game_bundle = rule(
         "srcs": attr.label_list(allow_files = True),
 
         "_engine": attr.label(default = Label("//projs/shadow/shadow-runtime")),
-        "_launcher": attr.label(default = Label("//projs/bazel-helpers/launcher")),
+        "_launcher": attr.label(default = Label("//projs/bazel-helpers/wraper:launcher.exe")),
         "_copy": attr.label(default = Label("//projs/bazel-helpers/copy")),
         #"lib": attr.label(default = Label("//projs/shadow/shadow-runtime")),
     },

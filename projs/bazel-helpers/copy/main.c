@@ -14,7 +14,7 @@
 #include <errno.h>
 #endif
 
-#include "dotnet/tools/common/manifest.h"
+//#include "dotnet/tools/common/manifest.h"
 
 const char *Exe = NULL;
 
