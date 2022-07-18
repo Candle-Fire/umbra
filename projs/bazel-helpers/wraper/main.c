@@ -28,6 +28,8 @@ static BOOL IsVerbose(){
 
 static void Execute(int argc, char *argv[], const char *manifestDir)
 {
+	printf("manifestDir: %s\n", manifestDir);
+
 	char dotnet[64 * 1024] = {0};
 	char torun[64 * 1024] = {0};
 	char *p = NULL;
@@ -61,7 +63,7 @@ static void Execute(int argc, char *argv[], const char *manifestDir)
 		exit(-1);
 	}
 
-	sprintf(dotnet, "%s/dotnet", manifestDir);
+	sprintf(dotnet, "%sshadow-runtime.exe", manifestDir);
 	newargv[0] = dotnet;
 	newargv[1] = torun;
 	for (i = 1; i < argc; ++i)
@@ -91,7 +93,7 @@ static void Execute(int argc, char *argv[], const char *manifestDir)
 
 int main(int argc, char *argv[], char *envp[])
 {
-	const char *manifestDir;
+	char manifestDir[64 * 1024] = {0};
 	const char *manifestPath;
 	char *p;
 
@@ -112,14 +114,21 @@ int main(int argc, char *argv[], char *envp[])
 	}
 
 	manifestPath = strdup(Exe);
-	manifestDir = strdup(manifestPath);
+	strcpy(manifestDir,manifestPath);
 	p = strrchr(manifestDir, '/');
 	if (p == NULL)
 	{
 		printf("/ not found in %s\n", manifestDir);
 		return -1;
 	}
-	p[1] = '\0';
+	p[0] = '\0';
+
+	printf("%s\n", manifestDir);
+
+	sprintf(manifestDir, "%s-package/", manifestDir);
+
+
+	printf("%s\n", manifestDir);
 
 	// Execute should never return - it should transform this process into
 	// dotnet, which will handle exiting at some point/
