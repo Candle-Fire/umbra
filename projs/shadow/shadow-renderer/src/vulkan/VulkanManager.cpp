@@ -7,7 +7,6 @@
 #include <vlkx/vulkan/Tools.h>
 
 #include <vlkx\vulkan\VulkanManager.h>
-#include <SDL2/SDL_vulkan.h>
 
 VulkanManager::VulkanManager() { rayTraceMode = false; }
 
@@ -72,7 +71,7 @@ void VulkanManager::initVulkan(SDL_Window* window) {
 
     validators->setupDebugCallback(validationRequired, vulkan);
 
-    if (SDL_Vulkan_CreateSurface(window, vulkan, &surface) != VK_SUCCESS)
+    if (SDL_Vulkan_CreateSurface(window, vulkan, &surface) != SDL_TRUE)
         throw std::runtime_error("Unable to create Vulkan Surface");
 
     this->device = new VulkanDevice();

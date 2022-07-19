@@ -66,7 +66,7 @@ void SwapChain::create(VkSurfaceKHR surface) {
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	QueueFamilies queues = VulkanManager::getInstance()->getDevice()->getQueues();
-	uint32_t indices[] = { queues.graphics, queues.presentation };
+	uint32_t indices[] = { static_cast<uint32_t>(queues.graphics), static_cast<uint32_t>(queues.presentation) };
 
 	if (queues.graphics != queues.presentation) {
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;

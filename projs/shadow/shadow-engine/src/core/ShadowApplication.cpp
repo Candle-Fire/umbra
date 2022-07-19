@@ -1,6 +1,9 @@
 #include "ShadowApplication.h"
 
 #include "Time.h"
+#include <vlkx/vulkan/VulkanManager.h>
+#include <vlkx/render/Camera.h>
+#include <vlkx/render/geometry/SingleRenderer.h>
 
 namespace ShadowEngine {
 
@@ -46,6 +49,8 @@ namespace ShadowEngine {
 
         window_ = new ShadowWindow(800,450);
 
+        VulkanManager::getInstance()->initVulkan(window_->sdlWindowPtr);
+
         /*
 		moduleManager.PushModule(new Log());
 		moduleManager.PushModule(new EventSystem::ShadowEventManager());
@@ -70,6 +75,15 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Start()
 	{
+        // Create the camera
+        Camera camera {};
+        camera.init(45, 1280, 720, 0.1, 10000);
+        camera.setPosition(glm::vec3(0, 0, 4));
+
+        // Create the renderer
+        SingleRenderer object;
+        object.createSingleRenderer(Geo::MeshType::Cube, glm::vec3(-1, 0, -1), glm::vec3(0.5));
+
         SDL_Event event;
 		while (running)
 		{
@@ -78,7 +92,17 @@ namespace ShadowEngine {
                     running = false;
             }
 
-			Time::UpdateTime();
+            object.setRotation(glm::rotate(object.getRotation(), (float) 0.5, glm::vec3(1, 0, 0)));
+
+            VulkanManager::getInstance()->startDraw();
+
+            object.updateUniforms(camera);
+            object.draw();
+
+            VulkanManager::getInstance()->endDraw();
+
+
+            Time::UpdateTime();
 		}
 	}
 }

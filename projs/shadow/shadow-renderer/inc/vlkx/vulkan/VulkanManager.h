@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <vulkan/vk_mem_alloc.h>
 #include <vlkx/vulkan/ValidationAndExtension.h>
 #include <vlkx/vulkan/VulkanDevice.h>
 #include <vlkx/vulkan/SwapChain.h>
@@ -9,7 +7,12 @@
 #include <vlkx/render/texture/RenderTexture.h>
 #include <vlkx/vulkan/CommandBuffer.h>
 
+#include <vulkan/vk_mem_alloc.h>
+#include <vulkan/vulkan.h>
+
 #include <vlkx/vulkan/Tools.h>
+
+#include <SDL_vulkan.h>
 
 class VulkanManager {
 public:

@@ -36,5 +36,8 @@ add_subdirectory(projs/shadow/shadow-reflection)
 # Core engine
 add_subdirectory(projs/shadow/shadow-engine)
 
+# Renderer
+add_subdirectory(projs/shadow/shadow-renderer)
+
 # Runtime executable
 add_subdirectory(projs/shadow/shadow-runtime)
