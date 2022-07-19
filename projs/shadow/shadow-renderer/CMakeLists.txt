@@ -6,5 +6,5 @@ FILE(GLOB_RECURSE SOURCES src/*.cpp inc/*.h)
 
 add_library(renderer ${SOURCES})
 
-target_include_directories(renderer PRIVATE ${SDL2_INCLUDE_DIRS} PUBLIC inc)
+target_include_directories(renderer PRIVATE ${SDL2_INCLUDE_DIRS} PUBLIC inc ${glm_SOURCE_DIR})
 target_link_libraries(renderer PRIVATE SDL2::Main Vulkan::Vulkan)
