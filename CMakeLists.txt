@@ -46,10 +46,14 @@ if(NOT spdlog_POPULATED)
     add_subdirectory(${spdlog_SOURCE_DIR} ${spdlog_BINARY_DIR})
 endif()
 
+
 # Import some find files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(umbra)
+
+# Fetch ImGui for the application
+add_subdirectory(projs/imgui)
 
 # Common utilities
 add_subdirectory(projs/shadow/shadow-utility)

@@ -9,4 +9,4 @@ FILE(GLOB_RECURSE HEADERS src/*.h)
 add_library(shadow-engine ${SOURCES})
 
 target_include_directories(shadow-engine PRIVATE ${SDL2_INCLUDE_DIRS} PUBLIC ${HEADERS})
-target_link_libraries(shadow-engine PRIVATE Vulkan::Vulkan PUBLIC SDL2::Core shadow-reflect shadow-asset PUBLIC renderer)
+target_link_libraries(shadow-engine PRIVATE Vulkan::Vulkan PUBLIC SDL2::Core shadow-reflect shadow-asset PUBLIC imgui renderer)
