@@ -1,4 +1,5 @@
 #include <vlkx/vulkan/VulkanDevice.h>
+#include "spdlog/spdlog.h"
 
 VulkanDevice::VulkanDevice() : physical(VK_NULL_HANDLE), logical(VK_NULL_HANDLE), graphicsQueue(VK_NULL_HANDLE), presentationQueue(VK_NULL_HANDLE) {}
 VulkanDevice::~VulkanDevice() = default;
@@ -13,7 +14,7 @@ void VulkanDevice::choosePhysicalDevice(VkInstance* vulkan, VkSurfaceKHR surface
 		throw std::runtime_error("Vulkan not supported on this system. No Devices available");
 	}
 
-	std::cout << "Found " << deviceCount << " devices that are Vulkan-compatible." << std::endl;
+    spdlog::debug("Found " + std::to_string(deviceCount) + " devices that are Vulkan-compatible.");
 
 	// Gather devices
 	std::vector<VkPhysicalDevice> physicals(deviceCount);
@@ -21,21 +22,19 @@ void VulkanDevice::choosePhysicalDevice(VkInstance* vulkan, VkSurfaceKHR surface
 
 	// Enumerate devices
 	std::string finalDeviceName;
-	std::cout << std::endl;
-	std::cout << "Device List" << std::endl;
+    spdlog::debug("Device List");
 	for (const auto& device : physicals) {
 		VkPhysicalDeviceProperties props;
 		vkGetPhysicalDeviceProperties(device, &props);
 
-		std::cout << "Device: " << props.deviceName << std::endl;
+		spdlog::debug(std::string("Device: ") + props.deviceName);
 		if (physical == VK_NULL_HANDLE && isSuitable(device, surface) ) {
 			finalDeviceName = props.deviceName;
 			physical = device;
 		}
 	}
-	
-	std::cout << std::endl << "Using device " << finalDeviceName << "." << std::endl;
-	
+
+    spdlog::debug("Using device " + std::string(finalDeviceName) + ".");
 	// Sanity check that at least one was found.
 	if (physical == VK_NULL_HANDLE)
 		throw std::runtime_error("No suitable GPU found");

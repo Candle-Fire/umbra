@@ -7,6 +7,8 @@
 #include <vlkx/vulkan/Tools.h>
 
 #include <vlkx\vulkan\VulkanManager.h>
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 VulkanManager::VulkanManager() { rayTraceMode = false; }
 
@@ -63,6 +65,9 @@ void VulkanManager::createAppAndVulkanInstance(bool enableValidation, Validation
 void VulkanManager::initVulkan(SDL_Window* window) {
     wnd = window;
     validators = new ValidationAndExtension();
+
+    spdlog::info("Initializing Infinity Drive rendering engine");
+    spdlog::default_logger()->set_level(spdlog::level::debug);
 
     if (!validators->checkValidationSupport())
         throw std::runtime_error("Validation not available");
@@ -121,7 +126,7 @@ void VulkanManager::initVulkan(SDL_Window* window) {
             throw std::runtime_error("Unable to create fence for a frame");
     }
 
-    std::cout << "Vulkan Initialization Finished" << std::endl;
+    spdlog::info("Infinity Drive initialization finished.");
 }
 
 void VulkanManager::startDraw() {
