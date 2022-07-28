@@ -7,9 +7,10 @@
 #include <vlkx/vulkan/VulkanManager.h>
 #include <vlkx/render/Camera.h>
 #include <vlkx/render/geometry/SingleRenderer.h>
+#include "spdlog/spdlog.h"
 
 #define CATCH(x) \
-    try { x } catch (std::exception& e) { std::cerr << "FATAL ERROR: " << e.what() << std::endl; exit(0); }
+    try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
 
 namespace ShadowEngine {
 
