@@ -8,6 +8,8 @@
 #include <vlkx/render/Camera.h>
 #include <vlkx/render/geometry/SingleRenderer.h>
 
+#define CATCH(x) \
+    try { x } catch (std::exception& e) { std::cerr << "FATAL ERROR: " << e.what() << std::endl; exit(0); }
 
 namespace ShadowEngine {
 
@@ -57,7 +59,7 @@ namespace ShadowEngine {
 
         window_ = new ShadowWindow(800,450);
 
-        VulkanManager::getInstance()->initVulkan(window_->sdlWindowPtr);
+        CATCH(VulkanManager::getInstance()->initVulkan(window_->sdlWindowPtr);)
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -176,7 +178,7 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Start()
 	{
-        object.createSingleRenderer(Geo::MeshType::Cube, glm::vec3(-1, 0, -1), glm::vec3(0.5));
+        CATCH(object.createSingleRenderer(Geo::MeshType::Cube, glm::vec3(-1, 0, -1), glm::vec3(0.5));)
 
         // Create the camera
         Camera camera {};
@@ -201,8 +203,8 @@ namespace ShadowEngine {
 
             /** START OF RENDER AREA  */
             /** PUT CODE HERE TO MAKE IT SHOW ON SCREEN */
-            object.updateUniforms(camera);
-            object.draw();
+            CATCH(object.updateUniforms(camera);)
+            CATCH(object.draw();)
 
             bool showDemo = true;
             if (showDemo)
@@ -212,6 +214,7 @@ namespace ShadowEngine {
             ImGui::Render();
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanManager::getInstance()->getCurrentCommandBuffer());
             VulkanManager::getInstance()->endDraw();
+
 
             Time::UpdateTime();
 		}
