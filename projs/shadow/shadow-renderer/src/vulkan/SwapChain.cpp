@@ -1,5 +1,6 @@
 #include <vlkx/vulkan/SwapChain.h>
 #include <vlkx/vulkan/VulkanManager.h>
+#include "spdlog/spdlog.h"
 
 SwapChain::SwapChain() {}
 SwapChain::~SwapChain() {}
@@ -52,7 +53,7 @@ void SwapChain::create(VkSurfaceKHR surface) {
 
 	// use the max if it's set, otherwise the minimum
 	uint32_t imageCount = std::max(info.capabilities.minImageCount, (uint32_t) 2);
-	std::cout << "SwapChain has " << imageCount << " images." << std::endl;
+    spdlog::debug("SwapChain has " + std::to_string(imageCount) + " images.");
 	
 	// Prepare the creation data
 	VkSwapchainCreateInfoKHR createInfo = {};

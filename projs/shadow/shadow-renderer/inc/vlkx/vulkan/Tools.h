@@ -30,7 +30,7 @@ namespace VkTools {
     ManagedImage createImage(VkFormat format, VkImageUsageFlags flags, VkExtent3D extent, VkDevice device);
     VkSampler createSampler(VkFilter filters, VkSamplerAddressMode mode);
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags flags, VkDevice device);
-    ManagedBuffer createGPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDevice logicalDevice, VkPhysicalDevice physicalDevice);
+    ManagedBuffer createGPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDevice logicalDevice, VkPhysicalDevice physicalDevice, bool hostVisible = true);
     uint32_t findMemoryIndex(uint32_t type, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDevice);
     VkCommandBuffer createTempCommandBuffer(VkCommandPool pool, VkDevice logical);
     void executeAndDeleteTempBuffer(VkCommandBuffer buffer, VkCommandPool pool, VkQueue queue, VkDevice logicalDevice);
@@ -103,7 +103,7 @@ namespace VkTools {
         return imageView;
     }
 
-    ManagedBuffer createGPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDevice logicalDevice, VkPhysicalDevice physicalDevice) {
+    ManagedBuffer createGPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkDevice logicalDevice, VkPhysicalDevice physicalDevice, bool hostVisible) {
         // Prepare for creation of a buffer
         VkBufferCreateInfo bufferInfo = {};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -114,9 +114,8 @@ namespace VkTools {
         ManagedBuffer buffer;
 
         VmaAllocationCreateInfo vmaInfo = {};
-        vmaInfo.usage = VMA_MEMORY_USAGE_AUTO;
+        vmaInfo.usage = hostVisible ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
         vmaInfo.requiredFlags = properties;
-        vmaInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
         // Create the buffer.
         if (vmaCreateBuffer(g_allocator, &bufferInfo, &vmaInfo, &buffer.buffer, &buffer.allocation, nullptr) != VK_SUCCESS)

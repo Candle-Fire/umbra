@@ -20,6 +20,8 @@ public:
 	void setPosition(glm::vec3 newPos) { position = newPos; }
 	void setRotation(glm::mat4 newRot) { rotation = newRot; }
 
+    Descriptor getDescriptor() { return descriptor; }
+
 	glm::mat4 getRotation() { return rotation; }
 private:
 
