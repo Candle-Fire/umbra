@@ -5,10 +5,11 @@ Include(FetchContent)
 # Fetch SDL for the runtime
 FetchContent_Declare(
         SDL2
-        URL     https://www.libsdl.org/release/SDL2-devel-2.0.22-VC.zip
+        URL     https://www.libsdl.org/release/SDL2-devel-2.24.0-VC.zip
 )
 FetchContent_MakeAvailable(SDL2)
-set(SDL2_PATH ${sdl2_SOURCE_DIR})
+set(SDL2_DIR ${sdl2_SOURCE_DIR})
+list(APPEND CMAKE_PREFIX_PATH "${sdl2_SOURCE_DIR}/cmake")
 
 # Fetch Catch2 for the file format tests
 FetchContent_Declare(

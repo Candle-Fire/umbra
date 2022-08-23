@@ -29,7 +29,7 @@ namespace ShadowEngine {
         template<typename T>
         T *GetModuleByType() {
             for (auto &module: modules) {
-                if (module->GetTypeId() == T::TypeId())
+                if (module.GetTypeId() == T::TypeId())
                     return dynamic_cast<T *>(module.get());
             }
             //SH_CORE_ERROR("Can't find the module {0}", T::Type());
