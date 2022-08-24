@@ -1,5 +1,6 @@
 find_package(Vulkan REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
+find_package(imgui REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 

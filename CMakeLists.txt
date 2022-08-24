@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 
 Include(FetchContent)
 
@@ -47,6 +47,14 @@ if(NOT spdlog_POPULATED)
     add_subdirectory(${spdlog_SOURCE_DIR} ${spdlog_BINARY_DIR})
 endif()
 
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui
+        GIT_TAG 8cbd391f096b9314a08670052cc0025cbcadb249
+)
+
+FetchContent_MakeAvailable(imgui)
+
 
 # Import some find files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -54,7 +62,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 project(umbra)
 
 # Fetch ImGui for the application
-add_subdirectory(projs/imgui)
+#add_subdirectory(projs/imgui)
 
 # Common utilities
 add_subdirectory(projs/shadow/shadow-utility)

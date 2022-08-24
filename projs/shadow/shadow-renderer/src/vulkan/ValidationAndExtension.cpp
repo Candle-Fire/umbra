@@ -77,7 +77,7 @@ void ValidationAndExtension::setupDebugCallback(bool validationRequired, VkInsta
 	VkDebugReportCallbackCreateInfoEXT info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-	info.pfnCallback = debugCallback;
+	//info.pfnCallback = debugCallback;
 
 	if (createDebugReportCallbackEXT(vulkan, &info, nullptr, &callback) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create log dumper.");
