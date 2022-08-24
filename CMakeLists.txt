@@ -9,7 +9,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL2)
 set(SDL2_DIR ${sdl2_SOURCE_DIR})
-list(APPEND CMAKE_PREFIX_PATH "${sdl2_SOURCE_DIR}/cmake")
+list(PREPEND CMAKE_PREFIX_PATH "${sdl2_SOURCE_DIR}/cmake")
 
 # Fetch Catch2 for the file format tests
 FetchContent_Declare(

@@ -10,5 +10,10 @@ target_link_libraries(shadow-runtime PRIVATE SDL2::SDL2main shadow-engine)
 
 add_custom_command(TARGET shadow-runtime
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_BINDIR}/SDL2.dll C:/Users/dpete/Documents/programing/_Projects/umbra/umbra/cmake-build-debug/projs/shadow/shadow-runtime/.
+        COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_BINDIR}/SDL2.dll ${CMAKE_CURRENT_BINARY_DIR}/.
+        )
+
+add_custom_command(TARGET shadow-runtime
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/vlkx-resources ${CMAKE_CURRENT_BINARY_DIR}/vlkx-resources
         )
