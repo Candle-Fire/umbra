@@ -1,13 +1,13 @@
-#include "ShadowApplication.h"
+#include "core/ShadowApplication.h"
 
-#include "Time.h"
-#include "imgui.h"
-#include "imgui_impl_vulkan.h"
-#include "imgui_impl_sdl.h"
+#include "core/Time.h"
+#include <imgui.h>
+#include <imgui_impl_vulkan.h>
+#include <imgui_impl_sdl.h>
 #include <vlkx/vulkan/VulkanManager.h>
 #include <vlkx/render/Camera.h>
 #include <vlkx/render/geometry/SingleRenderer.h>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }

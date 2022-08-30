@@ -1,4 +1,4 @@
-#include "ShadowWindow.h"
+#include "core/ShadowWindow.h"
 
 
 ShadowWindow::ShadowWindow(int W, int H) : Height(H), Width(W)
