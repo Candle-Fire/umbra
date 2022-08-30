@@ -50,7 +50,7 @@ endif()
 FetchContent_Declare(
         imgui
         GIT_REPOSITORY https://github.com/ocornut/imgui
-        GIT_TAG 8cbd391f096b9314a08670052cc0025cbcadb249
+        GIT_TAG 71a0701920dbc83155f718182f01132d1ec2d51e
 )
 
 FetchContent_MakeAvailable(imgui)

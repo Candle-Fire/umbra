@@ -28,12 +28,22 @@ void RenderPass::createVertexRenderPass(VkFormat format) {
 	subpass.pColorAttachments = &colorReference;
 
 	// Prepare the Render Pass for creation
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	std::array<VkAttachmentDescription, 1> attachments = { color };
 	VkRenderPassCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	createInfo.pAttachments = attachments.data();
 	createInfo.subpassCount = 1;
+    createInfo.dependencyCount = 1;
+    createInfo.pDependencies = &dependency;
 	createInfo.pSubpasses = &subpass;
 
 	// Create the Render Pass

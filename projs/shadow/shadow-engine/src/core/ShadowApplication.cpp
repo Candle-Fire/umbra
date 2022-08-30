@@ -65,6 +65,8 @@ namespace ShadowEngine {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -212,10 +214,19 @@ namespace ShadowEngine {
                 ImGui::ShowDemoWindow(&showDemo);
             /** END OF RENDER AREA */
             /** CODE AFTER HERE WILL NOT BE SHOWN ON SCREEN */
-            ImGui::Render();
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanManager::getInstance()->getCurrentCommandBuffer());
-            VulkanManager::getInstance()->endDraw();
 
+            ImGui::Render();
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanManager::getInstance()->getCurrentCommandBuffer());
+
+            // Update and Render additional Platform Windows
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+            }
+            VulkanManager::getInstance()->endDraw();
 
             Time::UpdateTime();
 		}

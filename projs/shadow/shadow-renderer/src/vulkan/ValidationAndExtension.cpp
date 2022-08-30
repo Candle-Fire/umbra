@@ -57,16 +57,17 @@ std::vector<const char*> ValidationAndExtension::getRequiredExtensions(SDL_Windo
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-	VkDebugReportFlagsEXT flags,
-	VkDebugReportObjectTypeEXT objExt,
-	size_t obj,
-	size_t location,
-	int32_t code,
-	const char* layer,
-	const char* message,
-	void* user) {
+        VkDebugReportFlagsEXT                       flags,
+        VkDebugReportObjectTypeEXT                  objectType,
+        uint64_t                                    object,
+        size_t                                      location,
+        int32_t                                     messageCode,
+        const char*                                 pLayerPrefix,
+        const char*                                 pMessage,
+        void*                                       pUserData
+        ) {
 
-	std::cerr << "Validation from layer " << layer << ": " << message << std::endl;
+	std::cerr << "Validation from layer " << pLayerPrefix << ": " << pMessage << std::endl;
 	return false;
 }
 
@@ -77,7 +78,7 @@ void ValidationAndExtension::setupDebugCallback(bool validationRequired, VkInsta
 	VkDebugReportCallbackCreateInfoEXT info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-	//info.pfnCallback = debugCallback;
+	info.pfnCallback = debugCallback;
 
 	if (createDebugReportCallbackEXT(vulkan, &info, nullptr, &callback) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create log dumper.");
