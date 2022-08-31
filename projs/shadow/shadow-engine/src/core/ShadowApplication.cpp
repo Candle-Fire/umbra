@@ -1,6 +1,9 @@
 #include "core/ShadowApplication.h"
 
 #include "core/Time.h"
+#include "core/SDL2Module.h"
+
+
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
 #include <imgui_impl_sdl.h>
@@ -40,6 +43,8 @@ namespace ShadowEngine {
 			}
 		}
 
+
+
 		//game = _setupFunc();
 	}
 
@@ -50,15 +55,11 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Init()
 	{
-        // Initialize SDL. SDL_Init will return -1 if it fails.
-        if ( SDL_Init( SDL_INIT_EVERYTHING ) < 0 ) {
-            //std::cout << "Error initializing SDL: " << SDL_GetError() << std::endl;
-            //system("pause");
-            // End the program
-            //return 1;
-        }
+        moduleManager.PushModule(new SDL2Module(),"core");
 
-        window_ = new ShadowWindow(800,450);
+        moduleManager.Init();
+
+        window_ = moduleManager.GetModuleByType<SDL2Module>()->_window;
 
         CATCH(VulkanManager::getInstance()->initVulkan(window_->sdlWindowPtr);)
 

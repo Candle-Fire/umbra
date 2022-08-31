@@ -1,5 +1,6 @@
 #pragma once
 #include "ShadowWindow.h"
+#include "ModuleManager.h"
 
 #include <string>
 
@@ -23,7 +24,7 @@ namespace ShadowEngine {
 		/// <summary>
 		/// The module manager instance
 		/// </summary>
-		//ShadowEngine::ShadowModuleManager moduleManager;
+		ModuleManager moduleManager;
 
 		/// <summary>
 		/// Represents the running state.

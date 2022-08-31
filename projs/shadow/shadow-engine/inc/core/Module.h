@@ -41,10 +41,6 @@ namespace ShadowEngine {
         /// </summary>
         /// <returns></returns>
         virtual std::string GetName() = 0;
-
-
-        Module();
-        virtual ~Module();
     };
 
 } // ShadowEngine

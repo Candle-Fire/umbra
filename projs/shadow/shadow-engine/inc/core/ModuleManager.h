@@ -7,8 +7,9 @@
 
 namespace ShadowEngine {
 
-    class ModuleRef{
-        std::unique_ptr<Module> module;
+    struct ModuleRef{
+    public:
+        Module* module;
         std::string domain;
     };
 
@@ -22,15 +23,15 @@ namespace ShadowEngine {
 
         ~ModuleManager();
 
-        void PushModule(Module *module);
+        void PushModule(Module *module, std::string domain);
 
         Module &GetModule(std::string name);
 
         template<typename T>
         T *GetModuleByType() {
             for (auto &module: modules) {
-                if (module.GetTypeId() == T::TypeId())
-                    return dynamic_cast<T *>(module.get());
+                if (module.module->GetTypeId() == T::TypeId())
+                    return dynamic_cast<T *>(module.module);
             }
             //SH_CORE_ERROR("Can't find the module {0}", T::Type());
             return nullptr;

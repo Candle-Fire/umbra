@@ -2,21 +2,24 @@
 
 #include <SDL.h>
 
-class ShadowWindow
-{
-public:
+namespace ShadowEngine {
 
-	int Height;
-	int Width;
+    class ShadowWindow {
+    public:
 
-	SDL_Window* sdlWindowPtr;
+        int Height;
+        int Width;
 
-    SDL_Surface* sdlSurface = NULL;
+        SDL_Window *sdlWindowPtr;
+
+        SDL_Surface *sdlSurface = NULL;
 
 
-	//ShadowEngine::Ref<ShadowEngine::Rendering::GraphicsContext> context;
+        //ShadowEngine::Ref<ShadowEngine::Rendering::GraphicsContext> context;
 
-	ShadowWindow(int W, int H);
-	
-	~ShadowWindow();
-};
+        ShadowWindow(int W, int H);
+
+        ~ShadowWindow();
+    };
+
+}
