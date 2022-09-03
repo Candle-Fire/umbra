@@ -23,11 +23,11 @@ namespace ShadowEngine {
     SingleRenderer object;
 
 
-	ShadowApplication* ShadowApplication::instance = nullptr;
+	//ShadowApplication* ShadowApplication::instance = nullptr;
 	
 	ShadowApplication::ShadowApplication(int argc, char* argv[])
 	{
-		instance = this;
+		//instance = this;
 
 		if(argc > 1)
 		{
@@ -265,5 +265,5 @@ namespace ShadowEngine {
         SDL_Quit();
 	}
 
-    ShadowApplication& ShadowApplication::Get() { return *instance; };
+    //ShadowApplication& ShadowApplication::Get() { return *instance; };
 }

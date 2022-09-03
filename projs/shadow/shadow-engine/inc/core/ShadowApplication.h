@@ -14,7 +14,7 @@ namespace ShadowEngine {
 		/// <summary>
 		/// This is the singleton instance
 		/// </summary>
-		static ShadowApplication* instance;
+		//static ShadowApplication* instance;
 
 		/// <summary>
 		/// The active window that we are drawing to
@@ -50,7 +50,7 @@ namespace ShadowEngine {
 		/// </summary>
 		/// Use this for accessing the Application
 		/// <returns>The current application reference</returns>
-		static ShadowApplication& Get();
+		//static ShadowApplication& Get();
 
 		/// <summary>
 		/// Returns the active window used for rendering
