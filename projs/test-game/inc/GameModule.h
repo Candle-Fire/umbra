@@ -10,6 +10,8 @@
 class GameModule : public ShadowEngine::Module {
 
     SHObject_Base(GameModule)
+
+    std::string tets = "asdasd";
 public:
     void PreInit() override {
 

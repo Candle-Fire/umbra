@@ -264,4 +264,6 @@ namespace ShadowEngine {
         SDL_DestroyWindow(window_->sdlWindowPtr);
         SDL_Quit();
 	}
+
+    ShadowApplication& ShadowApplication::Get() { return *instance; };
 }
