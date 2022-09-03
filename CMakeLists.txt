@@ -61,8 +61,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(umbra)
 
-# Fetch ImGui for the application
-#add_subdirectory(projs/imgui)
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 # Common utilities
 add_subdirectory(projs/shadow/shadow-utility)
