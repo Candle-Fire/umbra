@@ -35,7 +35,9 @@ namespace ShadowEngine {
 		bool no_gui = false;
 
         std::string game = "";
-		
+
+        void loadGame();
+
 	public:
 		/// <summary>
 		/// Default constructor
@@ -57,9 +59,11 @@ namespace ShadowEngine {
 		//ShadowWindow& const GetWindow() const { return window_; };
 		//void SetWindow(ShadowWindow w) { window_ = w; }
 
-		//ShadowEngine::ShadowModuleManager& GetModuleManager() { return moduleManager; };
+		ShadowEngine::ModuleManager& GetModuleManager() { return moduleManager; };
 
 		void Init();
 		void Start();
-	};
+
+
+    };
 }

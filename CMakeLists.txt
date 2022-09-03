@@ -55,6 +55,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(imgui)
 
+FetchContent_Declare(
+        dylib
+        GIT_REPOSITORY "https://github.com/martin-olivier/dylib"
+        GIT_TAG        "v2.1.0"
+)
+
+FetchContent_MakeAvailable(dylib)
 
 # Import some find files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -81,3 +88,5 @@ add_subdirectory(projs/shadow/shadow-renderer)
 
 # Runtime executable
 add_subdirectory(projs/shadow/shadow-runtime)
+
+add_subdirectory(projs/test-game)

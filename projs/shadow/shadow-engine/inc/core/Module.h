@@ -40,7 +40,9 @@ namespace ShadowEngine {
         /// Returns the name of the module
         /// </summary>
         /// <returns></returns>
-        virtual std::string GetName() = 0;
+        virtual std::string GetName() {
+            return this->GetType();
+        };
     };
 
 } // ShadowEngine

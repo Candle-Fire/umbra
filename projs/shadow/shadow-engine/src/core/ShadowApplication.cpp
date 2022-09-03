@@ -2,6 +2,8 @@
 
 #include "core/Time.h"
 #include "core/SDL2Module.h"
+#include "debug/DebugModule.h"
+#include "dylib.hpp"
 
 
 #include <imgui.h>
@@ -42,10 +44,6 @@ namespace ShadowEngine {
                 }
 			}
 		}
-
-
-
-		//game = _setupFunc();
 	}
 
 
@@ -53,13 +51,38 @@ namespace ShadowEngine {
 	{
 	}
 
+    void ShadowApplication::loadGame(){
+        if(game.empty())
+            return;
+
+        void (*gameInti)(ShadowApplication*);
+
+        try {
+            dylib lib("./", game);
+
+            gameInti = lib.get_function<void(ShadowApplication*)>("shadow_main");
+
+            gameInti(this);
+        }
+        catch (std::exception& e) {
+            spdlog::error(e.what());
+            exit(1);
+        }
+
+    }
+
 	void ShadowApplication::Init()
 	{
+        loadGame();
+
         moduleManager.PushModule(new SDL2Module(),"core");
+        moduleManager.PushModule(new Debug::DebugModule(), "core");
 
         moduleManager.Init();
 
-        window_ = moduleManager.GetModuleByType<SDL2Module>()->_window;
+        auto sdl2module = moduleManager.GetModuleByType<SDL2Module>();
+
+        window_ = sdl2module->_window;
 
         CATCH(VulkanManager::getInstance()->initVulkan(window_->sdlWindowPtr);)
 
@@ -170,7 +193,7 @@ namespace ShadowEngine {
 		moduleManager.PushModule(new DebugGui::ImGuiModule());
 		
 		moduleManager.PushModule(new InputSystem::ShadowActionSystem());
-		//moduleManager.PushModule(new Debug::DebugModule());
+		//
 		moduleManager.PushModule(new EntitySystem::EntitySystem());
 
 
@@ -213,6 +236,8 @@ namespace ShadowEngine {
             bool showDemo = true;
             if (showDemo)
                 ImGui::ShowDemoWindow(&showDemo);
+
+            moduleManager.Render();
             /** END OF RENDER AREA */
             /** CODE AFTER HERE WILL NOT BE SHOWN ON SCREEN */
 
