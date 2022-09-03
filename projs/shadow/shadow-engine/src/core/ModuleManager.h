@@ -26,6 +26,7 @@ namespace ShadowEngine {
 
         Module &GetModule(std::string name);
 
+        /*
         template<typename T>
         T *GetModuleByType() {
             for (auto &module: modules) {
@@ -35,6 +36,7 @@ namespace ShadowEngine {
             //SH_CORE_ERROR("Can't find the module {0}", T::Type());
             return nullptr;
         }
+        */
 
         void Init();
 
