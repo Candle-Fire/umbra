@@ -12,6 +12,10 @@ extern "C" __declspec(dllexport) void shadow_main(ShadowEngine::ShadowApplicatio
 
     std::cout << "HIIII from a loaded dll weeeeeee!!!" << std::endl;
 
-    app->GetModuleManager().PushModule(new GameModule(), "game");
+    app->GetModuleManager().PushModule(std::make_shared<GameModule>(), "game");
+
+    if(app == &ShadowEngine::ShadowApplication::Get()){
+        std::cout << "They are the same!!!" << std::endl;
+    }
 
 }

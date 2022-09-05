@@ -4,6 +4,8 @@
 
 #include "core/ModuleManager.h"
 
+#include <stdexcept>
+
 ShadowEngine::ModuleManager* ShadowEngine::ModuleManager::instance = nullptr;
 
 ShadowEngine::ModuleManager::ModuleManager()
@@ -19,7 +21,7 @@ ShadowEngine::ModuleManager::~ModuleManager()
 {
 }
 
-void ShadowEngine::ModuleManager::PushModule(Module* module, const std::string domain)
+void ShadowEngine::ModuleManager::PushModule(std::shared_ptr<Module> module, const std::string domain)
 {
     ModuleRef r = {module, domain};
     modules.emplace_back(r);

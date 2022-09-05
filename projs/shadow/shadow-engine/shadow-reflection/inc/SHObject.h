@@ -2,6 +2,8 @@
 #include <string>
 #include <typeinfo>
 
+#include "exports.h"
+
 namespace ShadowEngine {
 
 	/**
@@ -23,11 +25,7 @@ namespace ShadowEngine {
 		 * \brief Generates a new UID for each call
 		 * \return the next Unique ID that was just generated
 		 */
-		static uint64_t GenerateId() noexcept
-		{
-			static uint64_t count = 0;
-			return ++count;
-		}
+		SH_EXPORT static uint64_t GenerateId() noexcept;
 
 	public:
 		/**

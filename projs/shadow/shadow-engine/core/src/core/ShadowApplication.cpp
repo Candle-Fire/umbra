@@ -24,11 +24,11 @@ namespace ShadowEngine {
 
     dylib* gameLib;
 
-	//ShadowApplication* ShadowApplication::instance = nullptr;
+	ShadowApplication* ShadowApplication::instance = nullptr;
 
     ShadowApplication::ShadowApplication(int argc, char* argv[])
 	{
-		//instance = this;
+		instance = this;
 
 		if(argc > 1)
 		{
@@ -62,8 +62,6 @@ namespace ShadowEngine {
 
             gameInti = gameLib->get_function<void(ShadowApplication*)>("shadow_main");
 
-            //std::shared_ptr<ShadowEngine::Module> gameModule = gameInti();
-            //moduleManager.PushModule(gameModule, "game");
             gameInti(this);
         }
         catch (std::exception& e) {
@@ -77,8 +75,8 @@ namespace ShadowEngine {
 	{
         loadGame();
 
-        moduleManager.PushModule(new SDL2Module(),"core");
-        moduleManager.PushModule(new Debug::DebugModule(), "core");
+        moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
+        moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
 
         moduleManager.Init();
 
@@ -197,11 +195,6 @@ namespace ShadowEngine {
 		moduleManager.PushModule(new InputSystem::ShadowActionSystem());
 		//
 		moduleManager.PushModule(new EntitySystem::EntitySystem());
-
-
-		game->Init();
-		
-		moduleManager.Init();
         */
 	}
 
@@ -265,7 +258,9 @@ namespace ShadowEngine {
 
         SDL_DestroyWindow(window_->sdlWindowPtr);
         SDL_Quit();
+
+        delete gameLib;
 	}
 
-    //ShadowApplication& ShadowApplication::Get() { return *instance; };
+    ShadowApplication& ShadowApplication::Get() { return *instance; };
 }

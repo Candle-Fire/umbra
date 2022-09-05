@@ -10,12 +10,12 @@ namespace ShadowEngine {
 	/// <summary>
 	/// Represents the application
 	/// </summary>
-    class SH_EXPORT ShadowApplication
+    class ShadowApplication
 	{
 		/// <summary>
 		/// This is the singleton instance
 		/// </summary>
-		//static ShadowApplication* instance;
+		static ShadowApplication* instance;
 
 		/// <summary>
 		/// The active window that we are drawing to
@@ -43,15 +43,15 @@ namespace ShadowEngine {
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		SH_EXPORT ShadowApplication(int argc, char* argv[]);
-        SH_EXPORT virtual ~ShadowApplication();
+		ShadowApplication(int argc, char* argv[]);
+        virtual ~ShadowApplication();
 
 		/// <summary>
 		/// Static getter for the singleton instance 
 		/// </summary>
 		/// Use this for accessing the Application
 		/// <returns>The current application reference</returns>
-		//static ShadowApplication& Get();
+		static ShadowApplication& Get();
 
 		/// <summary>
 		/// Returns the active window used for rendering
@@ -62,8 +62,8 @@ namespace ShadowEngine {
 
         ShadowEngine::ModuleManager& GetModuleManager() { return moduleManager; };
 
-        SH_EXPORT void Init();
-        SH_EXPORT void Start();
+        void Init();
+        void Start();
 
 
     };

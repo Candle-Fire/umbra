@@ -1,5 +1,14 @@
-//
-// Created by dpete on 02/09/2022.
-//
+#include <GameModule.h>
+#include <iostream>
 
-#include "GameModule.h"
+void GameModule::PreInit() { std::cout << "what?" << std::endl; }
+
+void GameModule::Init() {}
+
+void GameModule::Update() {}
+
+void GameModule::Render() {}
+
+void GameModule::LateRender() {}
+
+void GameModule::AfterFrameEnd() {}

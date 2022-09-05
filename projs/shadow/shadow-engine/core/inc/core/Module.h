@@ -1,7 +1,7 @@
 #ifndef UMBRA_MODULE_H
 #define UMBRA_MODULE_H
 
-#include "../../../shadow-reflection/src/SHObject.h"
+#include "SHObject.h"
 
 namespace ShadowEngine {
 
@@ -34,7 +34,7 @@ namespace ShadowEngine {
 
         virtual void LateRender() = 0;
 
-        virtual void AfterFrameEnd() {};
+        virtual void AfterFrameEnd() = 0;
 
         /// <summary>
         /// Returns the name of the module

@@ -9,7 +9,7 @@ namespace ShadowEngine {
 
     struct ModuleRef{
     public:
-        Module* module;
+        std::shared_ptr<Module> module;
         std::string domain;
     };
 
@@ -23,7 +23,7 @@ namespace ShadowEngine {
 
         ~ModuleManager();
 
-        void PushModule(Module *module, std::string domain);
+        void PushModule(std::shared_ptr<Module> module, std::string domain);
 
         Module &GetModule(std::string name);
 
@@ -31,7 +31,7 @@ namespace ShadowEngine {
         T *GetModuleByType() {
             for (auto &module: modules) {
                 if (module.module->GetTypeId() == T::TypeId())
-                    return dynamic_cast<T *>(module.module);
+                    return dynamic_cast<T *>(module.module.get());
             }
             //SH_CORE_ERROR("Can't find the module {0}", T::Type());
             return nullptr;
