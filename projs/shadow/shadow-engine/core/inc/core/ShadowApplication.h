@@ -1,6 +1,7 @@
 #pragma once
 #include "ShadowWindow.h"
 #include "ModuleManager.h"
+#include "exports.h"
 
 #include <string>
 
@@ -9,7 +10,7 @@ namespace ShadowEngine {
 	/// <summary>
 	/// Represents the application
 	/// </summary>
-	class ShadowApplication
+    class SH_EXPORT ShadowApplication
 	{
 		/// <summary>
 		/// This is the singleton instance
@@ -42,8 +43,8 @@ namespace ShadowEngine {
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		ShadowApplication(int argc, char* argv[]);
-		virtual ~ShadowApplication();
+		SH_EXPORT ShadowApplication(int argc, char* argv[]);
+        SH_EXPORT virtual ~ShadowApplication();
 
 		/// <summary>
 		/// Static getter for the singleton instance 
@@ -59,10 +60,10 @@ namespace ShadowEngine {
 		//ShadowWindow& const GetWindow() const { return window_; };
 		//void SetWindow(ShadowWindow w) { window_ = w; }
 
-		ShadowEngine::ModuleManager& GetModuleManager() { return moduleManager; };
+        ShadowEngine::ModuleManager& GetModuleManager() { return moduleManager; };
 
-		void Init();
-		void Start();
+        SH_EXPORT void Init();
+        SH_EXPORT void Start();
 
 
     };

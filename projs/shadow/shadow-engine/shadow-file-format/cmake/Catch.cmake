@@ -85,6 +85,6 @@ endfunction()
 ###############################################################################
 
 set(_CATCH_DISCOVER_TESTS_SCRIPT
-        ${CMAKE_CURRENT_LIST_DIR}/CatchAddTests.cmake
+        CatchAddTests.cmake
         CACHE INTERNAL "Catch2 full path to CatchAddTests.cmake helper file"
         )

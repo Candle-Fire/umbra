@@ -34,7 +34,7 @@ ShadowEngine::Module& ShadowEngine::ModuleManager::GetModule(std::string name)
             return *module.module;
     }
     //SH_ASSERT(false, "Can't find the module");
-    //return NULL;
+    throw std::runtime_error("Can't find the module");
 }
 
 void ShadowEngine::ModuleManager::Init()

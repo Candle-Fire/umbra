@@ -22,10 +22,11 @@ namespace ShadowEngine {
     // Create the renderer
     SingleRenderer object;
 
+    dylib* gameLib;
 
 	//ShadowApplication* ShadowApplication::instance = nullptr;
-	
-	ShadowApplication::ShadowApplication(int argc, char* argv[])
+
+    ShadowApplication::ShadowApplication(int argc, char* argv[])
 	{
 		//instance = this;
 
@@ -46,7 +47,6 @@ namespace ShadowEngine {
 		}
 	}
 
-
 	ShadowApplication::~ShadowApplication()
 	{
 	}
@@ -58,10 +58,12 @@ namespace ShadowEngine {
         void (*gameInti)(ShadowApplication*);
 
         try {
-            dylib lib("./", game);
+            gameLib = new dylib("./", game);
 
-            gameInti = lib.get_function<void(ShadowApplication*)>("shadow_main");
+            gameInti = gameLib->get_function<void(ShadowApplication*)>("shadow_main");
 
+            //std::shared_ptr<ShadowEngine::Module> gameModule = gameInti();
+            //moduleManager.PushModule(gameModule, "game");
             gameInti(this);
         }
         catch (std::exception& e) {

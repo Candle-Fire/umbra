@@ -38,3 +38,7 @@ void ShadowEngine::SDL2Module::LateRender() {
 std::string ShadowEngine::SDL2Module::GetName() {
     return this->GetType();
 }
+
+void ShadowEngine::SDL2Module::AfterFrameEnd() {
+
+}

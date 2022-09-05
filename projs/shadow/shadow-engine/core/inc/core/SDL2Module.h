@@ -30,6 +30,9 @@ namespace ShadowEngine {
         void LateRender() override;
 
         std::string GetName() override;
+
+    public:
+        void AfterFrameEnd() override;
     };
 
 }

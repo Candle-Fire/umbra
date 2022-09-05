@@ -68,23 +68,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(umbra)
 
-# Fetch ImGui for the application
-#add_subdirectory(projs/imgui)
-
-# Common utilities
-add_subdirectory(projs/shadow/shadow-utility)
-
-# Asset management
-add_subdirectory(projs/shadow/shadow-file-format)
-
-# Reflection
-add_subdirectory(projs/shadow/shadow-reflection)
-
 # Core engine
 add_subdirectory(projs/shadow/shadow-engine)
-
-# Renderer
-add_subdirectory(projs/shadow/shadow-renderer)
 
 # Runtime executable
 add_subdirectory(projs/shadow/shadow-runtime)

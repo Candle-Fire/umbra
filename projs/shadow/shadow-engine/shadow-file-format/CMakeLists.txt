@@ -1,7 +1,7 @@
 set(CMAKE_CXX_STANDARD 20)
 
 # Set up Catch2 testing
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "cmake")
 enable_testing()
 
 # Set up asset sourceset
