@@ -26,6 +26,9 @@ target_include_directories(shadow-engine
             shadow-reflection/inc
         ${glm_SOURCE_DIR})
 
-target_link_libraries(shadow-engine PRIVATE Vulkan::Vulkan PUBLIC SDL2::SDL2 spdlog dylib PUBLIC imgui)
-
+target_link_libraries(shadow-engine PUBLIC Vulkan::Vulkan PUBLIC SDL2::SDL2 spdlog dylib PUBLIC imgui)
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
+
+target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
+
+

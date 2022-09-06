@@ -84,6 +84,8 @@ namespace ShadowEngine {
 
         window_ = sdl2module->_window;
 
+        printf("exe side: %p \n", VulkanManager::getInstance());
+
         CATCH(VulkanManager::getInstance()->initVulkan(window_->sdlWindowPtr);)
 
         IMGUI_CHECKVERSION();

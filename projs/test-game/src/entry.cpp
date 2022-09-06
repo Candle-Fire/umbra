@@ -7,6 +7,7 @@
 #include "core/ShadowApplication.h"
 #include "GameModule.h"
 #include "core/ShadowApplication.h"
+#include "vlkx/vulkan/VulkanManager.h"
 
 extern "C" __declspec(dllexport) void shadow_main(ShadowEngine::ShadowApplication* app) {
 
@@ -17,5 +18,7 @@ extern "C" __declspec(dllexport) void shadow_main(ShadowEngine::ShadowApplicatio
     if(app == &ShadowEngine::ShadowApplication::Get()){
         std::cout << "They are the same!!!" << std::endl;
     }
+
+    printf("dll side: %p \n", VulkanManager::getInstance());
 
 }
