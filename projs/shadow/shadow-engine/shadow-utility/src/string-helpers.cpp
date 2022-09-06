@@ -1,5 +1,5 @@
 
-#include "string-helpers.h"
+#include "../inc/string-helpers.h"
 
 std::vector<std::string> explode(const std::string& s, const char& c)
 {

@@ -9,14 +9,16 @@ FILE(GLOB_RECURSE SOURCES
         core/src/*.cpp
         shadow-renderer/src/*.cpp
         shadow-reflection/src/*.cpp
+        shadow-utility/src/*.cpp
         )
 FILE(GLOB_RECURSE HEADERS
         core/inc/*.h
         shadow-renderer/inc/*.h
         shadow-reflection/inc/*.h
+        shadow-utility/inc/*.h
         )
 
-add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
+add_library(shadow-engine SHARED ${SOURCES})
 
 target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}
@@ -24,6 +26,7 @@ target_include_directories(shadow-engine
             core/inc
             shadow-renderer/inc
             shadow-reflection/inc
+            shadow-utility/inc
         ${glm_SOURCE_DIR}
         INTERFACE
             ${imgui_SOURCE_DIR}

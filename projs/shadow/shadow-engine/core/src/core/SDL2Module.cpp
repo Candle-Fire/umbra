@@ -21,20 +21,20 @@ void ShadowEngine::SDL2Module::PreInit() {
         //return 1;
     }
 
-    _window = new ShadowWindow(800,450);
+    _window = new ShadowWindow(1280,720);
+    SDL_SetWindowResizable(_window->sdlWindowPtr, SDL_TRUE);
+    //SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
-void ShadowEngine::SDL2Module::Update() {
+void ShadowEngine::SDL2Module::Update(int frame) {}
 
-}
+void ShadowEngine::SDL2Module::Recreate() {}
 
-void ShadowEngine::SDL2Module::Render() {
+void ShadowEngine::SDL2Module::Render(VkCommandBuffer& commands, int frame) {}
 
-}
+void ShadowEngine::SDL2Module::OverlayRender() {}
 
-void ShadowEngine::SDL2Module::LateRender() {
-
-}
+void ShadowEngine::SDL2Module::LateRender(VkCommandBuffer& commands, int frame) {}
 
 std::string ShadowEngine::SDL2Module::GetName() {
     return this->GetType();

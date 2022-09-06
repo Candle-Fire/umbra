@@ -30,6 +30,7 @@ public:
 
 	/** Physical Devices **/
 	VkPhysicalDevice physical;
+    VkPhysicalDeviceLimits limits;
 	SwapChainMeta swapChain;
 	QueueFamilies queueData;
 

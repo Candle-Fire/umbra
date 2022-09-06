@@ -2,7 +2,8 @@
 #define UMBRA_MODULE_H
 
 #include "SHObject.h"
-#include <SDL_events.h>
+#include "SDL_events.h"
+#include "vlkx/vulkan/abstraction/Commands.h"
 
 namespace ShadowEngine {
 
@@ -29,13 +30,17 @@ namespace ShadowEngine {
         /// <summary>
         /// update is called each frame
         /// </summary>
-        virtual void Update() = 0;
+        virtual void Update(int frame) = 0;
+
+        virtual void Recreate() = 0;
 
         virtual void PreRender() = 0;
 
-        virtual void Render() = 0;
+        virtual void Render(VkCommandBuffer& commands, int frame) = 0;
 
-        virtual void LateRender() = 0;
+        virtual void LateRender(VkCommandBuffer& commands, int frame) = 0;
+
+        virtual void OverlayRender() = 0;
 
         virtual void AfterFrameEnd() = 0;
 
@@ -50,6 +55,21 @@ namespace ShadowEngine {
         virtual std::string GetName() {
             return this->GetType();
         };
+    };
+
+    /**
+     * A class especially for modules that are renderers.
+     * Allows the engine to access state from the renderer independent of implementation.
+     */
+    class RendererModule : public Module {
+    public:
+        // Begin the render pass using the given commands.
+        // Will call out through the regular modules to gather geometry to render.
+        virtual void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& commands) = 0;
+
+        virtual void EnableEditor() = 0;
+
+        virtual VkExtent2D GetRenderExtent() = 0;
     };
 
 } // ShadowEngine

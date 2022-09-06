@@ -5,8 +5,9 @@
 #ifndef UMBRA_DEBUGMODULE_H
 #define UMBRA_DEBUGMODULE_H
 
-#include <SDL_events.h>
+#include "SDL_events.h"
 #include "core/Module.h"
+#include "imgui.h"
 
 namespace ShadowEngine::Debug {
 
@@ -17,15 +18,19 @@ namespace ShadowEngine::Debug {
         bool active;
 
     public:
-        void Render() override;
+        void Render(VkCommandBuffer& commands, int frame) override {};
 
         void PreInit() override {  };
 
         void Init() override  {  };
 
-        void Update() override {  };
+        void Recreate() override {};
 
-        void LateRender() override {  };
+        void OverlayRender() override;
+
+        void Update(int frame) override {  };
+
+        void LateRender(VkCommandBuffer& commands, int frame) override {  };
 
         void AfterFrameEnd() override {  };
 

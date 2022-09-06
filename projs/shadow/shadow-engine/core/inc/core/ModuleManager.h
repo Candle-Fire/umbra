@@ -5,27 +5,37 @@
 #include <list>
 #include "Module.h"
 
+#ifdef EXPORTING_SH_ENGINE
+#define API __declspec(dllexport)
+#else
+#define API __declspec(dllimport)
+#endif
+
 namespace ShadowEngine {
 
     struct ModuleRef{
     public:
         std::shared_ptr<Module> module;
         std::string domain;
+
+        std::shared_ptr<RendererModule> operator->() const { return std::static_pointer_cast<RendererModule>(module); }
     };
 
     class ModuleManager {
     public:
-        static ModuleManager *instance;
+        static API ModuleManager *instance;
+        static ModuleManager* getInstance() { return instance; }
 
         std::list<ModuleRef> modules;
+        ModuleRef renderer;
 
         ModuleManager();
 
         ~ModuleManager();
 
-        void PushModule(std::shared_ptr<Module> module, std::string domain);
+        void PushModule(const std::shared_ptr<Module>& module, const std::string& domain);
 
-        Module &GetModule(std::string name);
+        Module &GetModule(const std::string& name);
 
         template<typename T>
         T *GetModuleByType() {
@@ -39,11 +49,15 @@ namespace ShadowEngine {
 
         void Init();
 
-        void Update();
+        void Update(int frame);
 
-        void LateRender();
+        void LateRender(VkCommandBuffer& commands, int frame);
 
-        void Render();
+        void OverlayRender();
+
+        void Recreate();
+
+        void Render(VkCommandBuffer& commands, int frame);
 
         void PreRender();
 
