@@ -2,6 +2,9 @@
 #include "ShadowWindow.h"
 #include "ModuleManager.h"
 #include "exports.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_vulkan.h"
 
 #include <string>
 

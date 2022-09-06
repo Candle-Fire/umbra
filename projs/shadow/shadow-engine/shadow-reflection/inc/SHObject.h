@@ -20,7 +20,7 @@ namespace ShadowEngine {
 	 */
 	class SHObject
 	{
-	protected:
+    public:
 		/**
 		 * \brief Generates a new UID for each call
 		 * \return the next Unique ID that was just generated
@@ -49,10 +49,13 @@ namespace ShadowEngine {
 	 */
 #define SHObject_Base(type)	\
 public: \
-	static const std::string& Type()				{ static const std::string t = typeid(type).name(); return t; } \
-	static uint64_t TypeId()						{ static const uint64_t id = GenerateId(); return id; } \
+	static const std::string& Type();				 \
+	static uint64_t TypeId();						 \
 	const std::string& GetType() const override		{ return Type();  } \
 	const uint64_t GetTypeId() const override		{ return  type::TypeId(); } \
 private:
 
+#define SHObject_Base_Impl(type)	\
+	const std::string& type::Type()				{ static const std::string t = typeid(type).name(); return t; } \
+	uint64_t type::TypeId()						{ static const uint64_t id = GenerateId(); return id; }
 }

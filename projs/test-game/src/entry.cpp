@@ -20,5 +20,6 @@ extern "C" __declspec(dllexport) void shadow_main(ShadowEngine::ShadowApplicatio
     }
 
     printf("dll side: %p \n", VulkanManager::getInstance());
+    printf("dll next ID: %llu \n", ShadowEngine::SHObject::GenerateId());
 
 }

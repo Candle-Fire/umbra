@@ -16,7 +16,7 @@ FILE(GLOB_RECURSE HEADERS
         shadow-reflection/inc/*.h
         )
 
-add_library(shadow-engine SHARED ${SOURCES})
+add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
 
 target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}
@@ -24,9 +24,16 @@ target_include_directories(shadow-engine
             core/inc
             shadow-renderer/inc
             shadow-reflection/inc
-        ${glm_SOURCE_DIR})
+        ${glm_SOURCE_DIR}
+        INTERFACE
+            ${imgui_SOURCE_DIR}
+            ${imgui_SOURCE_DIR}/backends)
 
-target_link_libraries(shadow-engine PUBLIC Vulkan::Vulkan PUBLIC SDL2::SDL2 spdlog dylib PUBLIC imgui)
+target_link_libraries(shadow-engine
+        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib
+#        "-Wl,--whole-archive ./imgui.a -Wl,--no-whole-archive"
+        imgui
+)
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)

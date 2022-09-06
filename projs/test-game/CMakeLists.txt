@@ -7,7 +7,6 @@ FILE(GLOB_RECURSE HEADERS src/*.h)
 
 add_library(test-game SHARED ${SOURCES})
 
-# ../shadow/shadow-engine/inc
 target_include_directories(test-game PRIVATE PUBLIC inc)
 target_link_libraries(test-game PUBLIC shadow-engine)
 

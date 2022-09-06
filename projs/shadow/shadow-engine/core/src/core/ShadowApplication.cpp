@@ -72,6 +72,9 @@ namespace ShadowEngine {
 	{
         loadGame();
 
+        printf("exe side: %p \n", VulkanManager::getInstance());
+        printf("exe next ID: %llu \n", ShadowEngine::SHObject::GenerateId());
+
         moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
         moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
 
@@ -80,6 +83,8 @@ namespace ShadowEngine {
         auto sdl2module = moduleManager.GetModuleByType<SDL2Module>();
 
         window_ = sdl2module->_window;
+
+
 	}
 
 	void ShadowApplication::Start()

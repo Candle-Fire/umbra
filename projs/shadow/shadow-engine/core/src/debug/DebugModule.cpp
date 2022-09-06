@@ -7,6 +7,8 @@
 #include "core/Time.h"
 #include "core/ModuleManager.h"
 
+SHObject_Base_Impl(ShadowEngine::Debug::DebugModule)
+
 void ShadowEngine::Debug::DebugModule::Render() {
 
     ImGui::Begin("Time", &active, ImGuiWindowFlags_MenuBar);

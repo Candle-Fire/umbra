@@ -18,12 +18,18 @@ SingleRenderer object;
 // Create the camera
 Camera camera;
 
+SHObject_Base_Impl(GameModule)
+
 void GameModule::PreInit() { spdlog::info("Game Module loading.."); }
 
 void GameModule::Init() {
 
-    auto sdl2module = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetModuleByType<ShadowEngine::SDL2Module>();
+    auto shApp = ShadowEngine::ShadowApplication::Get();
 
+    ShadowEngine::ModuleManager &moduleManager = shApp.GetModuleManager();
+
+    auto sdl2module = moduleManager.GetModuleByType<ShadowEngine::SDL2Module>();
+    
     CATCH(VulkanManager::getInstance()->initVulkan(sdl2module->_window->sdlWindowPtr);)
 
     IMGUI_CHECKVERSION();
@@ -123,7 +129,7 @@ void GameModule::Render() {
     bool active = true;
     ImGui::Begin("Game module window", &active, ImGuiWindowFlags_MenuBar);
 
-    ImGui::Text("Such teext");
+    ImGui::Text("Such teext from curle's branch");
 
     ImGui::End();
 

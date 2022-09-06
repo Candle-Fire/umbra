@@ -8,7 +8,7 @@ FILE(GLOB_RECURSE HEADERS ${imgui_SOURCE_DIR}/*.h)
 FILE(GLOB_RECURSE HEADERS ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.h)
 FILE(GLOB_RECURSE SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
 
-add_library(imgui
+add_library(imgui OBJECT
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_demo.cpp
         ${imgui_SOURCE_DIR}/imgui_draw.cpp

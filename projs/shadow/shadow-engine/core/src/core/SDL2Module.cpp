@@ -7,6 +7,7 @@
 #include "spdlog/spdlog.h"
 #include "imgui_impl_sdl.h"
 
+SHObject_Base_Impl(ShadowEngine::SDL2Module)
 
 void ShadowEngine::SDL2Module::Init() {
 }
