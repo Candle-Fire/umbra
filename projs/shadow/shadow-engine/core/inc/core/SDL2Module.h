@@ -32,6 +32,12 @@ namespace ShadowEngine {
         std::string GetName() override;
 
         void AfterFrameEnd() override;
+
+        void PreRender() override;
+
+        void Destroy() override;
+
+        void Event(SDL_Event* e) override;
     };
 
 }

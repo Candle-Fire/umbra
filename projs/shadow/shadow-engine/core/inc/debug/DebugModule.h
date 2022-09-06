@@ -5,6 +5,7 @@
 #ifndef UMBRA_DEBUGMODULE_H
 #define UMBRA_DEBUGMODULE_H
 
+#include <SDL_events.h>
 #include "core/Module.h"
 
 namespace ShadowEngine::Debug {
@@ -27,6 +28,12 @@ namespace ShadowEngine::Debug {
         void LateRender() override {  };
 
         void AfterFrameEnd() override {  };
+
+        void PreRender() override { };
+
+        void Destroy() override {};
+
+        void Event(SDL_Event* e) override {};
     };
 
 }

@@ -47,6 +47,31 @@ void ShadowEngine::ModuleManager::Init()
     }
 }
 
+void ShadowEngine::ModuleManager::Destroy()
+{
+    for (auto& module : modules)
+    {
+        module.module->Destroy();
+    }
+}
+
+
+void ShadowEngine::ModuleManager::PreRender()
+{
+    for (auto& module : modules)
+    {
+        module.module->PreRender();
+    }
+}
+
+void ShadowEngine::ModuleManager::Event(SDL_Event* evt)
+{
+    for (auto& module : modules)
+    {
+        module.module->Event(evt);
+    }
+}
+
 void ShadowEngine::ModuleManager::Update()
 {
     for (auto& module : modules)

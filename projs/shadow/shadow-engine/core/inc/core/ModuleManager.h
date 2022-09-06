@@ -45,7 +45,13 @@ namespace ShadowEngine {
 
         void Render();
 
+        void PreRender();
+
         void AfterFrameEnd();
+
+        void Destroy();
+
+        void Event(SDL_Event* evt);
     };
 }
 

@@ -2,6 +2,7 @@
 #define UMBRA_MODULE_H
 
 #include "SHObject.h"
+#include <SDL_events.h>
 
 namespace ShadowEngine {
 
@@ -30,11 +31,17 @@ namespace ShadowEngine {
         /// </summary>
         virtual void Update() = 0;
 
+        virtual void PreRender() = 0;
+
         virtual void Render() = 0;
 
         virtual void LateRender() = 0;
 
         virtual void AfterFrameEnd() = 0;
+
+        virtual void Destroy() = 0;
+
+        virtual void Event(SDL_Event* e) = 0;
 
         /// <summary>
         /// Returns the name of the module
