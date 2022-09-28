@@ -16,7 +16,9 @@ namespace ShadowEngine {
 
     dylib *gameLib;
 
-    ShadowApplication *ShadowApplication::instance = nullptr;
+    SHObject_Base_Impl(ShadowApplication)
+
+	ShadowApplication* ShadowApplication::instance = nullptr;
 
     std::unique_ptr<vlkx::RenderCommand> renderCommands;
 
@@ -71,13 +73,19 @@ namespace ShadowEngine {
         renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
 
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
-    }
+
+        eventBus.subscribe<SDLEvent>(nullptr,[](SDLEvent& e){
+            spdlog::info(e.event.type);
+        });
+	}
 
     void ShadowApplication::Start() {
         SDL_Event event;
         while (running) {
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                moduleManager.Event(&event);
+                //moduleManager.Event(&event);
+                SDLEvent e(event);
+                eventBus.fire(e);
                 if (event.type == SDL_QUIT)
                     running = false;
             }

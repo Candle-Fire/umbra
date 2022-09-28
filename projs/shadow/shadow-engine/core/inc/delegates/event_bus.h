@@ -4,63 +4,103 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <any>
+#include <SDL_events.h>
 
 #include "SHObject.h"
 
-template<class T, class U>
-concept Derived = std::is_base_of<U, T>::value;
+namespace ShadowEngine {
 
-template<typename T>
-concept SHObjectConcept = Derived<ShadowEngine::SHObject,T>;
+    template<class T, class U>
+    concept Derived = std::is_base_of<T, U>::value;
 
-class Event : public ShadowEngine::SHObject{
+    template<typename T>
+    concept SHObjectConcept = Derived<ShadowEngine::SHObject, T>;
+
+    class Event : public ShadowEngine::SHObject {
     SHObject_Base(Event)
-};
-SHObject_Base_Impl(Event)
+    };
 
-class TestEvent : public ShadowEngine::SHObject{
-SHObject_Base(TestEvent)
-};
-SHObject_Base_Impl(TestEvent)
 
-class EventDispatcherBase{
-public:
-    virtual void subscribe(std::function<const void(Event&)> func) = 0;
+    class SDLEvent : public Event {
+    SHObject_Base(SDLEvent)
+    public:
+        SDLEvent(SDL_Event e) : event(e) {};
 
-};
+        SDL_Event event;
+    };
 
-template<class T>
-class EventDispatcher : public EventDispatcherBase{
 
-    using RecieverList = std::map<std::string, std::function<const void(T&)>>;
+    class TestEvent : public Event {
+    SHObject_Base(TestEvent)
+    };
 
-public:
-    RecieverList list;
 
-    void subscribe(std::function<const void(Event &)> func) override {
+    template<typename T>
+    concept EventType = Derived<Event, T>;
 
-    }
+    template<EventType T>
+    struct Subscription {
+        std::function<const void(T &)> callback;
 
-    void subscribe(std::function<const void(T &)> func) {
+        std::weak_ptr<ShadowEngine::SHObject> binding;
+    };
 
-    }
-};
+    class EventDispatcherBase {
+    public:
+        virtual void call(ShadowEngine::SHObject &obj) = 0;
+    };
 
-class EventBus{
+    template<EventType T>
+    class EventDispatcher : public EventDispatcherBase {
 
-public:
+        using RecieverList = std::vector<Subscription<T>>;
 
-    std::map<int, std::shared_ptr<EventDispatcherBase>> dispatchers;
+    public:
+        RecieverList list;
 
-    template<Derived<ShadowEngine::SHObject> T>
-    void subscribe(std::function<const void(T&)> func){
-
-        if(dispatchers.contains(T::TypeId())) {
-            auto dis = std::reinterpret_pointer_cast<EventDispatcher<T>>(dispatchers[T::TypeId()]);
-            dis->subscribe(func);
+        void subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<const void(T &)> func) {
+            list.push_back(Subscription<T>{.callback = func, .binding= binding});
         }
-    }
 
-};
+        void call(ShadowEngine::SHObject &obj) override {
+            this->call_impl((T&)obj);
+        }
 
+        void call_impl(T &event) {
+            for (int i = 0; i < list.size(); ++i) {
+                list[i].callback(event);
+            }
+        }
+    };
 
+    class EventBus {
+
+    public:
+
+        std::map<uint64_t, std::shared_ptr<EventDispatcherBase>> dispatchers;
+
+        template<EventType T>
+        void subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<void(T &)> func) {
+
+            std::shared_ptr<EventDispatcher<T>> dis;
+
+            if (dispatchers.contains(T::TypeId())) {
+                dis = std::reinterpret_pointer_cast<EventDispatcher<T>>(dispatchers[T::TypeId()]);
+            } else {
+                dis = std::make_shared<EventDispatcher<T>>();
+                dispatchers.emplace(T::TypeId(), dis);
+            }
+
+            dis->subscribe(binding, func);
+        }
+
+        void fire(Event &e) {
+            auto id = e.GetTypeId();
+            if (dispatchers.contains(id)) {
+                dispatchers[id]->call(e);
+            }
+        }
+
+    };
+}
