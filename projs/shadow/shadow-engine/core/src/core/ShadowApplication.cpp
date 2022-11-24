@@ -70,6 +70,8 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Init()
 	{
+        spdlog::info("Starting Shadow Engine!");
+
         loadGame();
 
         printf("exe side: %p \n", VulkanManager::getInstance());

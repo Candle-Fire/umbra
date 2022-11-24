@@ -30,12 +30,9 @@ target_include_directories(shadow-engine
             ${imgui_SOURCE_DIR}/backends)
 
 target_link_libraries(shadow-engine
-        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib
-#        "-Wl,--whole-archive ./imgui.a -Wl,--no-whole-archive"
-        imgui
+        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui
 )
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
-
 
