@@ -6,12 +6,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_mem_alloc.h>
 #include "VulkanDevice.h"
+#include "exports.h"
 
-#ifdef EXPORTING_SH_ENGINE
-#define API __declspec(dllexport)
-#else
-#define API __declspec(dllimport)
-#endif
 
 namespace VkTools {
     struct ManagedImage {

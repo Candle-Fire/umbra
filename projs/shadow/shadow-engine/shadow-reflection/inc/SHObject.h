@@ -25,7 +25,7 @@ namespace ShadowEngine {
 		 * \brief Generates a new UID for each call
 		 * \return the next Unique ID that was just generated
 		 */
-		SH_EXPORT static uint64_t GenerateId() noexcept;
+		API static uint64_t GenerateId() noexcept;
 
 	public:
 		/**

@@ -1,10 +1,7 @@
 #pragma once
 
-#ifdef EXPORTING_SH_ENGINE
-#define API __declspec(dllexport)
-#else
-#define API __declspec(dllimport)
-#endif
+
+#include "exports.h"
 
 class Time
 {

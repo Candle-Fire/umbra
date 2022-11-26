@@ -5,12 +5,6 @@
 #include <list>
 #include "Module.h"
 
-#ifdef EXPORTING_SH_ENGINE
-#define API __declspec(dllexport)
-#else
-#define API __declspec(dllimport)
-#endif
-
 namespace ShadowEngine {
 
     struct ModuleRef{
@@ -18,6 +12,8 @@ namespace ShadowEngine {
         std::shared_ptr<Module> module;
         std::string domain;
 
+        // Reinterpret this module as if it were a Renderer Module.
+        // A shortcut for `std::static_pointer_cast<std::shared_ptr<RendererModule>>(ShadowEngine::ModuleManager::instance->GetModule("renderer"))
         std::shared_ptr<RendererModule> operator->() const { return std::static_pointer_cast<RendererModule>(module); }
     };
 
@@ -37,6 +33,7 @@ namespace ShadowEngine {
 
         Module &GetModule(const std::string& name);
 
+        /*
         template<typename T>
         T *GetModuleByType() {
             for (auto &module: modules) {
@@ -45,7 +42,7 @@ namespace ShadowEngine {
             }
             //SH_CORE_ERROR("Can't find the module {0}", T::Type());
             return nullptr;
-        }
+        } */
 
         void Init();
 
