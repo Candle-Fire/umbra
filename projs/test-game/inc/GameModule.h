@@ -13,13 +13,17 @@ public:
 
     void Init() override;
 
-    void Update() override;
+    void Update(int frame) override;
 
     void PreRender() override;
 
-    void Render() override;
+    void Recreate() override;
 
-    void LateRender() override;
+    void OverlayRender() override;
+
+    void Render(VkCommandBuffer& commands, int frame) override;
+
+    void LateRender(VkCommandBuffer& commands, int frame) override;
 
     void AfterFrameEnd() override;
 

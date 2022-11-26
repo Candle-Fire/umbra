@@ -6,9 +6,9 @@
 
 #if defined(_WIN32)
 #  if defined(EXPORTING_SH_ENGINE)
-#    define SH_EXPORT __declspec(dllexport)
+#    define API __declspec(dllexport)
 #  else
-#    define SH_EXPORT __declspec(dllimport)
+#    define API __declspec(dllimport)
 #  endif
 #else // non windows
 #  define SH_EXPORT

@@ -11,7 +11,8 @@ public:
 	~ValidationAndExtension();
 
 	const std::vector<const char*> requiredValidations = {
-		"VK_LAYER_KHRONOS_validation"
+		"VK_LAYER_KHRONOS_validation",
+        //"VK_LAYER_LUNARG_api_dump"
 	};
 
 	VkDebugReportCallbackEXT callback;

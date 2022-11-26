@@ -1,20 +1,27 @@
 #include "core/Time.h"
-//#include <SDL_hints.h>
-//#include <SDL.h>
+#include <chrono>
 
-int Time::NOW = 0;//SDL_GetPerformanceCounter();
-int Time::LAST = 0;
-double Time::deltaTime_ms = 0;
-double Time::deltaTime = 0;
+API int Time::NOW = 0;//SDL_GetPerformanceCounter();
+API int Time::LAST = 0;
+API double lastFrame = 0;
+API double Time::deltaTime_ms = 0;
+API double Time::deltaTime = 0;
+API double Time::startTime = 0;
+API double Time::timeSinceStart = 0;
 
 void Time::UpdateTime()
 {
-    /*
-	NOW = SDL_GetTicks();
-	deltaTime_ms = LAST > 0 ? (NOW - LAST) *10 : (1.0f / 60.0f);
-	deltaTime_ms = deltaTime_ms == 0 ? (1.0f / 60.0f) : deltaTime_ms;
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto now_ms = time_point_cast<milliseconds>(now);
 
-	LAST = NOW;
-	deltaTime = deltaTime_ms * 0.001;
-    */
+    auto value = now_ms.time_since_epoch();
+    double duration = value.count();
+
+    deltaTime = duration - lastFrame;
+    if (startTime == 0)
+        startTime = duration;
+    timeSinceStart = duration - startTime;
+
+    lastFrame = duration;
 }

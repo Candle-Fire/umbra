@@ -68,6 +68,6 @@ namespace ShadowEngine {
         void Init();
         void Start();
 
-
-    };
+        void PollEvents();
+	};
 }

@@ -18,17 +18,18 @@ ShadowEngine::ModuleManager::ModuleManager()
 }
 
 ShadowEngine::ModuleManager::~ModuleManager()
-{
-}
+= default;
 
-void ShadowEngine::ModuleManager::PushModule(std::shared_ptr<Module> module, const std::string domain)
+void ShadowEngine::ModuleManager::PushModule(const std::shared_ptr<Module>& module, const std::string& domain)
 {
     ModuleRef r = {module, domain};
     modules.emplace_back(r);
+    if (domain == "renderer")
+        renderer = r;
     module->PreInit();
 }
 
-ShadowEngine::Module& ShadowEngine::ModuleManager::GetModule(std::string name)
+ShadowEngine::Module& ShadowEngine::ModuleManager::GetModule(const std::string& name)
 {
     for (auto& module : modules)
     {
@@ -72,29 +73,46 @@ void ShadowEngine::ModuleManager::Event(SDL_Event* evt)
     }
 }
 
-void ShadowEngine::ModuleManager::Update()
+void ShadowEngine::ModuleManager::Update(int frame)
 {
     for (auto& module : modules)
     {
-        module.module->Update();
+        module.module->Update(frame);
     }
 }
 
-void ShadowEngine::ModuleManager::LateRender()
+void ShadowEngine::ModuleManager::LateRender(VkCommandBuffer& commands, int frame)
 {
     for (auto& module : modules)
     {
-        module.module->LateRender();
+        module.module->LateRender(commands, frame);
     }
 }
 
-void ShadowEngine::ModuleManager::Render()
+void ShadowEngine::ModuleManager::Render(VkCommandBuffer& commands, int frame)
 {
     for (auto& module : modules)
     {
-        module.module->Render();
+        module.module->Render(commands, frame);
     }
 }
+
+void ShadowEngine::ModuleManager::OverlayRender()
+{
+    for (auto& module : modules)
+    {
+        module.module->OverlayRender();
+    }
+}
+
+void ShadowEngine::ModuleManager::Recreate()
+{
+    for (auto& module : modules)
+    {
+        module.module->Recreate();
+    }
+}
+
 
 void ShadowEngine::ModuleManager::AfterFrameEnd()
 {

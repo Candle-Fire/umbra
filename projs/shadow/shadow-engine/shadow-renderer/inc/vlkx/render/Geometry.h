@@ -28,65 +28,66 @@ namespace Geo {
 	};
 
 	// All of the metadata involved with a vertex.
-	struct Vertex {
+	struct VertexAll {
 		glm::vec3 position; // XYZ coordinates of the vertex's position.
 		glm::vec3 normal;   // Unit vector pointing away from the outer surface of the vertex.
-		glm::vec3 color;    // The color of the vertex.
 		glm::vec2 texture;  // The u/v coordinates of this vertex in the bound texture.
 
 		// How fast should vertex data be read from RAM?
 		static VkVertexInputBindingDescription getBindingDesc() {
 			VkVertexInputBindingDescription desc = {};
 			desc.binding = 0;
-			desc.stride = sizeof(Vertex);
+			desc.stride = sizeof(VertexAll);
 			desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			return desc;
 		}
 
 		// How should vertexes be handled?
-		static std::array<VkVertexInputAttributeDescription, 4> getAttributeDesc() {
-			std::array<VkVertexInputAttributeDescription, 4> descs = {};
-
-			// Attribute 0; position. Location 0, 3x 32-bit float.
-			descs[0].binding = 0;
-			descs[0].location = 0;
-			descs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			descs[0].offset = offsetof(Vertex, position);
-
-			// Attribute 1; normal. Location 1, 3x 32-bit float.
-			descs[1].binding = 0;
-			descs[1].location = 1;
-			descs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			descs[1].offset = offsetof(Vertex, normal);
-
-			// Attribute 2; color. Location 2, 3x 32-bit float.
-			descs[2].binding = 0;
-			descs[2].location = 2;
-			descs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-			descs[2].offset = offsetof(Vertex, color);
-
-			// Attribute 3; texture. Location 3, 2x 32-bit float.
-			descs[3].binding = 0;
-			descs[3].location = 3;
-			descs[3].format = VK_FORMAT_R32G32_SFLOAT;
-			descs[3].offset = offsetof(Vertex, texture);
-
-			return descs;
+		static std::vector<VkVertexInputAttributeDescription> getAttributeDesc() {
+			return {
+                    { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(VertexAll, position)) },
+                    { 0, 1, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(VertexAll, normal)) },
+                    { 0, 2, VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(VertexAll, texture)) }
+            };
 		}
 	};
+
+    // All of the metadata involved with a vertex.
+    struct VertexColor {
+        glm::vec3 position; // XYZ coordinates of the vertex's position.
+        glm::vec3 color;    // The color of the vertex.
+
+        // How fast should vertex data be read from RAM?
+        static VkVertexInputBindingDescription getBindingDesc() {
+            VkVertexInputBindingDescription desc = {};
+            desc.binding = 0;
+            desc.stride = sizeof(VertexColor);
+            desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            return desc;
+        }
+
+        // How should vertexes be handled?
+        static std::vector<VkVertexInputAttributeDescription> getAttributeDesc() {
+            return {
+                    { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(VertexColor, position)) },
+                    { 0, 1, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(VertexColor, color)) }
+            };
+        }
+    };
 
 	// Contains data about a given Mesh.
 	class Mesh {
 	public:
 		// Pre-load the data for a triangle into the given buffers.
-		static void setTriData(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+		static void setTriData(std::vector<VertexAll>& vertices, std::vector<uint32_t>& indices);
 		// Pre-load the data for a quad into the given buffers.
-		static void setQuadData(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+		static void setQuadData(std::vector<VertexAll>& vertices, std::vector<uint32_t>& indices);
 		// Pre-load the data for a cube into the given buffers.
-		static void setCubeData(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+		static void setCubeData(std::vector<VertexAll>& vertices, std::vector<uint32_t>& indices);
 		// Pre-load the data for a sphere into the given buffers.
-		static void setSphereData(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+		static void setSphereData(std::vector<VertexAll>& vertices, std::vector<uint32_t>& indices);
 	};
 
 

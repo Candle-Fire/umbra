@@ -1,17 +1,14 @@
-#include "core/ShadowApplication.h"
+#define STB_IMAGE_IMPLEMENTATION
 
+#include "core/ShadowApplication.h"
 #include "core/Time.h"
 #include "core/SDL2Module.h"
 #include "debug/DebugModule.h"
 #include "dylib.hpp"
-
-
+#include "vlkx/vulkan/abstraction/Commands.h"
 #include <imgui.h>
-#include <imgui_impl_vulkan.h>
 #include <imgui_impl_sdl.h>
-#include <vlkx/vulkan/VulkanManager.h>
-#include <vlkx/render/Camera.h>
-#include <vlkx/render/geometry/SingleRenderer.h>
+#include <vlkx/vulkan/VulkanModule.h>
 #include <spdlog/spdlog.h>
 
 #define CATCH(x) \
@@ -22,6 +19,8 @@ namespace ShadowEngine {
     dylib* gameLib;
 
 	ShadowApplication* ShadowApplication::instance = nullptr;
+
+    std::unique_ptr<vlkx::RenderCommand> renderCommands;
 
     ShadowApplication::ShadowApplication(int argc, char* argv[])
 	{
@@ -70,23 +69,17 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Init()
 	{
-        spdlog::info("Starting Shadow Engine!");
+        moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
+        auto renderer = std::make_shared<VulkanModule>();
+        renderer->EnableEditor();
+        moduleManager.PushModule(renderer, "renderer");
 
         loadGame();
 
-        printf("exe side: %p \n", VulkanManager::getInstance());
-        printf("exe next ID: %llu \n", ShadowEngine::SHObject::GenerateId());
-
-        moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
         moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
 
         moduleManager.Init();
-
-        auto sdl2module = moduleManager.GetModuleByType<SDL2Module>();
-
-        window_ = sdl2module->_window;
-
-
+        renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 	}
 
 	void ShadowApplication::Start()
@@ -100,16 +93,14 @@ namespace ShadowEngine {
                     running = false;
             }
 
-            moduleManager.Update();
             moduleManager.PreRender();
 
-            VulkanManager::getInstance()->startDraw();
-            moduleManager.Render();
-
-            moduleManager.LateRender();
-            VulkanManager::getInstance()->endDraw();
+            moduleManager.renderer->BeginRenderPass(renderCommands);
 
             moduleManager.AfterFrameEnd();
+
+            renderCommands->nextFrame();
+            Time::UpdateTime();
 		}
 
         moduleManager.Destroy();

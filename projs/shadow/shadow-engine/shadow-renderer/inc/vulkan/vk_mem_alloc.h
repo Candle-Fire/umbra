@@ -5489,7 +5489,6 @@ public:
     // Posts next part of an open string.
     void ContinueString(const char* pStr);
     // Posts next part of an open string. The number is converted to decimal characters.
-    void ContinueString(uint32_t n);
     void ContinueString(uint64_t n);
     // Posts next part of an open string. Pointer value is converted to characters
     // using "%p" formatting - shown as hexadecimal number, e.g.: 000000081276Ad00
@@ -5498,7 +5497,6 @@ public:
     void EndString(const char* pStr = VMA_NULL);
 
     // Writes a number value.
-    void WriteNumber(uint32_t n);
     void WriteNumber(uint64_t n);
     // Writes a boolean value - false or true.
     void WriteBool(bool b);
@@ -5654,12 +5652,6 @@ void VmaJsonWriter::ContinueString(const char* pStr)
     }
 }
 
-void VmaJsonWriter::ContinueString(uint32_t n)
-{
-    VMA_ASSERT(m_InsideString);
-    m_SB.AddNumber(n);
-}
-
 void VmaJsonWriter::ContinueString(uint64_t n)
 {
     VMA_ASSERT(m_InsideString);
@@ -5681,13 +5673,6 @@ void VmaJsonWriter::EndString(const char* pStr)
     }
     m_SB.Add('"');
     m_InsideString = false;
-}
-
-void VmaJsonWriter::WriteNumber(uint32_t n)
-{
-    VMA_ASSERT(!m_InsideString);
-    BeginValue(false);
-    m_SB.AddNumber(n);
 }
 
 void VmaJsonWriter::WriteNumber(uint64_t n)
