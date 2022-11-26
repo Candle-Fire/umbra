@@ -194,9 +194,12 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& c
                             ImGui_ImplSDL2_NewFrame();
                             ImGui::NewFrame();
 
-                            if (editorEnabled)
-                                ImGui::Image((ImTextureID)editorRenderPlanes[0], { 640, 480 });
-
+                            if (editorEnabled) {
+                                static bool active = true;
+                                ImGui::Begin("Game View", &active, ImGuiWindowFlags_None);
+                                ImGui::Image((ImTextureID) editorRenderPlanes[0], {640, 480});
+                                ImGui::End();
+                            }
                             ShadowEngine::ModuleManager::instance->OverlayRender();
 
                             ImGui::Render();
