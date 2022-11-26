@@ -1,14 +1,15 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 
 Include(FetchContent)
 
 # Fetch SDL for the runtime
 FetchContent_Declare(
         SDL2
-        URL     https://www.libsdl.org/release/SDL2-devel-2.0.22-VC.zip
+        URL     https://www.libsdl.org/release/SDL2-devel-2.24.0-VC.zip
 )
 FetchContent_MakeAvailable(SDL2)
-set(SDL2_PATH ${sdl2_SOURCE_DIR})
+set(SDL2_DIR ${sdl2_SOURCE_DIR})
+list(PREPEND CMAKE_PREFIX_PATH "${sdl2_SOURCE_DIR}/cmake")
 
 # Fetch Catch2 for the file format tests
 FetchContent_Declare(
@@ -46,29 +47,34 @@ if(NOT spdlog_POPULATED)
     add_subdirectory(${spdlog_SOURCE_DIR} ${spdlog_BINARY_DIR})
 endif()
 
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui
+        GIT_TAG 71a0701920dbc83155f718182f01132d1ec2d51e
+)
+
+FetchContent_MakeAvailable(imgui)
+
+FetchContent_Declare(
+        dylib
+        GIT_REPOSITORY "https://github.com/martin-olivier/dylib"
+        GIT_TAG        "v2.1.0"
+)
+
+FetchContent_MakeAvailable(dylib)
 
 # Import some find files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(umbra)
 
-# Fetch ImGui for the application
-add_subdirectory(projs/imgui)
-
-# Common utilities
-add_subdirectory(projs/shadow/shadow-utility)
-
-# Asset management
-add_subdirectory(projs/shadow/shadow-file-format)
-
-# Reflection
-add_subdirectory(projs/shadow/shadow-reflection)
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 # Core engine
 add_subdirectory(projs/shadow/shadow-engine)
 
-# Renderer
-add_subdirectory(projs/shadow/shadow-renderer)
-
 # Runtime executable
 add_subdirectory(projs/shadow/shadow-runtime)
+
+add_subdirectory(projs/test-game)

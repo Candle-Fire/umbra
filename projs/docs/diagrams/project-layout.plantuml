@@ -1,14 +1,29 @@
 @startuml
-[shadow-engine] <<static lib>> as engine
 [shadow-light] <<exe>> as editor
+
+    [shadow-entity] <<static lib>> as shentity
+    [shadow-file-format] <<static lib>> as shff
+    [shadow-reflection] <<static lib>> as shreflection
+    [shadow-renderer] <<static lib>> as shrenderer
+    [shadow-utilty] <<static lib>> as shutitily
+
+    [shadow-engine] <<static/dynamic lib>> as shengine
+
+    shentity --* shengine
+    shff --* shengine
+    shreflection --* shengine
+    shrenderer --* shengine
+    shutitily --* shengine
+
+
 [shadow-runner] <<exe>> as runner
 
 [test-game] <<dll>> as game
 
-engine <-editor
-runner -> engine
+shengine <- editor
+runner -> shengine
 
-game ..> engine
+game ..> shengine : uses
 
 runner --> game : loads
 editor --> game : loads
