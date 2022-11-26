@@ -3,6 +3,7 @@
 
 #include "SHObject.h"
 #include "SDL_events.h"
+#include <memory>
 #include "vlkx/vulkan/abstraction/Commands.h"
 
 namespace ShadowEngine {

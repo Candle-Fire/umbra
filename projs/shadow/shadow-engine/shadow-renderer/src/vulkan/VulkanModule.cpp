@@ -174,7 +174,7 @@ void VulkanModule::Init() {
 }
 
 void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& commands) {
-    const auto update = !editorEnabled ? [](const int frame) { ShadowEngine::ModuleManager::instance->Update(frame); } : nullptr;
+    const auto update = !editorEnabled ? [](const int frame) { ShadowEngine::ModuleManager::instance->Update(frame); } : [](const int frame) {};
 
     const auto res = commands->execute(commands->getFrame(), swapchain->swapChain, update,
             [this](const VkCommandBuffer& buffer, int frame) {
@@ -195,7 +195,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& c
                             ImGui::NewFrame();
 
                             if (editorEnabled)
-                                ImGui::Image(editorRenderPlanes[0], { 640, 480 });
+                                ImGui::Image((ImTextureID)editorRenderPlanes[0], { 640, 480 });
 
                             ShadowEngine::ModuleManager::instance->OverlayRender();
 

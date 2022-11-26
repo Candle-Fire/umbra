@@ -8,4 +8,5 @@ riderModule.iml
 test-results
 cmake-build-vs-debug/
 cmake-build-debug/
+cmake-build-debug-msvc/
 /.idea/
