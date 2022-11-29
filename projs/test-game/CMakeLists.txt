@@ -13,5 +13,5 @@ target_link_libraries(test-game PUBLIC shadow-engine)
 
 add_custom_command(TARGET test-game
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/vlkx-resources
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
         )
