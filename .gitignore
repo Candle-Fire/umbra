@@ -9,4 +9,5 @@ test-results
 cmake-build-vs-debug/
 cmake-build-debug/
 cmake-build-debug-msvc/
+cmake-build-debug-msvc-vs/
 /.idea/
