@@ -46,3 +46,20 @@ target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
 
+
+add_executable(tests ${TEST_SOURCES} ${SOURCES} $<TARGET_OBJECTS:imgui>)
+target_link_libraries(tests PRIVATE Catch2::Catch2 PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui)
+target_include_directories(tests
+        PRIVATE ${SDL2_INCLUDE_DIRS}
+        PUBLIC
+        core/inc
+        shadow-renderer/inc
+        shadow-reflection/inc
+        ${glm_SOURCE_DIR}
+        INTERFACE
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends)
+# Enable testing on the executable
+include(CTest)
+include(Catch)
+catch_discover_tests(tests)

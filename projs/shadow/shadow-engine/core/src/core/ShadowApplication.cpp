@@ -1,5 +1,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <vlkx/vulkan/VulkanModule.h>
+#include <spdlog/spdlog.h>
+
 #include "core/ShadowApplication.h"
 #include "core/Time.h"
 #include "dylib.hpp"
@@ -8,6 +13,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <spdlog/spdlog.h>
+
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }

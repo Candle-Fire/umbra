@@ -1,7 +1,7 @@
 //
 // Created by dpete on 25/11/2022.
 //
-#include "delegates/event_bus.h"
+#include "event-bus/event_bus.h"
 #include "SHObject.h"
 
 namespace ShadowEngine {

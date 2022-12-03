@@ -5,7 +5,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_vulkan.h"
-#include "delegates/event_bus.h"
+#include "event-bus/event_bus.h"
 
 #include <string>
 

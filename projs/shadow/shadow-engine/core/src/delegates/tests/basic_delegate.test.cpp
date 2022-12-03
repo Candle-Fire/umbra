@@ -3,7 +3,7 @@
 //
 
 
-#include "delegates/event_bus.h"
+#include "event-bus/event_bus.h"
 
 #include "debug/DebugModule.h"
 
@@ -13,7 +13,7 @@ void test(){
 
     auto bind = std::make_shared<ShadowEngine::Debug::DebugModule>();
 
-    bus.subscribe<ShadowEngine::TestEvent>(bind,[](ShadowEngine::TestEvent& e){});
+    //bus.subscribe<ShadowEngine::TestEvent>(bind,[](ShadowEngine::TestEvent& e){});
 
 }
 
