@@ -92,7 +92,7 @@ namespace ShadowEngine {
                         std::is_base_of<T,Event>::value,
                         EventDispatcher<T>,
                         EventDispatcherThreaded<T>
-                >>
+                >::type>
         std::shared_ptr<V> getDispatcher(){
             std::shared_ptr<V> dis;
 
