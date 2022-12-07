@@ -215,14 +215,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
                                                ImGui_ImplSDL2_NewFrame();
                                                ImGui::NewFrame();
 
-                                               if (editorEnabled) {
-                                                   static bool active = true;
-                                                   if (ImGui::Begin("Game View", &active, ImGuiWindowFlags_None)) {
-                                                       ImGui::Image((ImTextureID) editorRenderPlanes[0], {640, 480});
-                                                   }
-                                                   ImGui::End();
-                                               }
-                                               ShadowEngine::ShadowApplication::Get().GetModuleManager().OverlayRender();
+                            ShadowEngine::ModuleManager::instance->OverlayRender();
 
                                                ImGui::Render();
                                                ImGuiIO &io = ImGui::GetIO();
@@ -380,4 +373,8 @@ void VulkanModule::cleanup() {
     delete swapchain;
     delete device;
     delete validators;
+}
+
+VkDescriptorSet VulkanModule::getEditorRenderPlanes() {
+    return editorRenderPlanes[0];
 }

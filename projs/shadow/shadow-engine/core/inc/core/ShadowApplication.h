@@ -65,7 +65,7 @@ namespace ShadowEngine {
 
         ModuleManager& GetModuleManager() { return moduleManager; };
 
-        void Init();
+        void Init(std::function<const void(ModuleManager &)> addModuleCbk = [](ModuleManager&){});
         void Start();
 
         void PollEvents();
