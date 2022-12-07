@@ -48,7 +48,7 @@ namespace ShadowEngine {
 
 	public:
 
-        EventBus eventBus;
+        EventBus::EventBus eventBus;
 		/// <summary>
 		/// Default constructor
 		/// </summary>

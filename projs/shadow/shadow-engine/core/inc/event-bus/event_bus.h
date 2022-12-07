@@ -9,7 +9,7 @@
 #include "SHObject.h"
 #include "events.h"
 
-namespace ShadowEngine {
+namespace ShadowEngine::EventBus {
 
     template<class T, class U>
     concept Derived = std::is_base_of<T, U>::value;
@@ -25,9 +25,13 @@ namespace ShadowEngine {
 
     template<EventType T>
     struct Subscription {
-        std::function<const void(T &)> callback;
+        using Callback = std::function<const void(T &)>;
+
+        Callback callback;
 
         std::weak_ptr<ShadowEngine::SHObject> binding;
+
+        explicit Subscription(Callback call): callback(call){}
     };
 
     class EventDispatcherBase {
@@ -39,15 +43,23 @@ namespace ShadowEngine {
 
     template<EventType T>
     class EventDispatcher : public EventDispatcherBase {
+    public:
+        using SubRef = std::shared_ptr<Subscription<T>>;
 
     protected:
-        using SubscriptionList = std::vector<Subscription<T>>;
+        using SubscriptionList = std::vector<SubRef>;
 
         SubscriptionList subscriptionList;
-    public:
 
-        void subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<const void(T &)> func) {
-            subscriptionList.push_back(Subscription<T>{.callback = func, .binding= binding});
+    public:
+        std::shared_ptr<Subscription<T>> subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<const void(T &)> func) {
+            auto sub = std::make_shared<Subscription<T>>(func);
+            subscriptionList.push_back(sub);
+            return sub;
+        }
+
+        void unsubscribe(const std::shared_ptr<Subscription<T>> ref) {
+            subscriptionList.erase(std::remove(subscriptionList.begin(), subscriptionList.end(), ref), subscriptionList.end());
         }
 
         void call(ShadowEngine::SHObject &obj) override {
@@ -56,7 +68,7 @@ namespace ShadowEngine {
 
         void call_impl(T &event) {
             for (int i = 0; i < subscriptionList.size(); ++i) {
-                subscriptionList[i].callback(event);
+                subscriptionList[i]->callback(event);
             }
         }
     };
@@ -70,16 +82,6 @@ namespace ShadowEngine {
         void call(ShadowEngine::SHObject &obj) override {
             std::lock_guard<std::mutex> lLockGuard(mObserversMutex);
 
-            this->subscriptionList.erase(
-                    std::remove_if(
-                            this->subscriptionList.begin(),
-                            this->subscriptionList.end(),
-                            [](const Subscription<T> i){
-                                return i.binding.expired();
-                            }
-                    ),
-                    this->subscriptionList.end());
-
             this->call_impl((T&)obj);
         }
     };
@@ -89,7 +91,7 @@ namespace ShadowEngine {
         template<class T,
                 class V =
                 std::conditional<
-                        std::is_base_of<T,Event>::value,
+                        std::is_base_of<Event,T>::value,
                         EventDispatcher<T>,
                         EventDispatcherThreaded<T>
                 >::type>
@@ -110,13 +112,20 @@ namespace ShadowEngine {
         std::map<uint64_t, std::shared_ptr<EventDispatcherBase>> dispatchers;
 
         template<EventType T>
-        void subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<void(T &)> func) {
+        EventDispatcher<T>::SubRef subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<void(T &)> func) {
 
             std::shared_ptr<EventDispatcher<T>> dis;
 
             dis = getDispatcher<T>();
 
-            dis->subscribe(binding, func);
+            return dis->subscribe(binding, func);
+        }
+
+        template<EventType T>
+        void unsubscribe(EventDispatcher<T>::SubRef ref) {
+
+            std::shared_ptr<EventDispatcher<T>> dis = getDispatcher<T>();
+            dis->unsubscribe(ref);
         }
 
         void fire(Event &e) {

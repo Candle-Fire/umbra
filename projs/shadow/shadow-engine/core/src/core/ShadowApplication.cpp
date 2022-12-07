@@ -80,8 +80,9 @@ namespace ShadowEngine {
 
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 
-        eventBus.subscribe<SDLEvent>(nullptr,[](SDLEvent& e){
+        subref = eventBus.subscribe<SDLEvent>(nullptr,[this](SDLEvent& e){
             spdlog::info(e.event.type);
+            eventBus.unsubscribe<SDLEvent>(subref);
         });
 	}
 
@@ -89,7 +90,7 @@ namespace ShadowEngine {
         SDL_Event event;
         while (running) {
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                //moduleManager.Event(&event);
+                moduleManager.Event(&event);
                 SDLEvent e(event);
                 eventBus.fire(e);
                 if (event.type == SDL_QUIT)

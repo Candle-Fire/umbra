@@ -9,7 +9,7 @@
 
 void test(){
 
-    ShadowEngine::EventBus bus;
+    ShadowEngine::EventBus::EventBus bus;
 
     auto bind = std::make_shared<ShadowEngine::Debug::DebugModule>();
 
