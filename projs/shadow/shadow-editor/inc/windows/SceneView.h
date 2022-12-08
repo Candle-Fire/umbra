@@ -14,8 +14,6 @@ namespace ShadowEngine::Editor {
         SceneView();
 
         void Draw() override;
-
-        void AddMenu() override;
     };
 
 }

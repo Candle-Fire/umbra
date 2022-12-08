@@ -15,8 +15,6 @@ namespace ShadowEngine::Editor {
         DebugWindows();
 
         void Draw() override;
-
-        void AddMenu() override;
     };
 
 }

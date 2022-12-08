@@ -25,8 +25,4 @@ namespace ShadowEngine::Editor{
         ImGui::End();
     }
 
-    void SceneView::AddMenu() {
-
-    }
-
 }

@@ -6,6 +6,8 @@
 #include "imgui.h"
 #include "../inc/windows/SceneView.h"
 #include "../inc/windows/DebugWindows.h"
+#include "string-helpers.h"
+#include <spdlog/spdlog.h>
 
 namespace ShadowEngine::Editor {
 
@@ -44,14 +46,7 @@ namespace ShadowEngine::Editor {
 
         if (ImGui::BeginMenuBar())
         {
-            if (ImGui::BeginMenu("Windows"))
-            {
-                for (int i = 0; i < windows.size(); ++i) {
-                    windows[i]->AddMenu();
-                }
-
-                ImGui::EndMenu();
-            }
+            DrawMenu();
 
             ImGui::EndMenuBar();
         }
@@ -64,9 +59,38 @@ namespace ShadowEngine::Editor {
         ImGui::End();
     }
 
+    void EditorModule::DrawMenu(){
+
+        for (const auto& menu: this->menus) {
+            std::vector<std::string> menu_path =
+                    explode(menu.first, '/');
+
+            int depth = 0;
+            for (; depth < menu_path.size()-1; ++depth) {
+                if(!ImGui::BeginMenu(menu_path[depth].c_str())){
+                    break;
+                }
+            }
+            if(depth == menu_path.size()-1)
+                if(ImGui::MenuItem(menu_path.back().c_str()))
+                    menu.second.clk();
+
+            for (; depth > 0 ; depth--) {
+                ImGui::EndMenu();
+            }
+        }
+    }
+
+
+
+
     void EditorModule::Init() {
         windows.push_back(std::make_shared<SceneView>());
         windows.push_back(std::make_shared<DebugWindows>());
+    }
+
+    void EditorModule::RegisterMenu(std::string path, Menu m) {
+        menus.emplace(path, m);
     }
 
 
