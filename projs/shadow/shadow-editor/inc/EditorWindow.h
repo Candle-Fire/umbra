@@ -11,6 +11,7 @@ namespace ShadowEngine::Editor {
     SHObject_Base(EditorWindow)
     public:
         virtual void Draw()= 0;
+        virtual void AddMenu()=0;
     };
 
 }

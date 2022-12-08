@@ -4,7 +4,8 @@
 
 #include "../inc/EditorModule.h"
 #include "imgui.h"
-#include "../inc/SceneView.h"
+#include "../inc/windows/SceneView.h"
+#include "../inc/windows/DebugWindows.h"
 
 namespace ShadowEngine::Editor {
 
@@ -41,6 +42,20 @@ namespace ShadowEngine::Editor {
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         }
 
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("Windows"))
+            {
+                for (int i = 0; i < windows.size(); ++i) {
+                    windows[i]->AddMenu();
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenuBar();
+        }
+
         for (int i = 0; i < windows.size(); ++i) {
             windows[i]->Draw();
         }
@@ -51,6 +66,7 @@ namespace ShadowEngine::Editor {
 
     void EditorModule::Init() {
         windows.push_back(std::make_shared<SceneView>());
+        windows.push_back(std::make_shared<DebugWindows>());
     }
 
 

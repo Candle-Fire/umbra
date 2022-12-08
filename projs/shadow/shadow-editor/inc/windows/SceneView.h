@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorWindow.h"
+#include "../EditorWindow.h"
 #include "vlkx/vulkan/VulkanModule.h"
 
 namespace ShadowEngine::Editor {
@@ -14,6 +14,8 @@ namespace ShadowEngine::Editor {
         SceneView();
 
         void Draw() override;
+
+        void AddMenu() override;
     };
 
 }

@@ -1,4 +1,4 @@
-#include "../inc/SceneView.h"
+#include "../../inc/windows/SceneView.h"
 #include "imgui.h"
 #include "core/ShadowApplication.h"
 #include "vlkx/vulkan/VulkanModule.h"
@@ -23,6 +23,10 @@ namespace ShadowEngine::Editor{
         }
 
         ImGui::End();
+    }
+
+    void SceneView::AddMenu() {
+
     }
 
 }
