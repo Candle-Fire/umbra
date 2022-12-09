@@ -7,6 +7,9 @@
 
 namespace ShadowEngine::EntitySystem {
 
+    template<class T>
+    struct rtm_ptr;
+
     class Entity;
 	class EntityManager;
 	
@@ -97,17 +100,7 @@ namespace ShadowEngine::EntitySystem {
 			return cc;
 		}
 
-		inline IEntityContainer* GetComponentContainer(int typeID)
-		{
-			auto it = this->m_EntityContainerRegistry.find(typeID);
-			IEntityContainer* cc = nullptr;
-
-			if (!(it == this->m_EntityContainerRegistry.end()))
-				cc = static_cast<IEntityContainer*>(it->second);
-
-			assert(cc != nullptr && "Failed to get ComponentContainer<Type>!");
-			return cc;
-		}
+		inline IEntityContainer* GetComponentContainer(int typeID);
 
 
 		/**
@@ -115,64 +108,16 @@ namespace ShadowEngine::EntitySystem {
 		 * \param component
 		 * \return
 		 */
-		int AssignIndexToEntity(Entity* component)
-		{
-			int i = 0;
-			if (LUTFragm) {
-				i = LUTFragmFree.back();
-				LUTFragmFree.pop_back();
-				if (LUTFragmFree.empty()) {
-					LUTFragm = false;
-				}
-			}
-			else {
-				i = LUTNextFree;
-				LUTNextFree++;
-				if (!(i < m_EntityLUT.size())) {
-					this->m_EntityLUT.resize(this->m_EntityLUT.size() + ENTITY_LUT_GROW, nullptr);
-				}
-			}
-
-			/*
-			for (; i < this->m_EntityLUT.size(); ++i)
-			{
-				if (this->m_EntityLUT[i] == nullptr)
-				{
-					this->m_EntityLUT[i] = component;
-					return i;
-				}
-			}
-			*/
-
-			// increase component LUT size
-
-
-			this->m_EntityLUT[i] = component;
-			return i;
-		}
+		int AssignIndexToEntity(Entity* component);
 
 		/**
 		 * \brief Frees up the given index
 		 * \param id
 		 */
-		void ReleaseIndex(int id)
-		{
-			assert(id < this->m_EntityLUT.size() && "Invalid component id");
-
-			//If this free is from the middle of the LUT
-			//We record that the LUT is fragmented
-			if (id != this->m_EntityLUT.size() - 1) {
-				LUTFragm = true;
-				LUTFragmFree.push_back(id);
-			}
-
-			this->m_EntityLUT[id] = nullptr;
-		}
+		void ReleaseIndex(int id);
 
 	public:
-		EntityManager() {
-			Instance = this;
-		}
+		EntityManager();
 
 
 		/**
@@ -203,22 +148,7 @@ namespace ShadowEngine::EntitySystem {
 			return rtm_ptr((T*)component);
 		}
 
-		void RemoveEntity(const int entityIndex, const int typeID)
-		{
-			//Lookup of the entity to be removed
-			Entity* entity = this->m_EntityLUT[entityIndex];
-			//Invalidate the UID
-			entity->m_runtimeUID = Entity::INVALID_UID;
-			// unmap entity id
-			ReleaseIndex(entityIndex);
-
-			assert(entity != nullptr && "FATAL: Trying to remove a entity that doesn't exsist");
-
-			entity->~Entity();
-
-			// release object memory
-			GetComponentContainer(typeID)->DestroyObject((void*)entity);
-		}
+		void RemoveEntity(int entityIndex, int typeID);
 
 		/**
 		 * \brief Removes an entity
@@ -228,27 +158,15 @@ namespace ShadowEngine::EntitySystem {
 		template<class T>
 		void RemoveEntity(const int entityIndex)
 		{
-			//Lookup of the entity to be removed
-			Entity* entity = this->m_EntityLUT[entityIndex];
-			//Invalidate the UID
-			entity->m_runtimeUID = Entity::INVALID_UID;
-			// unmap entity id
-			ReleaseIndex(entityIndex);
-
-			assert(entity != nullptr && "FATAL: Trying to remove a entity that doesn't exsist");
-
-			entity->~Entity();
-
-			// release object memory
-			GetComponentContainer<T>()->DestroyObject((void*)entity);
+			this->RemoveEntity(entityIndex, T::TypeID());
 		}
 
-		template<class T>
+		template<class T> requires std::is_base_of<Entity,T>::value
 		void RemoveEntity(T* entity)
 		{
 			RemoveEntity<T>(entity->m_runtimeIndex);
 		}
-
+/*
 		template<class T>
 		void RemoveEntity(rtm_ptr<T> entity)
 		{
@@ -260,7 +178,7 @@ namespace ShadowEngine::EntitySystem {
 		{
 			RemoveEntity(entity->m_runtimeIndex, entity->GetTypeId());
 		}
-
+*/
 		template<class T>
 		inline T* GetEntityByIndex(int index)
 		{
@@ -276,25 +194,11 @@ namespace ShadowEngine::EntitySystem {
 			return static_cast<EntityContainer<T>*>(it->second);
 		}
 
-		void AddSystem(SystemCallbacks fn) {
-			systems.push_back(fn);
-		}
+		void AddSystem(SystemCallbacks fn);
 
-		void UpdateEntities(float dt)
-		{
-			for (auto & var : systems)
-			{
-				var.update(this,dt);
-			}
-		}
+		void UpdateEntities(float dt);
 
-		void InitEntities()
-		{
-			for (auto & var : systems)
-			{
-				var.init(this);
-			}
-		}
+		void InitEntities();
 	};
 
 }

@@ -112,7 +112,7 @@ namespace ShadowEngine::EntitySystem {
 
 	public:
 
-		class iterator
+		class EntityContainerIterator
 		{
 			typename MemoryChunks::iterator m_CurrentChunk;
 			typename MemoryChunks::iterator m_EndChunk;
@@ -122,7 +122,7 @@ namespace ShadowEngine::EntitySystem {
 
 		public:
 
-			iterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) :
+            EntityContainerIterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) :
 				m_CurrentChunk(begin),
 				m_EndChunk(end),
 				index(0)
@@ -139,7 +139,7 @@ namespace ShadowEngine::EntitySystem {
 
 			}
 
-			inline iterator& operator++()
+			inline EntityContainerIterator& operator++()
 			{
 				// move to next object in current chunk
 				m_CurrentElement = &m_CurrentElement[1];
@@ -171,13 +171,13 @@ namespace ShadowEngine::EntitySystem {
 			inline Type& operator*() const { return (m_CurrentElement->element); }
 			inline Type* operator->() const { return &(m_CurrentElement->element); }
 
-			inline bool operator==(typename iterator& other)
+			inline bool operator==(EntityContainerIterator& other)
 			{
 				//auto o = dynamic_cast<iterator&>(other);
 				return ((this->m_CurrentChunk == other.m_CurrentChunk) && (this->m_CurrentElement == other.m_CurrentElement));
 			}
 
-			inline bool operator!=(typename iterator& other)
+			inline bool operator!=(EntityContainerIterator& other)
 			{
 				//auto o = dynamic_cast<iterator&>(other);
 				return ((this->m_CurrentChunk != other.m_CurrentChunk) && (this->m_CurrentElement != other.m_CurrentElement));
@@ -250,12 +250,12 @@ namespace ShadowEngine::EntitySystem {
 		}
 
 
-		inline iterator begin() {
+		inline EntityContainerIterator begin() {
 			auto end = this->m_Chunks.end();
 			return iterator(this->m_Chunks.begin(), end);
 		}
 
-		inline iterator end() { return iterator(this->m_Chunks.end(), this->m_Chunks.end()); }
+		inline EntityContainerIterator end() { return iterator(this->m_Chunks.end(), this->m_Chunks.end()); }
 
 	};
 
