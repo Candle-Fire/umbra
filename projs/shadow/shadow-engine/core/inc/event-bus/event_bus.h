@@ -9,6 +9,10 @@
 #include "SHObject.h"
 #include "events.h"
 
+/**
+ * Base types for the module event dispatcher
+ */
+
 namespace ShadowEngine::EventBus {
 
     template<class T, class U>
@@ -34,6 +38,9 @@ namespace ShadowEngine::EventBus {
         explicit Subscription(Callback call): callback(call){}
     };
 
+    /**
+     * Base class for calling all subscribers to an event
+     */
     class EventDispatcherBase {
     public:
         virtual ~EventDispatcherBase() = default;

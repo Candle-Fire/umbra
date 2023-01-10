@@ -32,8 +32,6 @@ namespace ShadowEngine {
         /// </summary>
         ModuleManager moduleManager;
 
-
-
 		/// <summary>
 		/// Represents the running state.
 		/// </summary>
