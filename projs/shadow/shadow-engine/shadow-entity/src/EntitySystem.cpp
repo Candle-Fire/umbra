@@ -1,7 +1,10 @@
 #include "../inc/EntitySystem.h"
+#include "core/Time.h"
 //#include <ShadowTime.h>
 
 namespace ShadowEngine::EntitySystem {
+
+    SHObject_Base_Impl(EntitySystem)
 
 	EntitySystem::EntitySystem() : activeScene(std::make_unique<Scene>())
 	{
@@ -13,14 +16,14 @@ namespace ShadowEngine::EntitySystem {
 		
 	}
 
-	void EntitySystem::Update()
+	void EntitySystem::Update(int frame)
 	{
 		auto dt = Time::deltaTime_ms;
 
 		entityMgr->UpdateEntities(dt);
 	}
 
-	Scope<Scene>& EntitySystem::GetActiveScene()
+	std::unique_ptr<Scene>& EntitySystem::GetActiveScene()
 	{
 		return activeScene;
 	}
@@ -29,7 +32,7 @@ namespace ShadowEngine::EntitySystem {
 	{
 		if (activeScene != NULL)
 		{
-			SH_CORE_CRITICAL("Scene wasn't unloaded.");
+			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
 		}
 
 		//activeScene = std::make_unique<ShadowScene>();
@@ -48,7 +51,7 @@ namespace ShadowEngine::EntitySystem {
 
 		entityMgr->InitEntities();
 
-		SH_CORE_TRACE("SceneLoaded");
+		//SH_CORE_TRACE("SceneLoaded");
 	}
 
 }

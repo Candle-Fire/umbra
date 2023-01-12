@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <list>
 
 #include "SHObject.h"
 #include "Entity.h"
@@ -63,7 +64,7 @@ namespace ShadowEngine::EntitySystem {
 		}
 
 		void DestroyScene() {
-			for each (auto var in m_entities)
+			for (auto var : m_entities)
 			{
 				EntityManager::Instance->RemoveEntity(var);
 			}

@@ -6,22 +6,28 @@
 
 #include "EntityBase.h"
 #include "SHObject.h"
+#include "EntityManager.h"
+#include "Transform.h"
 
-namespace ShadowEngine::ShadowEntity {
-	class Transform;
-}
+//namespace ShadowEngine::ShadowEntity {
+//	class Transform;
+//}
 
 namespace ShadowEngine::EntitySystem
 {
     struct SystemCallbacks;
     class Scene;
 
-    class EntityManager;
+    //class EntityManager;
 
     using Rtm_UUID = int;
 
 
-    
+    /**
+     * Runtime pointer to an Entity
+     * It tracks the UUID of the linked entity
+     * @tparam Type
+     */
 	template<class Type>
 	class rtm_ptr
 	{
@@ -76,116 +82,128 @@ namespace ShadowEngine::EntitySystem
 
 	};
 
+    /**
+     * Currently not used Probably wont
+     */
 	enum class EntityFlags {
 		NONE = 0,
 		HAS_TICK = 1 << 0,
 		HAS_LATE_TICK = 1 << 1
 	};
 
-	/// This is the base entity used in the game world. This should never be instantiated only the derived classes
-	/// A entity has a parent and internal, external hierarchy. The parent is the Entity that this is under. This effects the position of this Entity.
-	///
-	/// The internal hierarchy is used for Entities that are considered as part of this Entity these would be like components in Unity or UE4
-	/// This base Entity does not have a position so it acts like a Component in other engines. If you want to have a position you have to use <see cref="SceneEntity"/>
-	/// The base Entity does however does have a <see cref="Entity::GetTransform"/> that returns the position of the first parent's position that is <see cref="SceneEntity"/>
-	/// 
-	/// <summary>
-	/// Base Entity in the scene
-	/// </summary>
+    /**
+     *  This is the base entity used in the game world. This should never be instantiated only the derived classes
+     *  A entity has a parent and internal, external hierarchy. The parent is the Entity that this is under. This effects the position of this Entity.
+     *  The internal hierarchy is used for Entities that are considered as part of this Entity these would be like components in Unity or UE4
+     *  This base Entity does not have a position so it acts like a Component in other engines. If you want to have a position you have to use <see cref="SceneEntity"/>
+     *  The base Entity does however does have a <see cref="Entity::GetTransform"/> that returns the position of the first parent's position that is <see cref="SceneEntity"/>
+     *  <summary>
+     *  Base Entity in the scene
+     *  </summary>
+     */
 	class Entity : public SHObject
 	{
 		SHObject_Base(Entity)
 
 	public:
-		/// <summary>
-		/// This is the Globally unique ID of this Entity
-		/// </summary>
-		/// This ID will be only assigned to this Entity instance
-		/// It can be used to look up entities, but it is not recommended as it is a slow process
-		/// For Entity Lookup use the m_runtimeIndex
+
+        /**
+         * <summary>
+         * This is the Globally unique ID of this Entity
+         * </summary>
+         * This ID will be only assigned to this Entity instance
+         * It can be used to look up entities, but it is not recommended as it is a slow process
+         * For Entity Lookup use the m_runtimeIndex
+         */
         Rtm_UUID m_runtimeUID;
 
-		/// <summary>
-		/// This is the UID that represents an invalid ID
-		/// </summary>
+		/**
+		 * <summary>
+		 * This is the UID that represents an invalid ID
+		 * </summary>
+		 */
 		static const Rtm_UUID INVALID_UID = -1;
 
-
-		/// <summary>
-		/// This is the ID of the entity usable for lookup
-		/// </summary>
-		/// This ID will be reused when the Entity is removed
-		/// 
-		/// To use this Entity for lookup use the LUT in the EntityManager
+        /**
+         * <summary>
+         * This is the ID of the entity usable for lookup
+         * </summary>
+         * This ID will be reused when the Entity is removed
+         * To use this Entity for lookup use the LUT in the EntityManager
+         */
 		int m_runtimeIndex;
 
-		///The name of this entity
+		/**
+		 * The name of this entity
+		 */
 		std::string name;
 
-		/// <summary>
-		/// The scene this Entity is assigned to
-		/// </summary>
+        /**
+         * The scene this Entity is assigned to
+         */
 		Scene* scene;
 
-		/// <summary>
-		/// The internal hierarchy of this Entity
-		/// </summary>
+		/**
+		 * The internal hierarchy of this Entity
+		 */
 		std::vector<rtm_ptr<Entity>> internalHierarchy;
 
-		/// <summary>
-		/// The external hierarchy of this Entity
-		/// </summary>
+		/**
+		 * The external hierarchy of this Entity
+		 */
 		std::vector<rtm_ptr<Entity>> hierarchy;
 
-		/// <summary>
-		/// The parent entity
-		/// </summary>
-		///
-		/// This can be null when the Entity is the top one in the hierarchy
+		/**
+		 * The parent entity
+		 *
+		 * This can be null when the Entity is the top one in the hierarchy
+		 */
 		rtm_ptr<Entity> parent;
 
 	public:
-		/// <summary>
-		/// Empty default constructor
-		/// </summary>
+
+        /**
+         * Empty default constructor
+         */
 		Entity();
 
-		/// <summary>
-		/// Constructor defining the scene it is located in
-		/// </summary>
-		/// <param name="scene">The scene that this entity is in</param>
+        /**
+         * Constructor defining the scene it is located in
+         * @param scene The scene that this entity is in
+         */
 		Entity(Scene* scene);
 
 		virtual ~Entity() {}
 
-		/// <summary>
-		/// Creates a new Entity
-		/// </summary>
-		/// <param name="scene">The scene that this entity is in</param>
-		/// <returns>Pointer to the Entity created</returns>
+        /**
+         * Creates a new Entity
+         * @param scene The scene that this entity is in
+         * @return Pointer to the Entity created
+         */
 		virtual Entity* Create(Scene* scene);
 
 		virtual void Build() {};
-		
-		/// Called when the Entity needs to be initialised. Should be used as a constructor
-		/// <summary>
-		/// Called when the Entity needs to be initialised.
-		/// </summary>
+
+        /**
+         * Called when the Entity needs to be initialised. Should be used as a constructor
+         * Called when the Entity needs to be initialised.
+         */
 		virtual  void Init() {};
 
-		/// <summary>
-		/// Called when the world starts or before the Entity get's it's first tick
-		/// </summary>
+		/**
+		 * Called when the world starts or before the Entity get's it's first tick
+		 */
 		virtual void Start() {};
 
-		/// <summary>
-		/// Called every tick
-		/// </summary>
+		/**
+		 * Called every tick
+		 * @param dt The time since the last tick (delta time)
+		 */
 		virtual void Update(float dt) {};
 
-		/// <summary>
-		/// Called every Tick after the first is finished
-		/// </summary>
+		/**
+		 * Called every Tick after the first is finished
+		 */
 		virtual void LateUpdate() {};
 
 		virtual void Render() {};
@@ -210,10 +228,11 @@ namespace ShadowEngine::EntitySystem
 		virtual void TransformChanged() {};
 
 	public:
-		/// <summary>
-		/// Sets the scene this Entity is in
-		/// </summary>
-		/// <param name="se">The scene this entity belongs to</param>
+
+        /**
+         * Sets the scene this Entity is in
+         * @param se The scene this entity belongs to
+         */
 		void SetScene(Scene* se);
 
 		virtual void SetParent(rtm_ptr<Entity> e);
@@ -250,7 +269,7 @@ namespace ShadowEngine::EntitySystem
 
 			int c = 0;
 
-			for each (auto & current in container)
+			for (auto & current : container)
 			{
 				current.Update(dt);
 			}
@@ -263,7 +282,7 @@ namespace ShadowEngine::EntitySystem
 
 			int c = 0;
 
-			for each (auto & current in container)
+			for (auto & current : container)
 			{
 				current.Init();
 			}

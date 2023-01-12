@@ -11,6 +11,7 @@ FILE(GLOB_RECURSE SOURCES
         shadow-renderer/src/*.cpp
         shadow-reflection/src/*.cpp
         shadow-utility/src/*.cpp
+        shadow-math/src/*.cpp
         )
 FILE(GLOB_RECURSE HEADERS
         core/inc/*.h
@@ -18,6 +19,7 @@ FILE(GLOB_RECURSE HEADERS
         shadow-renderer/inc/*.h
         shadow-reflection/inc/*.h
         shadow-utility/inc/*.h
+        shadow-math/inc/*.h
         )
 
 add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
@@ -30,6 +32,7 @@ target_include_directories(shadow-engine
             shadow-renderer/inc
             shadow-reflection/inc
             shadow-utility/inc
+            shadow-math/inc
         ${glm_SOURCE_DIR}
         INTERFACE
             ${imgui_SOURCE_DIR}

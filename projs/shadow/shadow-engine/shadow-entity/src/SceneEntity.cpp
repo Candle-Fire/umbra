@@ -2,10 +2,11 @@
 
 namespace ShadowEngine::EntitySystem {
 
+    SHObject_Base_Impl(SceneEntity)   
 
 	void SceneEntity::SetParent(rtm_ptr<Entity> e)
 	{
-		Entity::SetParent(e);
+        Entity::SetParent(e);
 	}
 
 	ShadowEntity::Transform* SceneEntity::GetTransform()
@@ -95,15 +96,15 @@ namespace ShadowEngine::EntitySystem {
 	void SceneEntity::TransformUpdated()
 	{
 
-		TransformChanged();
+		this->TransformChanged();
 
 		//This transform has changed so we need to update the children about it
-		for each (auto & child in hierarchy)
+		for (auto & child : hierarchy)
 		{
 			child->ParentTransformUpdated();
 		}
 
-		for each (auto & child in internalHierarchy)
+		for (auto & child : internalHierarchy)
 		{
 			child->ParentTransformUpdated();
 		}

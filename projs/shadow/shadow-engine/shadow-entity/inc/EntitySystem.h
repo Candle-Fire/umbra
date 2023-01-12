@@ -7,21 +7,22 @@
 
 namespace ShadowEngine::EntitySystem {
 
-	/// <summary>
-	/// The module that manages all the Entities and Scenes
-	/// </summary>
+	/**
+	 * The module that manages all the Entities and Scenes
+	 */
 	class EntitySystem : public ShadowEngine::Module
 	{
 		SHObject_Base(EntitySystem)
 	private:
-		/// <summary>
-		/// The main reference to the EntityManager
-		/// </summary>
+
+		/**
+		 * The main reference to the EntityManager
+		 */
 		EntityManager* entityMgr;
 
-		/// <summary>
-		/// Reference to the active scene
-		/// </summary>
+		/**
+		 * Reference to the active scene
+		 */
 		std::unique_ptr<Scene> activeScene;
 
 
@@ -32,15 +33,15 @@ namespace ShadowEngine::EntitySystem {
 
 		void PreInit() override {};
 		void Init() override;
-		void Update() override;
+		void Update(int frame) override;
 
-		void Render() override {};
-		void LateRender() override {};
+		void Render(VkCommandBuffer& commands, int frame) override {};
+		void LateRender(VkCommandBuffer& commands, int frame) override {};
 
 		void LoadEmptyScene();
 		void LoadScene(Scene* scene);
 
-		ShadowEngine::Scope<Scene>& GetActiveScene();
+		std::unique_ptr<Scene>& GetActiveScene();
 	};
 
 }

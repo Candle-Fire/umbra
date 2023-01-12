@@ -166,19 +166,13 @@ namespace ShadowEngine::EntitySystem {
 		{
 			RemoveEntity<T>(entity->m_runtimeIndex);
 		}
-/*
+
 		template<class T>
 		void RemoveEntity(rtm_ptr<T> entity)
 		{
-			RemoveEntity<T>(entity->m_runtimeIndex);
+			this->RemoveEntity(entity->m_runtimeIndex, entity->GetTypeId());
 		}
 
-		template<>
-		void RemoveEntity<Entity>(rtm_ptr<Entity> entity)
-		{
-			RemoveEntity(entity->m_runtimeIndex, entity->GetTypeId());
-		}
-*/
 		template<class T>
 		inline T* GetEntityByIndex(int index)
 		{

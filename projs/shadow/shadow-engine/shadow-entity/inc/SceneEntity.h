@@ -4,20 +4,24 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "Entity.h"
-#include "ShadowMath/Transform.h"
-#include "EntitySystem\EntityBase.h"
-#include "EntitySystem\Scene.h"
+
+#include "Transform.h"
+#include "EntityBase.h"
+#include "Scene.h"
+
+//#include "ShadowMath/Transform.h"
+//#include "EntitySystem\EntityBase.h"
+//#include "EntitySystem\Scene.h"
 
 #define BIND_EVENT_FN(x, ...) std::bind(&x, this, __VA_ARGS__)
 
 namespace ShadowEngine::EntitySystem {
 
-	/// <summary>
-	/// Entity that has a position.
-	/// </summary>
-	///	Inherit from this class if your Entity needs to have it's own position. This position can be relative to the parent.
-	class SceneEntity :
-		public Entity
+    /**
+     * Entity that has a position.
+     * Inherit from this class if your Entity needs to have it's own position. This position can be relative to the parent.
+     */
+	class SceneEntity : public Entity
 	{
 		SHObject_Base(SceneEntity);
 

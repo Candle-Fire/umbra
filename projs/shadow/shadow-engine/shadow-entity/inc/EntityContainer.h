@@ -11,17 +11,18 @@ namespace ShadowEngine::EntitySystem {
 		virtual void DestroyObject(void* object) = 0;
 	};
 
-	/// <summary>
-	/// Entity container is a memory manager for a single type of Entity
-	/// This creates <see cref="EntityContainer::MemoryChunk"/>s that contain a block of memory for ``MAX_OBJECTS_IN_CHUNK`` number of entities, when it gets full it creates a new MemoryChunk.
-	/// These are created by the <see cref="EntityManager"/> for each entity type that gets registered.
-	/// </summary>
+    /**
+     * Entity container is a memory manager for a single type of Entity
+     * This creates <see cref="EntityContainer::MemoryChunk"/>s that contain a block of memory for ``MAX_OBJECTS_IN_CHUNK`` number of entities, when it gets full it creates a new MemoryChunk.
+     * These are created by the <see cref="EntityManager"/> for each entity type that gets registered.
+     * @tparam Type
+     */
 	template<class Type>
 	class EntityContainer : public IEntityContainer {
 
-		/// <summary>
-		/// This represents a single element of the memory chunks and is used for accessing the given element as either a pointer to the next free slot or as the Entity
-		/// </summary>
+		/**
+		 * This represents a single element of the memory chunks and is used for accessing the given element as either a pointer to the next free slot or as the Entity
+		 */
 		union Element
 		{
 		public:
@@ -29,23 +30,23 @@ namespace ShadowEngine::EntitySystem {
 			Type element;
 		};
 
-		/// <summary>
-		/// The maximum number of Entities in a MemoryChunk
-		/// </summary>
-		/// This is basically the size of the memory array that gets allocated.
-		//TODO: cosntexp
+        //TODO: cosntexp
+		/**
+		 * The maximum number of Entities in a MemoryChunk
+		 * This is basically the size of the memory array that gets allocated.
+		 */
 		static const size_t MAX_OBJECTS_IN_CHUNK = 2048;
 
-		/// <summary>
-		/// The size of a single Entity
-		/// </summary>
         //TODO: cosntexp
+        /**
+         * The size of a single Entity
+         */
 		static const size_t ELEMENT_SIZE = (sizeof(Element));
 
-		/// <summary>
-		/// The size of the Memoty Chunks in bytes
-		/// </summary>
         //TODO: cosntexp
+        /**
+         * The size of the Memoty Chunks in bytes
+         */
 		static const size_t ALLOC_SIZE = ELEMENT_SIZE * MAX_OBJECTS_IN_CHUNK;
 
 	public:

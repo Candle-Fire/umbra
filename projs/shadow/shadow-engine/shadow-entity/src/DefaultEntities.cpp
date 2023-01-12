@@ -1,8 +1,8 @@
 #include "../inc/EntityRegistry.h"
 #include "../inc/Entity.h"
 
-#include "../Entities/Player.h"
-#include "../Entities/DirectionalLight.h"
+//#include "../Entities/Player.h"
+
 
 namespace ShadowEngine::EntitySystem
 {

@@ -15,7 +15,7 @@ private:
 
 #define Entity_Base_NoCtor(Type, BaseType)		\
 public:											\
-ShadowEngine::EntitySystem::Entity* Type::Create(ShadowEngine::EntitySystem::Scene* scene) override {			\
+ShadowEngine::EntitySystem::Entity* Create(ShadowEngine::EntitySystem::Scene* scene) {			\
 Type* res = new Type(scene);							\
 return res;									    \
 }												\

@@ -2,6 +2,8 @@
 
 namespace ShadowEngine::EntitySystem {
 
+    SHObject_Base_Impl(Scene)
+
 	void EntitySystem::Scene::Start()
 	{
 		for (auto& entity : m_entities)
