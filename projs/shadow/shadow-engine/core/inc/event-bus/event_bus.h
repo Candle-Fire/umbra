@@ -15,21 +15,15 @@
 
 namespace ShadowEngine::EventBus {
 
-    template<class T, class U>
-    concept Derived = std::is_base_of<T, U>::value;
-
+    /**
+     * Helper template for any code that wants to narrow for only Events
+     * @tparam T
+     */
     template<typename T>
-    concept SHObjectConcept = Derived<ShadowEngine::SHObject, T>;
+    concept EventType = std::is_base_of<T, Event>::value;
 
-
-
-
-    template<typename T>
-    concept EventType = Derived<Event, T>;
-
-    template<EventType T>
     struct Subscription {
-        using Callback = std::function<const void(T &)>;
+        using Callback = std::function<const void(Event &)>;
 
         Callback callback;
 
@@ -39,33 +33,32 @@ namespace ShadowEngine::EventBus {
     };
 
     /**
-     * Base class for calling all subscribers to an event
+     * Interface class for all event dispatcher implementations
      */
     class EventDispatcherBase {
     public:
+        using SubRef = std::shared_ptr<Subscription>;
+
         virtual ~EventDispatcherBase() = default;
 
         virtual void call(ShadowEngine::SHObject &obj) = 0;
     };
 
     template<EventType T>
-    class EventDispatcher : public EventDispatcherBase {
-    public:
-        using SubRef = std::shared_ptr<Subscription<T>>;
-
+    class EventDispatcherSingleThread : public EventDispatcherBase {
     protected:
         using SubscriptionList = std::vector<SubRef>;
 
         SubscriptionList subscriptionList;
 
     public:
-        std::shared_ptr<Subscription<T>> subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<const void(T &)> func) {
-            auto sub = std::make_shared<Subscription<T>>(func);
+        std::shared_ptr<Subscription> subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<const void(T &)> func) {
+            auto sub = std::make_shared<Subscription>(func);
             subscriptionList.push_back(sub);
             return sub;
         }
 
-        void unsubscribe(const std::shared_ptr<Subscription<T>> ref) {
+        void unsubscribe(const std::shared_ptr<Subscription> ref) {
             subscriptionList.erase(std::remove(subscriptionList.begin(), subscriptionList.end(), ref), subscriptionList.end());
         }
 
@@ -81,7 +74,7 @@ namespace ShadowEngine::EventBus {
     };
 
     template<EventType T>
-    class EventDispatcherThreaded : public EventDispatcher<T> {
+    class EventDispatcherThreaded : public EventDispatcherSingleThread<T> {
         std::mutex mObserversMutex;
 
     public:
@@ -93,13 +86,19 @@ namespace ShadowEngine::EventBus {
         }
     };
 
+
+    /**
+     * EventBus holds Dispatchers for all event types that are used
+     * It routes the subscriptions, un-subscriptions and event publishing
+     * to the handling dispatchers.
+     */
     class EventBus {
 
         template<class T,
                 class V =
                 std::conditional<
                         std::is_base_of<Event,T>::value,
-                        EventDispatcher<T>,
+                        EventDispatcherSingleThread<T>,
                         EventDispatcherThreaded<T>
                 >::type>
         std::shared_ptr<V> getDispatcher(){
@@ -119,19 +118,16 @@ namespace ShadowEngine::EventBus {
         std::map<uint64_t, std::shared_ptr<EventDispatcherBase>> dispatchers;
 
         template<EventType T>
-        EventDispatcher<T>::SubRef subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<void(T &)> func) {
-
-            std::shared_ptr<EventDispatcher<T>> dis;
-
-            dis = getDispatcher<T>();
+        EventDispatcherBase::SubRef subscribe(const std::shared_ptr<ShadowEngine::SHObject> &binding, std::function<void(T &)> func) {
+            auto dis = getDispatcher<T>();
 
             return dis->subscribe(binding, func);
         }
 
         template<EventType T>
-        void unsubscribe(EventDispatcher<T>::SubRef ref) {
+        void unsubscribe(EventDispatcherBase::SubRef ref) {
 
-            std::shared_ptr<EventDispatcher<T>> dis = getDispatcher<T>();
+            auto dis = getDispatcher<T>();
             dis->unsubscribe(ref);
         }
 
