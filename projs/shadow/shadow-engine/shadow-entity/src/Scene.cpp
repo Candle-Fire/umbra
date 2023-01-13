@@ -1,10 +1,10 @@
 #include "../inc/Scene.h"
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
     SHObject_Base_Impl(Scene)
 
-	void EntitySystem::Scene::Start()
+	void Scene::Start()
 	{
 		for (auto& entity : m_entities)
 		{

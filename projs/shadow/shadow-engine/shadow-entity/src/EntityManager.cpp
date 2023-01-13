@@ -2,7 +2,7 @@
 #include "EntityManager.h"
 #include "Entity.h"
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
 	EntityManager* EntityManager::Instance = nullptr;
 

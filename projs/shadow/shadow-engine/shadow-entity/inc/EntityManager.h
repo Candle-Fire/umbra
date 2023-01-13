@@ -5,7 +5,7 @@
 #include "EntityContainer.h"
 //#include "Entity.h"
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
     template<class T>
     struct rtm_ptr;

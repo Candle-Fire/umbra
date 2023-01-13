@@ -9,7 +9,7 @@
 //#include "Entities/Player.h"
 
 
-namespace ShadowEngine::EntitySystem
+namespace ShadowEngine::Entities
 {
 	class EntityRegistry
 	{

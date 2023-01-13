@@ -4,7 +4,7 @@
 #include "../inc/Scene.h"
 
 
-namespace ShadowEngine::EntitySystem
+namespace ShadowEngine::Entities
 {
     SHObject_Base_Impl(Entity)
 

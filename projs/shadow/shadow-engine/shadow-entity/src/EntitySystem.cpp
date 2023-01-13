@@ -2,13 +2,13 @@
 #include "core/Time.h"
 //#include <ShadowTime.h>
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
     SHObject_Base_Impl(EntitySystem)
 
-	EntitySystem::EntitySystem() : activeScene(std::make_unique<Scene>())
+	EntitySystem::EntitySystem() : entityMgr(new EntityManager()), activeScene(std::make_unique<Scene>())
 	{
-		entityMgr = new EntityManager();
+
 	}
 
 	void EntitySystem::Init()

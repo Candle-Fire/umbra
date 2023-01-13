@@ -9,7 +9,7 @@
 
 class Camera;
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
 	/// <summary>
 	/// Represents a scene, that is composed of Entities.

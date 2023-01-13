@@ -15,7 +15,7 @@
 
 #define BIND_EVENT_FN(x, ...) std::bind(&x, this, __VA_ARGS__)
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
     /**
      * Entity that has a position.

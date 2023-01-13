@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace ShadowEngine::ShadowEntity {
+namespace ShadowEngine::Entities {
 
 #define Entity_Base(Type, BaseType)		\
 public:											\
@@ -15,7 +15,7 @@ private:
 
 #define Entity_Base_NoCtor(Type, BaseType)		\
 public:											\
-ShadowEngine::EntitySystem::Entity* Create(ShadowEngine::EntitySystem::Scene* scene) {			\
+ShadowEngine::Entities::Entity* Create(ShadowEngine::Entities::Scene* scene) {			\
 Type* res = new Type(scene);							\
 return res;									    \
 }												\

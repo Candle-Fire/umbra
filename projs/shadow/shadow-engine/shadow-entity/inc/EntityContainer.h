@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
 	class IEntityContainer {
 	public:

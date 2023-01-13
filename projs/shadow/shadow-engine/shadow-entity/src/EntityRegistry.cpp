@@ -1,11 +1,11 @@
 #include <iostream>
 #include "../inc/EntityRegistry.h"
 
-namespace ShadowEngine::EntitySystem
+namespace ShadowEngine::Entities
 {
 	//PreRegistry
 
-	bool EntityRegistry::RegisterEntity(std::string id, EntitySystem::Entity* entityTemplate)
+	bool EntityRegistry::RegisterEntity(std::string id, Entities::Entity* entityTemplate)
 	{
 		EntityRegistryMap[id] = entityTemplate;
 		return true;

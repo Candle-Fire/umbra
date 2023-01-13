@@ -13,7 +13,7 @@
 //	class Transform;
 //}
 
-namespace ShadowEngine::EntitySystem
+namespace ShadowEngine::Entities
 {
     struct SystemCallbacks;
     class Scene;

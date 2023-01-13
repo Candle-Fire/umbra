@@ -5,7 +5,7 @@
 
 //Holds the reference to the active scene
 
-namespace ShadowEngine::EntitySystem {
+namespace ShadowEngine::Entities {
 
 	/**
 	 * The module that manages all the Entities and Scenes
@@ -28,6 +28,8 @@ namespace ShadowEngine::EntitySystem {
 
 	public:
 		EntitySystem();
+
+
 
 		std::string GetName() override { return "EntitySystem"; };
 

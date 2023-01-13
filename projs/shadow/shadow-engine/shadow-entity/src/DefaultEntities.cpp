@@ -4,7 +4,7 @@
 //#include "../Entities/Player.h"
 
 
-namespace ShadowEngine::EntitySystem
+namespace ShadowEngine::Entities
 {
 	void EntityRegistry::PreRegisterDefaults()
 	{
