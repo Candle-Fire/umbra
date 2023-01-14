@@ -54,4 +54,8 @@ namespace ShadowEngine::Entities {
 		//SH_CORE_TRACE("SceneLoaded");
 	}
 
+    EntitySystem::~EntitySystem() {
+
+    }
+
 }

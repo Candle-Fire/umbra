@@ -25,13 +25,11 @@ namespace ShadowEngine::Entities {
 		 */
 		std::unique_ptr<Scene> activeScene;
 
-
 	public:
 		EntitySystem();
+        ~EntitySystem() override;
 
-
-
-		std::string GetName() override { return "EntitySystem"; };
+        std::string GetName() override { return "EntitySystem"; };
 
 		void PreInit() override {};
 		void Init() override;
@@ -40,7 +38,15 @@ namespace ShadowEngine::Entities {
 		void Render(VkCommandBuffer& commands, int frame) override {};
 		void LateRender(VkCommandBuffer& commands, int frame) override {};
 
-		void LoadEmptyScene();
+        void Recreate() override {}
+        void PreRender() override {}
+        void OverlayRender() override {}
+        void AfterFrameEnd() override {}
+        void Destroy() override {}
+        void Event(SDL_Event *e) override {}
+
+
+        void LoadEmptyScene();
 		void LoadScene(Scene* scene);
 
 		std::unique_ptr<Scene>& GetActiveScene();
