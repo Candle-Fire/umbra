@@ -2,6 +2,8 @@
 
 namespace ShadowEngine::Entities {
 
+    //TODO: this could be converted into a generic container
+
 	class IEntityContainer {
 	public:
 
@@ -14,14 +16,15 @@ namespace ShadowEngine::Entities {
     /**
      * Entity container is a memory manager for a single type of Entity
      * This creates <see cref="EntityContainer::MemoryChunk"/>s that contain a block of memory for ``MAX_OBJECTS_IN_CHUNK`` number of entities, when it gets full it creates a new MemoryChunk.
-     * These are created by the <see cref="EntityManager"/> for each entity type that gets registered.
+     * This container is created by the <see cref="EntityManager"/> for each entity type that gets registered.
      * @tparam Type
      */
 	template<class Type>
 	class EntityContainer : public IEntityContainer {
 
 		/**
-		 * This represents a single element of the memory chunks and is used for accessing the given element as either a pointer to the next free slot or as the Entity
+		 * This represents a single element of the memory chunks
+		 * and is used for accessing the given element as either a pointer to the next free slot or as the Entity
 		 */
 		union Element
 		{
@@ -45,7 +48,7 @@ namespace ShadowEngine::Entities {
 
         //TODO: cosntexp
         /**
-         * The size of the Memoty Chunks in bytes
+         * The size of the Memory Chunks in bytes
          */
 		static const size_t ALLOC_SIZE = ELEMENT_SIZE * MAX_OBJECTS_IN_CHUNK;
 
@@ -58,7 +61,7 @@ namespace ShadowEngine::Entities {
 			Element* chunkEnd;
 
 			int count;
-			static const bool FreeFlag = true;
+			static const bool FreeFlag = true;   //TODO: WTF?
 			bool metadata[MAX_OBJECTS_IN_CHUNK];
 
 			//Points to the next free element in the pool
@@ -68,10 +71,12 @@ namespace ShadowEngine::Entities {
 			{
 				chunkStart = (Element*)malloc(ALLOC_SIZE);
 
+                // Might not be needed, probably for nicer debugging....
 				memset(chunkStart, -1, ALLOC_SIZE);
 
 				chunkEnd = &chunkStart[MAX_OBJECTS_IN_CHUNK];
 
+                //Sets up the free linked list
 				for (size_t i = 1; i < MAX_OBJECTS_IN_CHUNK; i++) {
 					chunkStart[i - 1].next = &chunkStart[i];
 					metadata[i] = FreeFlag;
@@ -80,6 +85,12 @@ namespace ShadowEngine::Entities {
 				nextFree = chunkStart;
 			}
 
+            /**
+             * Allocates a new instance of the stored type.
+             * The allocation is just a large enough memory area,
+             * calling the constructor on that are if not done.
+             * @return pointer to the new allocation, or nullptr if no free space available
+             */
 			Type* allocate()
 			{
 				if (nextFree == nullptr)
@@ -94,8 +105,14 @@ namespace ShadowEngine::Entities {
 				return (Type*)res;
 			}
 
+            /**
+             * Frees a place that was previously allocated by this
+             * @param ptr The pointer to the start of the allocation.
+             */
 			void free(void* ptr)
 			{
+                //TODO: In debug we should check if ptr is actually inside our allocation.
+
 				count--;
 				auto element = ((Element*)ptr);
 				element->next = nextFree;
@@ -106,12 +123,7 @@ namespace ShadowEngine::Entities {
 			}
 		};
 
-	protected:
-
-		using MemoryChunks = std::vector<MemoryChunk*>;
-
-
-	public:
+        using MemoryChunks = std::vector<MemoryChunk*>;
 
 		class EntityContainerIterator
 		{
@@ -142,6 +154,8 @@ namespace ShadowEngine::Entities {
 
 			inline EntityContainerIterator& operator++()
 			{
+                //TODO: probably a do while.... also could make the in chunk and between chunk steps a single loop
+
 				// move to next object in current chunk
 				m_CurrentElement = &m_CurrentElement[1];
 				index++;
@@ -210,6 +224,9 @@ namespace ShadowEngine::Entities {
 					//chunk->objects.push_back((OBJECT_TYPE*)slot);
 					break;
 				}
+                //TODO: if we got here that is impossible...
+                // If ``chunk->count > MAX_OBJECTS_IN_CHUNK`` was right but we still got nullptr
+                // than we got a misalignment
 			}
 
 			// all chunks are full... allocate a new one
