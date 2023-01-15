@@ -21,25 +21,25 @@ namespace ShadowEngine::Entities {
      * Entity that has a position.
      * Inherit from this class if your Entity needs to have it's own position. This position can be relative to the parent.
      */
-	class SceneEntity : public Entity
+	class TransformEntity : public Entity
 	{
-		SHObject_Base(SceneEntity);
+		SHObject_Base(TransformEntity);
 
-		Entity_Base_NoCtor(SceneEntity, Entity);
+		Entity_Base_NoCtor(TransformEntity, Entity);
 
 	public:
 		ShadowEntity::Transform transform;
 		ShadowEntity::Transform w_transform;
 
 	public:
-		SceneEntity() :Entity() 
+		TransformEntity() : Entity()
 		{
 			scene = nullptr;
 			this->transform = ShadowEntity::Transform({ 0,0,0 });
 			this->w_transform = CalcNewComponentToWorld(this->transform);
 		}
 
-		SceneEntity(Scene* scene) : Entity(scene)
+		TransformEntity(Scene* scene) : Entity(scene)
 		{
 			this->transform = ShadowEntity::Transform({ 0,0,0 });
 			this->w_transform = CalcNewComponentToWorld(this->transform);

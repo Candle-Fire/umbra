@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../inc/EntityRegistry.h"
-#include "../inc/SceneEntity.h"
+#include "../inc/TransformEntity.h"
 
 
 class Player : public ShadowEngine::EntitySystem::SceneEntity

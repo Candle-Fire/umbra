@@ -95,8 +95,8 @@ namespace ShadowEngine::Entities
      *  This is the base entity used in the game world. This should never be instantiated only the derived classes
      *  A entity has a parent and internal, external hierarchy. The parent is the Entity that this is under. This effects the position of this Entity.
      *  The internal hierarchy is used for Entities that are considered as part of this Entity these would be like components in Unity or UE4
-     *  This base Entity does not have a position so it acts like a Component in other engines. If you want to have a position you have to use <see cref="SceneEntity"/>
-     *  The base Entity does however does have a <see cref="Entity::GetTransform"/> that returns the position of the first parent's position that is <see cref="SceneEntity"/>
+     *  This base Entity does not have a position so it acts like a Component in other engines. If you want to have a position you have to use <see cref="TransformEntity"/>
+     *  The base Entity does however does have a <see cref="Entity::GetTransform"/> that returns the position of the first parent's position that is <see cref="TransformEntity"/>
      *  <summary>
      *  Base Entity in the scene
      *  </summary>
