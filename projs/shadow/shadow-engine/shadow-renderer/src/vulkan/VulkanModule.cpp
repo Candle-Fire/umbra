@@ -85,7 +85,8 @@ void VulkanModule::PreInit() {
 
     ShadowEngine::ModuleManager &moduleManager = shApp.GetModuleManager();
 
-    auto sdl2module = moduleManager.GetModuleByType<ShadowEngine::SDL2Module>();
+    //TODO:: well we should be sure about this... There is a chance SDL might want to quit..
+    auto sdl2module = moduleManager.GetModule<ShadowEngine::SDL2Module>().lock();
 
     CATCH(initVulkan(sdl2module->_window->sdlWindowPtr);)
 

@@ -1,5 +1,4 @@
-#ifndef UMBRA_MODULE_H
-#define UMBRA_MODULE_H
+#pragma once
 
 #include "SHObject.h"
 #include "SDL_events.h"
@@ -73,6 +72,5 @@ namespace ShadowEngine {
         virtual VkExtent2D GetRenderExtent() = 0;
     };
 
-} // ShadowEngine
+}
 
-#endif //UMBRA_MODULE_H

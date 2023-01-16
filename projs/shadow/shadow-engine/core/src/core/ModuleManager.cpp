@@ -1,7 +1,3 @@
-//
-// Created by dpete on 2022-07-06.
-//
-
 #include "core/ModuleManager.h"
 
 #include <stdexcept>
@@ -22,7 +18,7 @@ ShadowEngine::ModuleManager::~ModuleManager()
 
 void ShadowEngine::ModuleManager::PushModule(const std::shared_ptr<Module>& module, const std::string& domain)
 {
-    ModuleRef r = {module, domain};
+    ModuleHolder r = {module, domain};
     modules.emplace_back(r);
     if (domain == "renderer")
         renderer = r;
@@ -40,12 +36,34 @@ ShadowEngine::Module& ShadowEngine::ModuleManager::GetModule(const std::string& 
     throw std::runtime_error("Can't find the module");
 }
 
+void ShadowEngine::ModuleManager::RemoveModule(std::weak_ptr<Module> ptr) {
+    if(finalized) return;
+
+    for (auto& moduleHolder: this->modules) {
+        if(moduleHolder.module == ptr.lock()){
+            moduleHolder.disabled = true;
+        }
+    }
+}
+
 void ShadowEngine::ModuleManager::Init()
 {
     for (auto& module : modules)
     {
         module.module->Init();
     }
+
+    this->Finalise();
+}
+
+void ShadowEngine::ModuleManager::Finalise() {
+
+    modules.erase(
+            std::remove_if(modules.begin(), modules.end(),
+                           [](ModuleHolder& a){return a.disabled;})
+    );
+
+    this->finalized = true;
 }
 
 void ShadowEngine::ModuleManager::Destroy()
@@ -121,3 +139,4 @@ void ShadowEngine::ModuleManager::AfterFrameEnd()
         module.module->AfterFrameEnd();
     }
 }
+

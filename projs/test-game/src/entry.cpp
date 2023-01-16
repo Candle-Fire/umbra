@@ -8,7 +8,10 @@
 #include "GameModule.h"
 #include "core/ShadowApplication.h"
 #include "vlkx/vulkan/VulkanModule.h"
+#include "TestModule.h"
 
 extern "C" __declspec(dllexport) void shadow_main(ShadowEngine::ShadowApplication* app) {
+    app->GetModuleManager().PushModule(std::make_shared<TestModule>(), "game");
     app->GetModuleManager().PushModule(std::make_shared<GameModule>(), "game");
+
 }

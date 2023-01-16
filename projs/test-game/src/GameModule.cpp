@@ -23,10 +23,14 @@ std::unique_ptr<vlkx::PushConstant> trans_constant_;
 std::unique_ptr<vlkxtemp::Model> cube_model_;
 float aspectRatio;
 
-void GameModule::PreInit() {  }
+void GameModule::PreInit() {
+    spdlog::info("{0} PreInit", this->GetName());
+}
 
 void GameModule::Init() {
+    spdlog::info("{0} Init", this->GetName());
     spdlog::info("Game Module loading level..");
+
     trans_constant_ = std::make_unique<vlkx::PushConstant>(
             sizeof(Transformation), 2);
 
