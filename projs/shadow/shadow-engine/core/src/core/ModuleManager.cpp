@@ -50,7 +50,8 @@ void ShadowEngine::ModuleManager::Init()
 {
     for (auto& module : modules)
     {
-        module.module->Init();
+        if(!module.disabled)
+            module.module->Init();
     }
 
     this->Finalise();
