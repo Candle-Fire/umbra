@@ -2,13 +2,12 @@
 
 #include "core/Module.h"
 #include "Scene.h"
-
 //Holds the reference to the active scene
 
 namespace ShadowEngine::Entities {
 
 	/**
-	 * The module that manages all the Entities and Scenes
+	 * The module that manages all the entities and Scenes
 	 */
 	class EntitySystem : public ShadowEngine::Module
 	{
@@ -23,13 +22,15 @@ namespace ShadowEngine::Entities {
 		/**
 		 * Reference to the active scene
 		 */
-		std::unique_ptr<Scene> activeScene;
+		rtm_ptr<Scene> activeScene;
 
 	public:
 		EntitySystem();
         ~EntitySystem() override;
 
         std::string GetName() override { return "EntitySystem"; };
+
+        EntityManager* GetEntityMgr(){return entityMgr;};
 
 		void PreInit() override {};
 		void Init() override;
@@ -49,7 +50,7 @@ namespace ShadowEngine::Entities {
         void LoadEmptyScene();
 		void LoadScene(Scene* scene);
 
-		std::unique_ptr<Scene>& GetActiveScene();
+		rtm_ptr<Scene> GetActiveScene();
 	};
 
 }

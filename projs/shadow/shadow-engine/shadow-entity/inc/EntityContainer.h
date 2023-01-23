@@ -35,7 +35,7 @@ namespace ShadowEngine::Entities {
 
         //TODO: cosntexp
 		/**
-		 * The maximum number of Entities in a MemoryChunk
+		 * The maximum number of entities in a MemoryChunk
 		 * This is basically the size of the memory array that gets allocated.
 		 */
 		static const size_t MAX_OBJECTS_IN_CHUNK = 2048;

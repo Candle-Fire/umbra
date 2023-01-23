@@ -1,20 +1,23 @@
 #include "../inc/EntitySystem.h"
 #include "core/Time.h"
 #include "debug/AllocationDebugger.h"
+#include "entities/NullEntity.h"
+#include "editor/HierarchyWindow.h"
 //#include <ShadowTime.h>
 
 namespace ShadowEngine::Entities {
 
     SHObject_Base_Impl(EntitySystem)
 
-	EntitySystem::EntitySystem() : entityMgr(new EntityManager()), activeScene(std::make_unique<Scene>())
+	EntitySystem::EntitySystem() : entityMgr(new EntityManager()), activeScene()
 	{
 
 	}
 
 	void EntitySystem::Init()
 	{
-		
+		LoadEmptyScene();
+        activeScene->AddChildEntity<Builtin::NullEntity>();
 	}
 
 	void EntitySystem::Update(int frame)
@@ -24,7 +27,7 @@ namespace ShadowEngine::Entities {
 		entityMgr->UpdateEntities(dt);
 	}
 
-	std::unique_ptr<Scene>& EntitySystem::GetActiveScene()
+	rtm_ptr<Scene> EntitySystem::GetActiveScene()
 	{
 		return activeScene;
 	}
@@ -36,7 +39,7 @@ namespace ShadowEngine::Entities {
 			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
 		}
 
-		//activeScene = std::make_unique<ShadowScene>();
+		activeScene = entityMgr->AddEntity<Scene>();
 	}
 
 	void EntitySystem::LoadScene(Scene* scene)
@@ -46,7 +49,7 @@ namespace ShadowEngine::Entities {
 			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
 		}
 
-		activeScene.reset(scene);
+		//activeScene.reset(scene);
 
 		//scene->Init();
 
@@ -62,6 +65,7 @@ namespace ShadowEngine::Entities {
     void EntitySystem::OverlayRender() {
 
         ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
+        ShadowEngine::Entities::Editor::HierarchyWindow::Draw();
 
     }
 

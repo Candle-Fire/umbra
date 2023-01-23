@@ -13,20 +13,24 @@ class Camera;
 namespace ShadowEngine::Entities {
 
 	/// <summary>
-	/// Represents a scene, that is composed of Entities.
+	/// Represents a scene, that is composed of entities.
 	/// 
 	/// </summary>
 	class Scene : public TransformEntity
 	{
 		SHObject_Base(Scene)
 
+        Entity_Base_NoCtor(TransformEntity, Entity);
+
         Entity::HierarchyList staticHierarchy;
 
 	public:
 		Scene() {
-
+            this->name = "Scene";
 		}
 		virtual ~Scene() = default;
+
+
 
 /*
 		template<class T>

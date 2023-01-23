@@ -9,16 +9,11 @@
 #include "EntityManager.h"
 #include "Transform.h"
 
-//namespace ShadowEngine::ShadowEntity {
-//	class Transform;
-//}
 
 namespace ShadowEngine::Entities
 {
     struct SystemCallbacks;
     class Scene;
-
-    //class EntityManager;
 
     using Rtm_UUID = int;
 
@@ -85,7 +80,7 @@ namespace ShadowEngine::Entities
     /**
      *  This is the base entity used in the game world. This should never be instantiated only the derived classes
      *  A entity has a parent and internal, external hierarchy. The parent is the Entity that this is under. This effects the position of this Entity.
-     *  The internal hierarchy is used for Entities that are considered as part of this Entity these would be like components in Unity or UE4
+     *  The internal hierarchy is used for entities that are considered as part of this Entity these would be like components in Unity or UE4
      *  This base Entity does not have a position so it acts like a Component in other engines. If you want to have a position you have to use <see cref="TransformEntity"/>
      *  The base Entity does however does have a <see cref="Entity::GetTransform"/> that returns the position of the first parent's position that is <see cref="TransformEntity"/>
      *  <summary>
@@ -153,7 +148,6 @@ namespace ShadowEngine::Entities
 		 */
 		rtm_ptr<Entity> parent;
 
-	public:
 
         /**
          * Empty default constructor
@@ -179,18 +173,14 @@ namespace ShadowEngine::Entities
 
 		virtual ShadowEntity::Transform* GetTransform();
 
-	public:
 		//Internal call
 		virtual void ParentTransformUpdated()
 		{
 			TransformChanged();
 		};
 
-	public:
 		//Override for custom behaviour on transform change
 		virtual void TransformChanged() {};
-
-	public:
 
         /**
          * Sets the scene this Entity is in

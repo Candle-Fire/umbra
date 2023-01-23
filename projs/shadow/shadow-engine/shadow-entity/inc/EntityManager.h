@@ -1,9 +1,9 @@
 #pragma once
+
 #include <unordered_map>
 #include <cassert>
 #include <vector>
 #include "EntityContainer.h"
-//#include "Entity.h"
 
 namespace ShadowEngine::Entities {
 
@@ -23,7 +23,7 @@ namespace ShadowEngine::Entities {
 
 
 	/**
-	 * \brief Manages the memory and IDs of Entities
+	 * \brief Manages the memory and IDs of entities
 	 *
 	 * It is responsible for the allocation of entities and does not care about the graph of them
 	 */
@@ -55,7 +55,7 @@ namespace ShadowEngine::Entities {
 		 *
 		 * To use the table simply access the element at the index of the Entity.
 		 *
-		 * \brief Quick access Look Up Table of active Entities
+		 * \brief Quick access Look Up Table of active entities
 		 *
 		 */
 		EntityLookupTable	m_EntityLUT;
@@ -93,7 +93,7 @@ namespace ShadowEngine::Entities {
 				this->m_EntityContainerRegistry[CID] = cc;
 
                 //TODO: Why do we need the template word there now?
-				T::template RegisterDefaultUpdate<T>(*this);
+				//T::template RegisterDefaultUpdate<T>(*this);
 			}
 			else
 				cc = static_cast<EntityContainer<T>*>(it->second);
