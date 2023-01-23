@@ -7,7 +7,7 @@
 
 #include "Transform.h"
 #include "EntityBase.h"
-#include "Scene.h"
+//#include "Scene.h"
 
 //#include "ShadowMath/Transform.h"
 //#include "EntitySystem\EntityBase.h"
@@ -16,6 +16,8 @@
 #define BIND_EVENT_FN(x, ...) std::bind(&x, this, __VA_ARGS__)
 
 namespace ShadowEngine::Entities {
+
+    class Scene;
 
     /**
      * Entity that has a position.
@@ -36,13 +38,13 @@ namespace ShadowEngine::Entities {
 		{
 			scene = nullptr;
 			this->transform = ShadowEntity::Transform({ 0,0,0 });
-			this->w_transform = CalcNewComponentToWorld(this->transform);
+			UpdateWorldTransform();
 		}
 
 		TransformEntity(Scene* scene) : Entity(scene)
 		{
 			this->transform = ShadowEntity::Transform({ 0,0,0 });
-			this->w_transform = CalcNewComponentToWorld(this->transform);
+			UpdateWorldTransform();
 		};
 
 
@@ -51,7 +53,7 @@ namespace ShadowEngine::Entities {
 
 		virtual ShadowEntity::Transform* GetTransform();
 
-		ShadowEntity::Transform CalcNewComponentToWorld(const ShadowEntity::Transform& NewRelativeTransform) const;
+		void UpdateWorldTransform();
 
 		/**
 		 * Sets the position of the entity relative to it's parent or the world.

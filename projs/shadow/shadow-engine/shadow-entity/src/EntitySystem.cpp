@@ -1,5 +1,6 @@
 #include "../inc/EntitySystem.h"
 #include "core/Time.h"
+#include "debug/AllocationDebugger.h"
 //#include <ShadowTime.h>
 
 namespace ShadowEngine::Entities {
@@ -47,7 +48,7 @@ namespace ShadowEngine::Entities {
 
 		activeScene.reset(scene);
 
-		scene->Init();
+		//scene->Init();
 
 		entityMgr->InitEntities();
 
@@ -55,6 +56,12 @@ namespace ShadowEngine::Entities {
 	}
 
     EntitySystem::~EntitySystem() {
+
+    }
+
+    void EntitySystem::OverlayRender() {
+
+        ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
 
     }
 

@@ -1,4 +1,5 @@
 #include "../inc/TransformEntity.h"
+#include "Scene.h"
 
 namespace ShadowEngine::Entities {
 
@@ -15,19 +16,18 @@ namespace ShadowEngine::Entities {
 	}
 
 
-	ShadowEntity::Transform TransformEntity::CalcNewComponentToWorld(
-		const ShadowEntity::Transform& NewRelativeTransform) const
-	{
+	 void TransformEntity::UpdateWorldTransform()
+     {
 		if (this->parent)
 		{
-			return NewRelativeTransform * *parent->GetTransform();
+			this->w_transform = (this->transform * *parent->GetTransform());
 		}
 		else
 		{
 			if (scene != nullptr)
-				return NewRelativeTransform * *scene->GetCenter();
+                this->w_transform = this->transform * *scene->GetTransform();
 
-			return NewRelativeTransform;
+            this->w_transform = this->transform;
 		}
 	}
 
@@ -35,7 +35,7 @@ namespace ShadowEngine::Entities {
 	{
 		if (transform.GetPosition() != location) {
 			this->transform.SetPosition(location);
-			this->w_transform = CalcNewComponentToWorld(this->transform);
+			UpdateWorldTransform();
 			TransformUpdated();
 		}
 	}
@@ -44,7 +44,7 @@ namespace ShadowEngine::Entities {
 	{
 		if (transform.GetEulerRotation() != rotation) {
 			this->transform.SetEulerRotation(rotation);
-			this->w_transform = CalcNewComponentToWorld(this->transform);
+			UpdateWorldTransform();
 			TransformUpdated();
 		}
 	}
@@ -52,7 +52,7 @@ namespace ShadowEngine::Entities {
 	void TransformEntity::RotateBy(glm::vec3 rotation)
 	{
 		this->transform.RotateByEulerRotation(rotation);
-		this->w_transform = CalcNewComponentToWorld(this->transform);
+		this->w_transform = UpdateWorldTransform(this->transform);
 		TransformUpdated();
 
 	}
@@ -61,7 +61,7 @@ namespace ShadowEngine::Entities {
 	{
 		if (transform.GetScale() != scale) {
 			this->transform.SetScale(scale);
-			this->w_transform = CalcNewComponentToWorld(this->transform);
+			UpdateWorldTransform();
 			TransformUpdated();
 		}
 	}
@@ -69,7 +69,7 @@ namespace ShadowEngine::Entities {
 	void TransformEntity::SetRelativeTransform(const ShadowEntity::Transform& NewTransform)
 	{
 		this->transform = NewTransform;
-		this->w_transform = CalcNewComponentToWorld(NewTransform);
+		UpdateWorldTransform();
 		TransformUpdated();
 	}
 
@@ -95,10 +95,9 @@ namespace ShadowEngine::Entities {
 
 	void TransformEntity::TransformUpdated()
 	{
-
 		this->TransformChanged();
 
-		//This transform has changed so we need to update the children about it
+		//This transform has changed, so we need to update the children about it
 		for (auto & child : hierarchy)
 		{
 			child->ParentTransformUpdated();
@@ -112,8 +111,8 @@ namespace ShadowEngine::Entities {
 
 	void TransformEntity::ParentTransformUpdated()
 	{
-		//Recalculat the transform, this always uses the parent or world.
-		this->w_transform = CalcNewComponentToWorld(this->transform);
+		//Re-calculate the transform, this always uses the parent or world.
+		UpdateWorldTransform();
 
 		TransformUpdated();
 	}

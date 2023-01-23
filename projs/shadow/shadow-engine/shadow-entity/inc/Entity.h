@@ -83,15 +83,6 @@ namespace ShadowEngine::Entities
 	};
 
     /**
-     * Currently not used Probably wont
-     */
-	enum class EntityFlags {
-		NONE = 0,
-		HAS_TICK = 1 << 0,
-		HAS_LATE_TICK = 1 << 1
-	};
-
-    /**
      *  This is the base entity used in the game world. This should never be instantiated only the derived classes
      *  A entity has a parent and internal, external hierarchy. The parent is the Entity that this is under. This effects the position of this Entity.
      *  The internal hierarchy is used for Entities that are considered as part of this Entity these would be like components in Unity or UE4
@@ -143,15 +134,17 @@ namespace ShadowEngine::Entities
          */
 		Scene* scene;
 
+        using HierarchyList = std::vector<rtm_ptr<Entity>>;
+
 		/**
 		 * The internal hierarchy of this Entity
 		 */
-		std::vector<rtm_ptr<Entity>> internalHierarchy;
+        HierarchyList internalHierarchy;
 
 		/**
 		 * The external hierarchy of this Entity
 		 */
-		std::vector<rtm_ptr<Entity>> hierarchy;
+        HierarchyList hierarchy;
 
 		/**
 		 * The parent entity
@@ -183,36 +176,6 @@ namespace ShadowEngine::Entities
 		virtual Entity* Create(Scene* scene);
 
 		virtual void Build() {};
-
-        /**
-         * Called when the Entity needs to be initialised. Should be used as a constructor
-         * Called when the Entity needs to be initialised.
-         */
-		virtual  void Init() {};
-
-		/**
-		 * Called when the world starts or before the Entity get's it's first tick
-		 */
-		virtual void Start() {};
-
-		/**
-		 * Called every tick
-		 * @param dt The time since the last tick (delta time)
-		 */
-		virtual void Update(float dt) {};
-
-		/**
-		 * Called every Tick after the first is finished
-		 */
-		virtual void LateUpdate() {};
-
-		virtual void Render() {};
-
-		virtual  void LateRender() {};
-
-		virtual EntityFlags GetFlags();
-
-		
 
 		virtual ShadowEntity::Transform* GetTransform();
 

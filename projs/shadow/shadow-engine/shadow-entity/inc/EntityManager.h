@@ -24,6 +24,8 @@ namespace ShadowEngine::Entities {
 
 	/**
 	 * \brief Manages the memory and IDs of Entities
+	 *
+	 * It is responsible for the allocation of entities and does not care about the graph of them
 	 */
 	class EntityManager {
 

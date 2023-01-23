@@ -40,7 +40,7 @@ namespace ShadowEngine::Entities {
 
         void Recreate() override {}
         void PreRender() override {}
-        void OverlayRender() override {}
+        void OverlayRender() override;
         void AfterFrameEnd() override {}
         void Destroy() override {}
         void Event(SDL_Event *e) override {}

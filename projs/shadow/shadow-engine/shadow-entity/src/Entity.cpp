@@ -8,11 +8,15 @@ namespace ShadowEngine::Entities
 {
     SHObject_Base_Impl(Entity)
 
+    Entity::Entity()
+    {
 
-	EntityFlags Entity::GetFlags()
-	{
-		return EntityFlags::NONE;
-	}
+    }
+
+    Entity::Entity(Scene* scene)
+    {
+        this->scene = scene;
+    }
 
 	ShadowEntity::Transform* Entity::GetTransform()
 	{
@@ -20,7 +24,7 @@ namespace ShadowEngine::Entities
 			return parent->GetTransform();
 		}
 		else {
-			return this->scene->GetCenter();
+			return this->scene->GetTransform();
 		}
 		
 	}
@@ -33,16 +37,6 @@ namespace ShadowEngine::Entities
 	void Entity::SetParent(rtm_ptr<Entity> e)
 	{
 		this->parent = e;
-	}
-
-	Entity::Entity()
-	{
-
-	}
-
-	Entity::Entity(Scene* scene)
-	{
-		this->scene = scene;
 	}
 
 	Entity* Entity::Create(Scene* scene)
