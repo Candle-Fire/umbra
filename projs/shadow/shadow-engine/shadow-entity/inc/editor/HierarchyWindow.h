@@ -20,8 +20,12 @@ namespace ShadowEngine::Entities::Editor {
                 entitySystem = ShadowEngine::ModuleManager::instance->GetModuleByType<ShadowEngine::Entities::EntitySystem>();
 
             DebugHierarchy();
+
+            Inspector();
         }
 
         static void DebugHierarchy();
+
+        static void Inspector();
     };
 }

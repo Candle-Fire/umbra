@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace ShadowEngine::Entities {
 
     //TODO: this could be converted into a generic container

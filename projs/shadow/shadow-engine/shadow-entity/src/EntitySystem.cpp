@@ -34,7 +34,7 @@ namespace ShadowEngine::Entities {
 
 	void EntitySystem::LoadEmptyScene()
 	{
-		if (activeScene != NULL)
+		if (activeScene)
 		{
 			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
 		}
@@ -44,7 +44,7 @@ namespace ShadowEngine::Entities {
 
 	void EntitySystem::LoadScene(Scene* scene)
 	{
-		if (activeScene != NULL)
+		if (activeScene)
 		{
 			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
 		}

@@ -37,7 +37,7 @@ namespace ShadowEngine::Entities
 		rtm_ptr() : m_ptr(nullptr) {}
 		
 		template<class T>
-		rtm_ptr(const rtm_ptr<T>& o) {
+		explicit rtm_ptr(const rtm_ptr<T>& o) {
 			m_ptr = (Type*)o.getInternalPointer();
 			m_uid = o.getInternalUID();
 		}
@@ -51,7 +51,9 @@ namespace ShadowEngine::Entities
 			return ((Type*)m_ptr);
 		}
 
-		inline operator bool() const { return m_ptr != nullptr && m_ptr->m_runtimeUID == m_uid; }
+        bool isValid(){ return m_ptr != nullptr && m_ptr->m_runtimeUID == m_uid; }
+
+		inline operator bool() const { return isValid(); }
 
 		template<class T>
 		inline bool operator ==(rtm_ptr<T> o) const {
@@ -64,7 +66,7 @@ namespace ShadowEngine::Entities
 			return rtm_ptr<T>(m_ptr);
 		}
 
-		void null() {
+		void setNull() {
 			m_ptr = nullptr;
 			m_uid = -1;
 		}
