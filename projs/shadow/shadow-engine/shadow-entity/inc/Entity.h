@@ -51,9 +51,9 @@ namespace ShadowEngine::Entities
 			return ((Type*)m_ptr);
 		}
 
-        bool isValid(){ return m_ptr != nullptr && m_ptr->m_runtimeUID == m_uid; }
+        bool isValid() const { return m_ptr != nullptr && m_ptr->m_runtimeUID == m_uid; }
 
-		inline operator bool() const { return isValid(); }
+		inline operator bool() const { return this->isValid(); }
 
 		template<class T>
 		inline bool operator ==(rtm_ptr<T> o) const {

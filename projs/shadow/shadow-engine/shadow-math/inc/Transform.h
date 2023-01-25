@@ -1,6 +1,12 @@
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvolatile"
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+#pragma GCC diagnostic pop
+
 
 namespace ShadowEngine::ShadowEntity {
 
