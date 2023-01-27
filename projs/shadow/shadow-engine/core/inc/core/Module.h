@@ -14,7 +14,21 @@ namespace ShadowEngine {
     {
         SHObject_Base(Module)
 
+    protected:
+        std::string Id;
+
     public:
+
+        explicit Module(const std::string &id);
+
+
+        std::string GetId() const{
+            return this->Id;
+        }
+
+        virtual std::vector<std::string> GetDependencies(){
+            return {};
+        }
 
         /// <summary>
         /// Pre Init is called when the module is added to the engine
@@ -63,6 +77,8 @@ namespace ShadowEngine {
      */
     class RendererModule : public Module {
     public:
+        explicit RendererModule(const std::string &id);
+
         // Begin the render pass using the given commands.
         // Will call out through the regular modules to gather geometry to render.
         virtual void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& commands) = 0;

@@ -26,8 +26,6 @@ const std::unique_ptr<vlkx::ScreenRenderPassManager>& VulkanModule::getRenderPas
     return renderPass;
 }
 
-VulkanModule::VulkanModule() { instance = this; }
-
 VulkanModule::~VulkanModule() = default;
 
 VulkanModule* VulkanModule::instance = nullptr;

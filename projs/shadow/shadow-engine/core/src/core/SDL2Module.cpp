@@ -1,7 +1,3 @@
-//
-// Created by dpete on 30/08/2022.
-//
-
 #include "core/SDL2Module.h"
 #include "core/ShadowWindow.h"
 #include "spdlog/spdlog.h"

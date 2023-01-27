@@ -10,6 +10,12 @@ SHObject_Base(TestModule)
 public:
     ~TestModule() override = default;
 
+    explicit TestModule() : Module("module:/test-game/TestModule") {}
+
+    std::vector<std::string> GetDependencies() override {
+        return { "module:/test-game/GameModule" };
+    }
+
     void PreInit() override {
         spdlog::info("{0} PreInit", this->GetName());
     }

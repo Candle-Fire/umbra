@@ -1,4 +1,5 @@
 #include "core/ModuleManager.h"
+#include "spdlog/spdlog.h"
 
 #include <stdexcept>
 
@@ -18,7 +19,7 @@ ShadowEngine::ModuleManager::~ModuleManager()
 
 void ShadowEngine::ModuleManager::PushModule(const std::shared_ptr<Module>& module, const std::string& domain)
 {
-    ModuleHolder r = {module, domain};
+    ModuleHolder r {module, domain};
     modules.emplace_back(r);
     if (domain == "renderer")
         renderer = r;
@@ -48,6 +49,8 @@ void ShadowEngine::ModuleManager::RemoveModule(std::weak_ptr<Module> ptr) {
 
 void ShadowEngine::ModuleManager::Init()
 {
+    SortDeps();
+
     for (auto& module : modules)
     {
         if(!module.disabled)
@@ -74,7 +77,6 @@ void ShadowEngine::ModuleManager::Destroy()
         module.module->Destroy();
     }
 }
-
 
 void ShadowEngine::ModuleManager::PreRender()
 {
@@ -132,12 +134,56 @@ void ShadowEngine::ModuleManager::Recreate()
     }
 }
 
-
 void ShadowEngine::ModuleManager::AfterFrameEnd()
 {
     for (auto& module : modules)
     {
         module.module->AfterFrameEnd();
     }
+}
+
+#define Iterate(It) It.begin(), It.end()
+
+auto ModulePredicate(std::string target){
+    return [target](const auto &item) { return target == item->GetId();};
+}
+
+void ShadowEngine::ModuleManager::dfs(ModuleHolder module, std::vector<ModuleHolder>& sorted) {
+    //visited[v] = true;
+    for (auto u : module->GetDependencies()) {
+        if (!std::any_of( Iterate(sorted),ModulePredicate(u)) && u != module->GetId())
+        {
+            auto it = std::find_if(Iterate(this->modules), ModulePredicate(u));
+
+            if(it != modules.end())
+                dfs(*it, sorted);
+            else
+                spdlog::info("Module {0} is missing, required by {1}", u ,module->GetId());
+
+        }
+    }
+    sorted.push_back(module);
+}
+
+void ShadowEngine::ModuleManager::SortDeps() {
+    int module_count = this->modules.size();
+
+    for (auto i : this->modules) {
+        spdlog::info("Module {0} is present", i->GetId());
+    }
+
+
+    std::vector<ModuleHolder> sorted;
+    sorted.clear();
+
+    for (auto i : this->modules) {
+        if (!std::any_of(Iterate(sorted),ModulePredicate(i->GetId())))
+            dfs(i, sorted);
+    }
+
+    //reverse(sorted.begin(), sorted.end());
+
+    this->modules = sorted;
+
 }
 

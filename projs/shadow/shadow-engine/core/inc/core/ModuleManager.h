@@ -17,6 +17,15 @@ namespace ShadowEngine {
         // Reinterpret this module as if it were a Renderer Module.
         // A shortcut for `std::static_pointer_cast<std::shared_ptr<RendererModule>>(ShadowEngine::ModuleManager::instance->GetModule("renderer"))
         std::shared_ptr<RendererModule> operator->() const { return std::static_pointer_cast<RendererModule>(module); }
+/*
+        ModuleHolder() {}
+        ModuleHolder(std::shared_ptr<Module> module, std::string domain) : module(module), domain(domain) {}
+        ModuleHolder(ModuleHolder& o) {
+            this->module = o.module;
+            this->domain = o.domain;
+            this->disabled = o.disabled;
+        }
+*/
     };
 
     class ModuleManager {
@@ -26,7 +35,7 @@ namespace ShadowEngine {
         static ModuleManager* getInstance() { return instance; }
 
 
-        std::list<ModuleHolder> modules;
+        std::vector<ModuleHolder> modules;
         ModuleHolder renderer;
 
         bool finalized = false;
@@ -51,6 +60,8 @@ namespace ShadowEngine {
 
         void RemoveModule(std::weak_ptr<Module> ptr);
 
+        void SortDeps();
+
         void Init();
 
         void Finalise();
@@ -72,6 +83,8 @@ namespace ShadowEngine {
         void Destroy();
 
         void Event(SDL_Event* evt);
+
+        void dfs(ModuleHolder module, std::vector<ModuleHolder>& sorted);
     };
 }
 

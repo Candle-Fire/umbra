@@ -94,3 +94,4 @@ void GameModule::PreRender() {}
 
 void GameModule::Destroy() {}
 void GameModule::Event(SDL_Event *) {}
+

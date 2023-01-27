@@ -1,7 +1,3 @@
-//
-// Created by dpete on 31/08/2022.
-//
-
 #include "debug/DebugModule.h"
 #include "imgui.h"
 #include "core/Time.h"
@@ -25,7 +21,7 @@ void ShadowEngine::Debug::DebugModule::OverlayRender() {
 
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:");
         for (auto &module: m->modules) {
-            ImGui::Text("%s", module.module->GetName().c_str());
+            ImGui::Text("%s", module.module->GetId().c_str());
         }
     }
 

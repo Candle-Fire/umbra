@@ -16,8 +16,12 @@ class VulkanModule : public ShadowEngine::RendererModule {
     SHObject_Base(VulkanModule);
 public:
 
-    VulkanModule();
+    VulkanModule(): RendererModule("module:/renderer/vulkan") { instance = this; }
 	~VulkanModule() override;
+
+    std::vector<std::string> GetDependencies() override {
+        return {"module:/platform/sdl2"};
+    }
 
 #ifdef _DEBUG
 	static const bool validationRequired = true;

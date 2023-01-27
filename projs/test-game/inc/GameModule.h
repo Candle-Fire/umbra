@@ -7,8 +7,10 @@ class GameModule : public ShadowEngine::Module {
 
     SHObject_Base(GameModule)
 
-    std::string tets = "asdasd";
+    std::string test = "asdasd";
 public:
+    GameModule() : Module("module:/test-game/GameModule") {}
+
     void PreInit() override;
 
     void Init() override;

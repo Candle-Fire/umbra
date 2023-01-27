@@ -74,9 +74,11 @@ namespace ShadowEngine {
         renderer->EnableEditor();
         moduleManager.PushModule(renderer, "renderer");
 
+        moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
+
         loadGame();
 
-        moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
+
 
         moduleManager.Init();
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
