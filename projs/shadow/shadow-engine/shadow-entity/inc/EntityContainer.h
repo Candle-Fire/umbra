@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 
 namespace ShadowEngine::Entities {
 
@@ -74,7 +75,7 @@ namespace ShadowEngine::Entities {
 				chunkStart = (Element*)malloc(ALLOC_SIZE);
 
                 // Might not be needed, probably for nicer debugging....
-				memset(chunkStart, -1, ALLOC_SIZE);
+				std::memset(chunkStart, -1, ALLOC_SIZE);
 
 				chunkEnd = &chunkStart[MAX_OBJECTS_IN_CHUNK];
 

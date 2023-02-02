@@ -12,14 +12,6 @@ namespace ShadowEngine::Entities {
 
     class Entity;
 	class EntityManager;
-	
-	struct SystemCallbacks {
-		typedef void (*Callback)(EntityManager* mgr);
-		typedef void (*UpdateCallback)(EntityManager* mgr, float dt);
-
-		UpdateCallback update;
-		Callback init;
-	};
 
 
 	/**
@@ -65,9 +57,6 @@ namespace ShadowEngine::Entities {
 		int LUTNextFree = 0;
 		bool LUTFragm = false;
 		std::vector<int> LUTFragmFree;
-
-		//using SystemUpdate = std::function<void(EntityManager*)>;
-		std::vector<SystemCallbacks> systems;
 
 		/**
 		 * \brief The next assignable Unique ID
@@ -189,12 +178,6 @@ namespace ShadowEngine::Entities {
 
 			return static_cast<EntityContainer<T>*>(it->second);
 		}
-
-		void AddSystem(SystemCallbacks fn);
-
-		void UpdateEntities(float dt);
-
-		void InitEntities();
 	};
 
 }

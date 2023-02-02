@@ -7,7 +7,7 @@ namespace ShadowEngine::Entities {
 public:											\
 Type(ShadowEngine::Entities::Scene* scene) : BaseType(scene) {}	\
 Type() : BaseType() {}	\
-ShadowEngine::Entities::Entity* Type::Create(ShadowEngine::Entities::Scene* scene) override {			\
+ShadowEngine::Entities::Entity* Create(ShadowEngine::Entities::Scene* scene) override {			\
 Type* res = new Type(scene);							\
 return res;									    \
 }												\

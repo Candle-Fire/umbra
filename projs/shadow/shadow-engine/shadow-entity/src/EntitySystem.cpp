@@ -23,8 +23,6 @@ namespace ShadowEngine::Entities {
 	void EntitySystem::Update(int frame)
 	{
 		auto dt = Time::deltaTime_ms;
-
-		entityMgr->UpdateEntities(dt);
 	}
 
 	rtm_ptr<Scene> EntitySystem::GetActiveScene()
@@ -52,8 +50,6 @@ namespace ShadowEngine::Entities {
 		//activeScene.reset(scene);
 
 		//scene->Init();
-
-		entityMgr->InitEntities();
 
 		//SH_CORE_TRACE("SceneLoaded");
 	}

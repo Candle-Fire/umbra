@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../inc/EntityRegistry.h"
 #include "../inc/TransformEntity.h"
 
 

@@ -242,15 +242,6 @@ namespace ShadowEngine::Entities
 				current.Init();
 			}
 		}
-
-		template<class T>
-		static void RegisterDefaultUpdate(EntityManager& mgr) {
-			SystemCallbacks s;
-			s.update = &UpdateEntities<T>;
-			s.init = &InitEntities<T>;
-
-			mgr.AddSystem(s);
-		}
 	};
 
     template<typename T>

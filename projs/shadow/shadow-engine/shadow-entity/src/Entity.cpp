@@ -1,6 +1,5 @@
 #include <iostream>
 #include "../inc/Entity.h"
-#include "../inc/EntityRegistry.h"
 #include "../inc/Scene.h"
 
 

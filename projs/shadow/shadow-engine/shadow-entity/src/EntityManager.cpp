@@ -22,24 +22,6 @@ namespace ShadowEngine::Entities {
         GetComponentContainer(typeID)->DestroyObject((void*)entity);
     }
 
-    void EntityManager::UpdateEntities(float dt) {
-        for (auto & var : systems)
-        {
-            var.update(this,dt);
-        }
-    }
-
-    void EntityManager::InitEntities() {
-        for (auto & var : systems)
-        {
-            var.init(this);
-        }
-    }
-
-    void EntityManager::AddSystem(SystemCallbacks fn) {
-        systems.push_back(fn);
-    }
-
     IEntityContainer *EntityManager::GetComponentContainer(int typeID) {
         auto it = this->m_EntityContainerRegistry.find(typeID);
         IEntityContainer* cc = nullptr;
