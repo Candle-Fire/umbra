@@ -9,6 +9,7 @@
 #include "core/ShadowApplication.h"
 #include "core/SDL2Module.h"
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
+#include "core/ModuleManager.h"
 #include <vlkx/vulkan/SwapChain.h>
 
 #define CATCH(x) \
@@ -81,10 +82,10 @@ void VulkanModule::PreInit() {
 
     auto shApp = ShadowEngine::ShadowApplication::Get();
 
-    ShadowEngine::ModuleManager &moduleManager = shApp.GetModuleManager();
+    ShadowEngine::ModuleManager *moduleManager = nullptr; // shApp.GetModuleManager();
 
     //TODO:: well we should be sure about this... There is a chance SDL might want to quit..
-    auto sdl2module = moduleManager.GetModule<ShadowEngine::SDL2Module>().lock();
+    auto sdl2module = moduleManager->GetModule<ShadowEngine::SDL2Module>().lock();
 
     CATCH(initVulkan(sdl2module->_window->sdlWindowPtr);)
 

@@ -41,6 +41,21 @@ namespace ShadowEngine {
                 }
 			}
 		}
+        SetConsoleOutputCP(CP_UTF8);
+        CONSOLE_FONT_INFOEX cfi;
+        cfi.cbSize = sizeof cfi;
+        cfi.nFont = 0;
+        cfi.dwFontSize.X = 0;
+        cfi.dwFontSize.Y = 14;
+        cfi.FontFamily = FF_DONTCARE;
+        cfi.FontWeight = FW_NORMAL;
+        wcscpy_s(cfi.FaceName, LF_FACESIZE, L"Lucida Console");
+        if (SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi) == 0) {
+            // handle error
+        }
+        std::cout << "asdasd";
+
+        spdlog::set_level(spdlog::level::debug);
 	}
 
 	ShadowApplication::~ShadowApplication()
@@ -69,19 +84,47 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Init()
 	{
-        moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
-        auto renderer = std::make_shared<VulkanModule>();
-        renderer->EnableEditor();
-        moduleManager.PushModule(renderer, "renderer");
+        moduleManager.AddDescriptors({
+                                             .id="module:/renderer/vulkan",
+                                             .name = "Vulkan",
+                                             .assembly="assembly:/core",
+                                             .dependencies={"module:/platform/sdl2"},
+                                     });
 
-        moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
+        moduleManager.AddDescriptors({
+            .id="module:/core",
+            .name = "Core",
+            .assembly="assembly:/core",
+            });
+
+        moduleManager.AddDescriptors({
+                                             .id="module:/platform/sdl2",
+                                             .name = "SDL2",
+                                             .assembly="assembly:/core",
+                                             .dependencies={"module:/core"},
+                                     });
+
+
+
+        moduleManager.AddDescriptors({
+                                             .id="module:/test1",
+                                             .name = "Test1",
+                                             .assembly="assembly:/core",
+                                     });
+
+        //moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
+        //auto renderer = std::make_shared<VulkanModule>();
+        //renderer->EnableEditor();
+        //moduleManager.PushModule(renderer, "renderer");
+
+        //moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
 
         loadGame();
 
 
 
         moduleManager.Init();
-        renderCommands = std::make_unique<vlkx::RenderCommand>(2);
+        //renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 	}
 
 	void ShadowApplication::Start()
@@ -90,22 +133,22 @@ namespace ShadowEngine {
 		while (running)
 		{
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                moduleManager.Event(&event);
+                //moduleManager.Event(&event);
                 if (event.type == SDL_QUIT)
                     running = false;
             }
 
-            moduleManager.PreRender();
+            //moduleManager.PreRender();
 
-            moduleManager.renderer->BeginRenderPass(renderCommands);
+            //moduleManager.renderer->BeginRenderPass(renderCommands);
 
-            moduleManager.AfterFrameEnd();
+            //moduleManager.AfterFrameEnd();
 
-            renderCommands->nextFrame();
+            //renderCommands->nextFrame();
             Time::UpdateTime();
 		}
 
-        moduleManager.Destroy();
+        //moduleManager.Destroy();
 
         delete gameLib;
 	}

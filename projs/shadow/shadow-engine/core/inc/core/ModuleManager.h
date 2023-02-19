@@ -1,5 +1,4 @@
-#ifndef UMBRA_MODULEMANAGER_H
-#define UMBRA_MODULEMANAGER_H
+#pragma once
 
 #include <memory>
 #include <list>
@@ -17,15 +16,6 @@ namespace ShadowEngine {
         // Reinterpret this module as if it were a Renderer Module.
         // A shortcut for `std::static_pointer_cast<std::shared_ptr<RendererModule>>(ShadowEngine::ModuleManager::instance->GetModule("renderer"))
         std::shared_ptr<RendererModule> operator->() const { return std::static_pointer_cast<RendererModule>(module); }
-/*
-        ModuleHolder() {}
-        ModuleHolder(std::shared_ptr<Module> module, std::string domain) : module(module), domain(domain) {}
-        ModuleHolder(ModuleHolder& o) {
-            this->module = o.module;
-            this->domain = o.domain;
-            this->disabled = o.disabled;
-        }
-*/
     };
 
     class ModuleManager {
@@ -62,6 +52,11 @@ namespace ShadowEngine {
 
         void SortDeps();
 
+        void dfs(ModuleHolder module, std::vector<ModuleHolder>& sorted);
+
+
+
+
         void Init();
 
         void Finalise();
@@ -83,9 +78,6 @@ namespace ShadowEngine {
         void Destroy();
 
         void Event(SDL_Event* evt);
-
-        void dfs(ModuleHolder module, std::vector<ModuleHolder>& sorted);
     };
 }
 
-#endif //UMBRA_MODULEMANAGER_H

@@ -1,6 +1,6 @@
 #pragma once
 #include "ShadowWindow.h"
-#include "ModuleManager.h"
+#include "module-manager-v2.h"
 #include "exports.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -63,7 +63,7 @@ namespace ShadowEngine {
 		//ShadowWindow& const GetWindow() const { return window_; };
 		//void SetWindow(ShadowWindow w) { window_ = w; }
 
-        ShadowEngine::ModuleManager& GetModuleManager() { return moduleManager; };
+        ModuleManager& GetModuleManager() { return moduleManager; };
 
         void Init();
         void Start();

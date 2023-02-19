@@ -18,7 +18,7 @@ FILE(GLOB_RECURSE HEADERS
         shadow-utility/inc/*.h
         )
 
-add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
+add_library(shadow-engine SHARED ${SOURCES} ${HEADERS} $<TARGET_OBJECTS:imgui>)
 
 target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}
@@ -34,7 +34,9 @@ target_include_directories(shadow-engine
 
 target_link_libraries(shadow-engine
         PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui
+        PRIVATE -static-libgcc -static-libstdc++
 )
+
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
