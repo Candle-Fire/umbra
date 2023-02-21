@@ -2,13 +2,10 @@
 
 #include "core/ShadowApplication.h"
 #include "core/Time.h"
-#include "core/SDL2Module.h"
-#include "debug/DebugModule.h"
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
-#include <vlkx/vulkan/VulkanModule.h>
 #include <spdlog/spdlog.h>
 
 #define CATCH(x) \
@@ -87,20 +84,23 @@ namespace ShadowEngine {
         moduleManager.AddDescriptors({
                                              .id="module:/renderer/vulkan",
                                              .name = "Vulkan",
-                                             .assembly="assembly:/core",
+                                             .class_name = "",
+                                             .assembly="shadow-engine",
                                              .dependencies={"module:/platform/sdl2"},
                                      });
 
         moduleManager.AddDescriptors({
             .id="module:/core",
             .name = "Core",
-            .assembly="assembly:/core",
+                                             .class_name = "",
+            .assembly="shadow-engine",
             });
 
         moduleManager.AddDescriptors({
                                              .id="module:/platform/sdl2",
                                              .name = "SDL2",
-                                             .assembly="assembly:/core",
+                                             .class_name = "SDL2Module",
+                                             .assembly="shadow-engine",
                                              .dependencies={"module:/core"},
                                      });
 
@@ -109,7 +109,8 @@ namespace ShadowEngine {
         moduleManager.AddDescriptors({
                                              .id="module:/test1",
                                              .name = "Test1",
-                                             .assembly="assembly:/core",
+                                             .class_name = "",
+                                             .assembly="shadow-engine",
                                      });
 
         //moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
@@ -119,7 +120,7 @@ namespace ShadowEngine {
 
         //moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
 
-        loadGame();
+        //loadGame();
 
 
 

@@ -9,6 +9,7 @@
 
 using ID = std::string;
 
+
 class Module{
 
 };
@@ -23,6 +24,7 @@ struct Assembly{
 struct ModuleDescriptor{
      ID id;
      std::string name;
+     std::string class_name;
      ID assembly;
 
      std::vector<ID> dependencies;
@@ -60,6 +62,11 @@ class ModuleManager{
         });
     }
 
+    Assembly& GetAssembly(const ID& id){
+        return *std::find_if(ITERATE(this->loadedAssemblies),[id](const Assembly& a){ return a.id == id; });
+    }
+
+    void LoadModule(ModuleHolder& holder);
 
 
 
@@ -106,35 +113,7 @@ public:
 
     void AddDescriptors(ModuleDescriptor descriptor){ modules.push_back( {descriptor=descriptor} ); }
 
-    void Init(){
-        for (const auto& i : this->modules) {
-            spdlog::debug("\"{0}\" is registered", i.descriptor.id);
-        }
-
-        //Sort
-        this->SortModules();
-
-        spdlog::debug("Sorted order:");
-        for (const auto& i : this->modules) {
-            spdlog::debug("\"{0}\" is registered", i.descriptor.id);
-        }
-
-        //Load
-        for (const auto& i : this->modules) {
-            spdlog::debug("Loading {0}", i.descriptor.id);
-            if(std::any_of(ITERATE(this->loadedAssemblies),[i](Assembly a){ return a.id == i.descriptor.assembly; })){
-                spdlog::debug("✅ Assembly \"{0}\" is already loaded", i.descriptor.assembly);
-            }
-            else{
-                spdlog::debug("🔃 Loading assembly \"{0}\"", i.descriptor.assembly);
-                this->LoadAssembly(i.descriptor.assembly);
-            }
-
-        }
-
-        //Init
-        //Sort
-    }
+    void Init();
 
 };
 

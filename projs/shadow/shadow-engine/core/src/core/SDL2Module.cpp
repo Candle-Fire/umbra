@@ -1,9 +1,16 @@
 #include "core/SDL2Module.h"
 #include "core/ShadowWindow.h"
+#include "core/module-manager-v2.h"
 #include "spdlog/spdlog.h"
 #include "imgui_impl_sdl.h"
 
 SHObject_Base_Impl(ShadowEngine::SDL2Module)
+
+extern "C" {
+    std::shared_ptr<ShadowEngine::SDL2Module> SDL2Module_entry(){
+        return std::make_shared<ShadowEngine::SDL2Module>();
+    }
+}
 
 void ShadowEngine::SDL2Module::Init() {
 }
