@@ -17,6 +17,8 @@
 
 SHObject_Base_Impl(VulkanModule)
 
+ModuleEntry(VulkanModule, VulkanModule)
+
 std::unique_ptr<vlkx::ScreenRenderPassManager> renderPass;
 bool renderingGeometry;
 std::unique_ptr<vlkx::ScreenRenderPassManager> editorPass;

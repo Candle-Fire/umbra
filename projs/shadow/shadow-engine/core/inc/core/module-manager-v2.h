@@ -7,12 +7,11 @@
 #include "spdlog/spdlog.h"
 #include "dylib.hpp"
 
+#include "Module.h"
+
 using ID = std::string;
 
-
-class Module{
-
-};
+#define ModuleEntry(name, shortname) extern "C" { std::shared_ptr<name> shortname ## _entry(){return std::make_shared<name>();} }
 
 struct Assembly{
     ID id;
@@ -32,7 +31,8 @@ struct ModuleDescriptor{
 
 struct ModuleHolder{
     ModuleDescriptor descriptor;
-    std::shared_ptr<Module> module;
+    std::shared_ptr<ShadowEngine::Module> module;
+    bool enabled;
 };
 
 #define ITERATE(It) It.begin(), (It).end()
@@ -43,24 +43,7 @@ class ModuleManager{
 
     std::vector<ModuleHolder> modules;
 
-    void LoadAssembly(const std::string& path){
-        spdlog::info("Assembly {0} is loaded", path);
-
-        dylib* dllptr;
-
-        try { 
-            dllptr = new dylib("./", path);
-        }
-        catch (std::exception& e) {
-            spdlog::error(e.what());
-            exit(1);
-        }
-
-        this->loadedAssemblies.push_back({
-            .id = path,
-            .lib = dllptr,
-        });
-    }
+    void LoadAssembly(const std::string& path);
 
     Assembly& GetAssembly(const ID& id){
         return *std::find_if(ITERATE(this->loadedAssemblies),[id](const Assembly& a){ return a.id == id; });
@@ -74,40 +57,9 @@ class ModuleManager{
         return [target](const auto &item) { return target == item.descriptor.id;};
     }
 
-    void dfs(const ModuleHolder& moduleHolder, std::vector<ModuleHolder>& sorted) {
-        //visited[v] = true;
-        for (auto u : moduleHolder.descriptor.dependencies) {
-            if (!std::any_of( ITERATE(sorted),ModulePredicate(u)) && u != moduleHolder.descriptor.id)
-            {
-                auto it = std::find_if(ITERATE(this->modules), ModulePredicate(u));
+    void dfs(const ModuleHolder& moduleHolder, std::vector<ModuleHolder>& sorted);
 
-                if(it != modules.end())
-                    dfs(*it, sorted);
-                else
-                    spdlog::info("Module {0} is missing, required by {1}", u ,moduleHolder.descriptor.id);
-
-            }
-        }
-        sorted.push_back(moduleHolder);
-    }
-
-    void SortModules() {
-        int module_count = this->modules.size();
-
-        std::vector<ModuleHolder> sorted;
-        sorted.clear();
-
-        for (auto i : this->modules) {
-            spdlog::debug("Processing {0}", i.descriptor.id);
-            if (!std::any_of(ITERATE(sorted),ModulePredicate(i.descriptor.id)))
-                dfs(i, sorted);
-        }
-
-        //reverse(sorted.begin(), sorted.end());
-
-        this->modules = sorted;
-
-    }
+    void SortModules();
 
 public:
 

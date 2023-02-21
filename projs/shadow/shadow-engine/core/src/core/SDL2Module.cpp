@@ -6,11 +6,7 @@
 
 SHObject_Base_Impl(ShadowEngine::SDL2Module)
 
-extern "C" {
-    std::shared_ptr<ShadowEngine::SDL2Module> SDL2Module_entry(){
-        return std::make_shared<ShadowEngine::SDL2Module>();
-    }
-}
+ModuleEntry(ShadowEngine::SDL2Module, SDL2Module)
 
 void ShadowEngine::SDL2Module::Init() {
 }

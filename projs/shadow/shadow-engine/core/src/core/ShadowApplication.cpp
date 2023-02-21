@@ -50,7 +50,6 @@ namespace ShadowEngine {
         if (SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi) == 0) {
             // handle error
         }
-        std::cout << "asdasd";
 
         spdlog::set_level(spdlog::level::debug);
 	}
@@ -84,7 +83,7 @@ namespace ShadowEngine {
         moduleManager.AddDescriptors({
                                              .id="module:/renderer/vulkan",
                                              .name = "Vulkan",
-                                             .class_name = "",
+                                             .class_name = "VulkanModule",
                                              .assembly="shadow-engine",
                                              .dependencies={"module:/platform/sdl2"},
                                      });

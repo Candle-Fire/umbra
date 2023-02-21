@@ -9,10 +9,17 @@ void ModuleManager::LoadModule(ModuleHolder &holder) {
         spdlog::error("❌ Could not find the entry for module \"{0}\"", holder.descriptor.id);
         return;
     }
+    try{
+        auto moduleInit = assembly.lib->get_function<std::shared_ptr<ShadowEngine::Module>()>(symbolName);
 
-    auto moduleInit = assembly.lib->get_function<std::shared_ptr<Module>()>(symbolName);
+        holder.module = moduleInit();    
+    }
+    catch (std::exception& e) {
+        spdlog::error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id, e.what());
+        return;
+    }
 
-    holder.module = moduleInit();
+    holder.enabled = true;
 }
 
 void ModuleManager::Init() {
@@ -39,18 +46,71 @@ void ModuleManager::Init() {
             spdlog::debug("✅ Assembly \"{0}\" is already loaded", i.descriptor.assembly);
         }
         else{
-            spdlog::debug("🔃 Loading assembly \"{0}\"", i.descriptor.assembly);
+            spdlog::debug("➕ Loading assembly \"{0}\"", i.descriptor.assembly);
             this->LoadAssembly(i.descriptor.assembly);
         }
 
         this->LoadModule(i);
     }
 
+
+
+    //PreInit
     for(auto& holder : this->modules){
-        if(holder.module)
-            spdlog::info("Module {0}({1}) loaded",holder.module holder.descriptor.id);
+        if(holder.enabled){
+            spdlog::info("Module {0}({1}) loaded", holder.module->GetName(), holder.descriptor.id);
+            holder.module->PreInit();
+        }
     }
 
-    //Init
+
     //Sort
+}
+
+void ModuleManager::LoadAssembly(const std::string &path) {
+    spdlog::info("Assembly {0} is loaded", path);
+
+    dylib* dllptr;
+
+    try {
+        dllptr = new dylib("./", path);
+    }
+    catch (std::exception& e) {
+        spdlog::error(e.what());
+        exit(1);
+    }
+
+    this->loadedAssemblies.push_back({
+                                             .id = path,
+                                             .lib = dllptr,
+                                     });
+}
+
+void ModuleManager::dfs(const ModuleHolder &moduleHolder, std::vector<ModuleHolder> &sorted) {
+    for (auto u : moduleHolder.descriptor.dependencies) {
+        if (!std::any_of( ITERATE(sorted),ModulePredicate(u)) && u != moduleHolder.descriptor.id)
+        {
+            auto it = std::find_if(ITERATE(this->modules), ModulePredicate(u));
+
+            if(it != modules.end())
+                dfs(*it, sorted);
+            else
+                spdlog::info("Module {0} is missing, required by {1}", u ,moduleHolder.descriptor.id);
+
+        }
+    }
+    sorted.push_back(moduleHolder);
+}
+
+void ModuleManager::SortModules() {
+    std::vector<ModuleHolder> sorted;
+    sorted.clear();
+
+    for (auto i : this->modules) {
+        if (!std::any_of(ITERATE(sorted),ModulePredicate(i.descriptor.id)))
+            dfs(i, sorted);
+    }
+
+    this->modules = sorted;
+
 }
