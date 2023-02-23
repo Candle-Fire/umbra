@@ -41,12 +41,12 @@ void ModuleManager::Init() {
 
     //Load
     for (auto& i : this->modules) {
-        spdlog::debug("Loading {0}", i.descriptor.id);
+        spdlog::info("Loading {0}", i.descriptor.id);
         if(std::any_of(ITERATE(this->loadedAssemblies),[i](Assembly a){ return a.id == i.descriptor.assembly; })){
             spdlog::debug("✅ Assembly \"{0}\" is already loaded", i.descriptor.assembly);
         }
         else{
-            spdlog::debug("➕ Loading assembly \"{0}\"", i.descriptor.assembly);
+            spdlog::info("➕ Loading assembly \"{0}\"", i.descriptor.assembly);
             this->LoadAssembly(i.descriptor.assembly);
         }
 

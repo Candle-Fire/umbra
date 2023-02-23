@@ -4,6 +4,7 @@
 #include "core/Time.h"
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
+#include "vlkx/vulkan/VulkanModule.h"
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <spdlog/spdlog.h>
@@ -18,6 +19,8 @@ namespace ShadowEngine {
 	ShadowApplication* ShadowApplication::instance = nullptr;
 
     std::unique_ptr<vlkx::RenderCommand> renderCommands;
+
+    std::weak_ptr<VulkanModule> renderer;
 
     ShadowApplication::ShadowApplication(int argc, char* argv[])
 	{
@@ -51,32 +54,12 @@ namespace ShadowEngine {
             // handle error
         }
 
-        spdlog::set_level(spdlog::level::debug);
+        //spdlog::set_level(spdlog::level::debug);
 	}
 
 	ShadowApplication::~ShadowApplication()
 	{
 	}
-
-    void ShadowApplication::loadGame(){
-        if(game.empty())
-            return;
-
-        void (*gameInti)(ShadowApplication*);
-
-        try {
-            gameLib = new dylib("./", game);
-
-            gameInti = gameLib->get_function<void(ShadowApplication*)>("shadow_main");
-
-            gameInti(this);
-        }
-        catch (std::exception& e) {
-            spdlog::error(e.what());
-            exit(1);
-        }
-
-    }
 
 	void ShadowApplication::Init()
 	{
@@ -106,9 +89,9 @@ namespace ShadowEngine {
 
 
         moduleManager.AddDescriptors({
-                                             .id="module:/test1",
-                                             .name = "Test1",
-                                             .class_name = "",
+                                             .id="module:/debug",
+                                             .name = "DebugModule",
+                                             .class_name = "DebugModule",
                                              .assembly="shadow-engine",
                                      });
 
@@ -124,7 +107,11 @@ namespace ShadowEngine {
 
 
         moduleManager.Init();
-        //renderCommands = std::make_unique<vlkx::RenderCommand>(2);
+
+
+        renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
+
+        renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 	}
 
 	void ShadowApplication::Start()
@@ -140,11 +127,14 @@ namespace ShadowEngine {
 
             //moduleManager.PreRender();
 
-            //moduleManager.renderer->BeginRenderPass(renderCommands);
+            if(renderer.expired()){
+                auto r = renderer.lock();
+                r->BeginRenderPass(renderCommands);
+            }
 
             //moduleManager.AfterFrameEnd();
 
-            //renderCommands->nextFrame();
+            renderCommands->nextFrame();
             Time::UpdateTime();
 		}
 

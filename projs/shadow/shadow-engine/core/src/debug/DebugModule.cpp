@@ -2,8 +2,11 @@
 #include "imgui.h"
 #include "core/Time.h"
 #include "core/ModuleManager.h"
+#include "core/module-manager-v2.h"
 
 SHObject_Base_Impl(ShadowEngine::Debug::DebugModule)
+
+ModuleEntry(ShadowEngine::Debug::DebugModule, DebugModule)
 
 void ShadowEngine::Debug::DebugModule::OverlayRender() {
 

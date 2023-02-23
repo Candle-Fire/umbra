@@ -11,6 +11,8 @@
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
 #include "core/ModuleManager.h"
 #include <vlkx/vulkan/SwapChain.h>
+#include "core/module-manager-v2.h"
+
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -84,10 +86,9 @@ void VulkanModule::PreInit() {
 
     auto shApp = ShadowEngine::ShadowApplication::Get();
 
-    ShadowEngine::ModuleManager *moduleManager = nullptr; // shApp.GetModuleManager();
+    ModuleManager& moduleManager = shApp.GetModuleManager();
 
-    //TODO:: well we should be sure about this... There is a chance SDL might want to quit..
-    auto sdl2module = moduleManager->GetModule<ShadowEngine::SDL2Module>().lock();
+    auto sdl2module = moduleManager.GetById<ShadowEngine::SDL2Module>("module:/platform/sdl2").lock();
 
     CATCH(initVulkan(sdl2module->_window->sdlWindowPtr);)
 
