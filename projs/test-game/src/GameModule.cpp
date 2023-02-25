@@ -8,12 +8,15 @@
 #include "vlkx/vulkan/abstraction/Buffer.h"
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
 #include "temp/model/Builder.h"
-#include "core/ModuleManager.h"
+#include "core/module-manager-v2.h"
+#include "core/ShadowApplication.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
 
 SHObject_Base_Impl(GameModule)
+
+ModuleEntry(GameModule, GameModule)
 
 struct Transformation {
     alignas(sizeof(glm::mat4)) glm::mat4 proj_view_model;
@@ -22,6 +25,8 @@ struct Transformation {
 std::unique_ptr<vlkx::PushConstant> trans_constant_;
 std::unique_ptr<vlkxtemp::Model> cube_model_;
 float aspectRatio;
+
+std::shared_ptr<ShadowEngine::RendererModule> renderer;
 
 void GameModule::PreInit() {
     spdlog::info("{0} PreInit", this->GetName());
@@ -34,7 +39,14 @@ void GameModule::Init() {
     trans_constant_ = std::make_unique<vlkx::PushConstant>(
             sizeof(Transformation), 2);
 
-    auto extent = ShadowEngine::ModuleManager::getInstance()->renderer->GetRenderExtent();
+    auto rendererPtr = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::RendererModule>("module:/renderer/vulkan");
+    if(rendererPtr.expired()){
+        return;
+    }
+    renderer = rendererPtr.lock();
+
+
+    auto extent = renderer->GetRenderExtent();
     aspectRatio = (float) extent.width / extent.height;
 
     /* Model */
@@ -54,7 +66,7 @@ void GameModule::Init() {
 }
 
 void GameModule::Recreate() {
-    auto extent = ShadowEngine::ModuleManager::getInstance()->renderer->GetRenderExtent();
+    auto extent = renderer->GetRenderExtent();
     cube_model_->update(true, extent, VK_SAMPLE_COUNT_1_BIT, *VulkanModule::getInstance()->getRenderPass()->getPass(), 0);
 }
 

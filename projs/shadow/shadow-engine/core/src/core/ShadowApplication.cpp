@@ -31,9 +31,9 @@ namespace ShadowEngine {
 			for (size_t i = 0; i < argc; i++)
 			{
 				std::string param(argv[i]);
-				if(param == "-no-gui")
+				if(param == "-debug")
 				{
-					this->no_gui = true;
+					this->debug = true;
 				}
                 if(param == "-game")
                 {
@@ -54,7 +54,8 @@ namespace ShadowEngine {
             // handle error
         }
 
-        //spdlog::set_level(spdlog::level::debug);
+        if(this->debug)
+            spdlog::set_level(spdlog::level::debug);
 	}
 
 	ShadowApplication::~ShadowApplication()
@@ -63,51 +64,23 @@ namespace ShadowEngine {
 
 	void ShadowApplication::Init()
 	{
-        moduleManager.AddDescriptors({
-                                             .id="module:/renderer/vulkan",
-                                             .name = "Vulkan",
-                                             .class_name = "VulkanModule",
-                                             .assembly="shadow-engine",
-                                             .dependencies={"module:/platform/sdl2"},
-                                     });
-
-        moduleManager.AddDescriptors({
-            .id="module:/core",
-            .name = "Core",
-                                             .class_name = "",
-            .assembly="shadow-engine",
-            });
-
-        moduleManager.AddDescriptors({
-                                             .id="module:/platform/sdl2",
-                                             .name = "SDL2",
-                                             .class_name = "SDL2Module",
-                                             .assembly="shadow-engine",
-                                             .dependencies={"module:/core"},
-                                     });
+        moduleManager.AddAssembly({.id="assembly:/core", .path="shadow-engine"});
+        moduleManager.LoadModulesFromAssembly("assembly:/core");
 
 
+        if(!game.empty()){
+            spdlog::info("Loading Game: {0}", game);
+            moduleManager.AddAssembly({.id="assembly:/"+game, .path=game});
+            moduleManager.LoadModulesFromAssembly("assembly:/"+game);
+        }
 
-        moduleManager.AddDescriptors({
-                                             .id="module:/debug",
-                                             .name = "DebugModule",
-                                             .class_name = "DebugModule",
-                                             .assembly="shadow-engine",
-                                     });
-
-        //moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
         //auto renderer = std::make_shared<VulkanModule>();
         //renderer->EnableEditor();
         //moduleManager.PushModule(renderer, "renderer");
 
-        //moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
-
         //loadGame();
 
-
-
         moduleManager.Init();
-
 
         renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
 
@@ -120,19 +93,19 @@ namespace ShadowEngine {
 		while (running)
 		{
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                //moduleManager.Event(&event);
+                moduleManager.Event(&event);
                 if (event.type == SDL_QUIT)
                     running = false;
             }
 
-            //moduleManager.PreRender();
+            moduleManager.PreRender();
 
-            if(renderer.expired()){
+            if(!renderer.expired()){
                 auto r = renderer.lock();
                 r->BeginRenderPass(renderCommands);
             }
 
-            //moduleManager.AfterFrameEnd();
+            moduleManager.AfterFrameEnd();
 
             renderCommands->nextFrame();
             Time::UpdateTime();

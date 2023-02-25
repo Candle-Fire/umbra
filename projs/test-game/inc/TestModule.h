@@ -21,8 +21,8 @@ public:
     }
 
     void Init() override {
-        auto self = ShadowEngine::ModuleManager::instance->GetModule<TestModule>();
-        ShadowEngine::ModuleManager::instance->RemoveModule(self);
+        //auto self = ShadowEngine::ModuleManager::instance->GetModule<TestModule>();
+        //ShadowEngine::ModuleManager::instance->RemoveModule(self);
 
         spdlog::info("{0} Init", this->GetName());
     }

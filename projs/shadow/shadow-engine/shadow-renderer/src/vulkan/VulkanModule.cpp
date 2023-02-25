@@ -86,7 +86,7 @@ void VulkanModule::PreInit() {
 
     auto shApp = ShadowEngine::ShadowApplication::Get();
 
-    ModuleManager& moduleManager = shApp.GetModuleManager();
+    ShadowEngine::ModuleManager& moduleManager = shApp.GetModuleManager();
 
     auto sdl2module = moduleManager.GetById<ShadowEngine::SDL2Module>("module:/platform/sdl2").lock();
 
@@ -177,7 +177,7 @@ void VulkanModule::Init() {
 }
 
 void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& commands) {
-    const auto update = !editorEnabled ? [](const int frame) { ShadowEngine::ModuleManager::instance->Update(frame); } : [](const int frame) {};
+    const auto update = !editorEnabled ? [](const int frame) { ShadowEngine::ShadowApplication::Get().GetModuleManager().Update(frame); } : [](const int frame) {};
 
     const auto res = commands->execute(commands->getFrame(), swapchain->swapChain, update,
             [this](const VkCommandBuffer& buffer, int frame) {
@@ -186,8 +186,8 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& c
                         [&](const VkCommandBuffer &commands) {
                             if (!editorEnabled) {
                                 renderingGeometry = true;
-                                ShadowEngine::ModuleManager::instance->Render(const_cast<VkCommandBuffer &>(commands), frame);
-                                ShadowEngine::ModuleManager::instance->LateRender(const_cast<VkCommandBuffer &>(commands), frame);
+                                ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(const_cast<VkCommandBuffer &>(commands), frame);
+                                ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(const_cast<VkCommandBuffer &>(commands), frame);
                                 renderingGeometry = false;
                             }
                         },
@@ -204,7 +204,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& c
                                 }
                                 ImGui::End();
                             }
-                            ShadowEngine::ModuleManager::instance->OverlayRender();
+                            ShadowEngine::ShadowApplication::Get().GetModuleManager().OverlayRender();
 
                             ImGui::Render();
                             ImGuiIO &io = ImGui::GetIO();
@@ -223,18 +223,18 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& c
     );
 
     if (res.has_value())
-        ShadowEngine::ModuleManager::getInstance()->Recreate();
+        ShadowEngine::ShadowApplication::Get().GetModuleManager().Recreate();
 }
 
 void VulkanModule::PreRender() {
     if (editorEnabled) {
-        editorRenderCommands->executeSimple(editorRenderCommands->getFrame(), [](const int frame) { ShadowEngine::ModuleManager::instance->Update(frame); },
+        editorRenderCommands->executeSimple(editorRenderCommands->getFrame(), [](const int frame) { ShadowEngine::ShadowApplication::Get().GetModuleManager().Update(frame); },
                    [&](const VkCommandBuffer& buffer, int frame) {
                        renderPass->getPass()->execute(buffer, frame, {
                            [&](const VkCommandBuffer& commands) {
                                renderingGeometry = true;
-                               ShadowEngine::ModuleManager::instance->Render(const_cast<VkCommandBuffer &>(commands), frame);
-                               ShadowEngine::ModuleManager::instance->LateRender(const_cast<VkCommandBuffer &>(commands), frame);
+                               ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(const_cast<VkCommandBuffer &>(commands), frame);
+                               ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(const_cast<VkCommandBuffer &>(commands), frame);
                                renderingGeometry = false;
                            }
                        });

@@ -2,7 +2,7 @@
 #include "spdlog/spdlog.h"
 
 #include <stdexcept>
-
+/*
 ShadowEngine::ModuleManager* ShadowEngine::ModuleManager::instance = nullptr;
 
 ShadowEngine::ModuleManager::ModuleManager()
@@ -187,3 +187,4 @@ void ShadowEngine::ModuleManager::SortDeps() {
 
 }
 
+*/

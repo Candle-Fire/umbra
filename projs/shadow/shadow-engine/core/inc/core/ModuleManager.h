@@ -3,7 +3,7 @@
 #include <memory>
 #include <list>
 #include "Module.h"
-
+/*
 namespace ShadowEngine {
 
     struct ModuleHolder{
@@ -81,3 +81,4 @@ namespace ShadowEngine {
     };
 }
 
+*/
