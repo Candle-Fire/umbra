@@ -88,7 +88,7 @@ void VulkanModule::PreInit() {
 
     ShadowEngine::ModuleManager& moduleManager = shApp.GetModuleManager();
 
-    auto sdl2module = moduleManager.GetById<ShadowEngine::SDL2Module>("module:/platform/sdl2").lock();
+    auto sdl2module = moduleManager.getById<ShadowEngine::SDL2Module>("module:/platform/sdl2").lock();
 
     CATCH(initVulkan(sdl2module->_window->sdlWindowPtr);)
 

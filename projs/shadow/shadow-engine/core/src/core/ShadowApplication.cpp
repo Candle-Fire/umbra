@@ -82,7 +82,7 @@ namespace ShadowEngine {
 
         moduleManager.Init();
 
-        renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
+        renderer = moduleManager.getById<VulkanModule>("module:/renderer/vulkan");
 
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 	}

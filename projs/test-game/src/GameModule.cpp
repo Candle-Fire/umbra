@@ -39,7 +39,8 @@ void GameModule::Init() {
     trans_constant_ = std::make_unique<vlkx::PushConstant>(
             sizeof(Transformation), 2);
 
-    auto rendererPtr = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::RendererModule>("module:/renderer/vulkan");
+    auto rendererPtr = ShadowEngine::ShadowApplication::Get().GetModuleManager().getById<ShadowEngine::RendererModule>(
+            "module:/renderer/vulkan");
     if(rendererPtr.expired()){
         return;
     }

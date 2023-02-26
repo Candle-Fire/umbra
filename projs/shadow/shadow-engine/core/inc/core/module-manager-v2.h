@@ -66,14 +66,14 @@ namespace ShadowEngine {
 
         void AddDescriptors(ModuleDescriptor descriptor) { modules.push_back({descriptor = descriptor}); }
 
-        void AddAssembly(Assembly assembly) { this->loadedAssemblies.push_back(assembly); }
+        void AddAssembly(const Assembly& assembly) { this->loadedAssemblies.push_back(assembly); }
 
         void LoadModulesFromAssembly(const std::string &id);
 
         void Init();
 
         template<class T>
-        std::weak_ptr<T> GetById(const std::string &id) {
+        std::weak_ptr<T> getById(const std::string &id) {
             for (const auto &i: this->modules) {
                 if (i.enabled && i.descriptor.id == id) {
                     return std::dynamic_pointer_cast<T>(i.module);
@@ -83,6 +83,24 @@ namespace ShadowEngine {
         }
 
         const std::vector<ModuleHolder>& getModules(){ return this->modules; }
+
+        bool isModuleActive(const ID& id){
+            auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
+            return m != this->modules.end() && m->enabled;
+        }
+
+        void if_moduleActive(const ID& id, const std::function<void()>& callback){
+            if(isModuleActive(id))
+                callback();
+        }
+
+        template<class T>
+        void if_moduleActive(const ID& id, const std::function<void(T&)>& callback){
+            if(isModuleActive(id)) {
+                auto m = getById<T>(id);
+                callback(m);
+            }
+        }
 
         // Event functions
 
