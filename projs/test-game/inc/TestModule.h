@@ -1,7 +1,8 @@
 #pragma once
 
 #include "core/Module.h"
-#include "core/ModuleManager.h"
+#include "core/module-manager-v2.h"
+#include "core/ShadowApplication.h"
 #include "spdlog/spdlog.h"
 
 class TestModule : public ShadowEngine::Module {
@@ -22,7 +23,7 @@ public:
 
     void Init() override {
         //auto self = ShadowEngine::ModuleManager::instance->GetModule<TestModule>();
-        //ShadowEngine::ModuleManager::instance->RemoveModule(self);
+        ShadowEngine::ShadowApplication::Get().GetModuleManager().deactivateModule(this);
 
         spdlog::info("{0} Init", this->GetName());
     }

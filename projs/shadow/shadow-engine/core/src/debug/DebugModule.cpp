@@ -25,7 +25,10 @@ void ShadowEngine::Debug::DebugModule::OverlayRender() {
 
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:");
         for (auto &module: m.getModules()) {
-            ImGui::Text("%s", module.descriptor.name.c_str());
+            if(module.enabled)
+                ImGui::Text("%s", module.descriptor.name.c_str());
+            else
+                ImGui::TextDisabled("%s", module.descriptor.name.c_str());
         }
 
     }

@@ -45,6 +45,8 @@ namespace ShadowEngine {
 
         std::vector<ModuleHolder> modules;
 
+        bool finalized = false;
+
         void LoadAssembly(const std::string &id);
 
         Assembly &GetAssembly(const ID &id) {
@@ -71,6 +73,17 @@ namespace ShadowEngine {
         void LoadModulesFromAssembly(const std::string &id);
 
         void Init();
+
+        void deactivateModule(Module* module_ptr, bool force = false){
+            if(!this->finalized || force){
+                auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder& item){
+                    return item.module.get() == module_ptr;
+                });
+                if(m != this->modules.end()){
+                    m->enabled = false;
+                }
+            }
+        }
 
         template<class T>
         std::weak_ptr<T> getById(const std::string &id) {

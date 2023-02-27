@@ -73,6 +73,8 @@ namespace ShadowEngine {
         }
 
         //Sort
+
+        this->finalized = true;
     }
 
     void ModuleManager::LoadAssembly(const std::string &id) {
@@ -133,7 +135,7 @@ namespace ShadowEngine {
         const std::string &symbolName = "assembly_entry";
 
         if (!assembly.lib->has_symbol(symbolName)) {
-            spdlog::error("❌ Could not find the entry for assembly \"{0}\"", id);
+            spdlog::error("❌ Could not find the entry for assembly \"{0}\"({1})", id, assembly.path.c_str());
             return;
         }
         try {
