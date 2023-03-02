@@ -41,7 +41,7 @@ namespace ShadowEngine {
         //Load
         for (auto &i: this->modules) {
             spdlog::info("Loading {0}", i.descriptor.id);
-            if (std::any_of(ITERATE(this->loadedAssemblies), [i](Assembly a) {
+            if (std::any_of(ITERATE(this->assemblies), [i](Assembly a) {
                 return a.id == i.descriptor.assembly && a.lib != nullptr;
             })) {
                 spdlog::debug("✅ Assembly \"{0}\" is already loaded", i.descriptor.assembly);
@@ -78,10 +78,10 @@ namespace ShadowEngine {
     }
 
     void ModuleManager::LoadAssembly(const std::string &id) {
-        auto assembly = std::find_if(ITERATE(this->loadedAssemblies), [&](const auto &item) {
+        auto assembly = std::find_if(ITERATE(this->assemblies), [&](const auto &item) {
             return item.id == id;
         });
-        if (assembly == this->loadedAssemblies.end()) {
+        if (assembly == this->assemblies.end()) {
             spdlog::error("No such assembly: {0}", id);
             return;
         }

@@ -41,7 +41,7 @@ namespace ShadowEngine {
 
     class ModuleManager {
 
-        std::vector<Assembly> loadedAssemblies;
+        std::vector<Assembly> assemblies;
 
         std::vector<ModuleHolder> modules;
 
@@ -50,7 +50,7 @@ namespace ShadowEngine {
         void LoadAssembly(const std::string &id);
 
         Assembly &GetAssembly(const ID &id) {
-            return *std::find_if(ITERATE(this->loadedAssemblies), [id](const Assembly &a) { return a.id == id; });
+            return *std::find_if(ITERATE(this->assemblies), [id](const Assembly &a) { return a.id == id; });
         }
 
         void LoadModule(ModuleHolder &holder);
@@ -68,7 +68,7 @@ namespace ShadowEngine {
 
         void AddDescriptors(ModuleDescriptor descriptor) { modules.push_back({descriptor = descriptor}); }
 
-        void AddAssembly(const Assembly& assembly) { this->loadedAssemblies.push_back(assembly); }
+        void AddAssembly(const Assembly& assembly) { this->assemblies.push_back(assembly); }
 
         void LoadModulesFromAssembly(const std::string &id);
 
