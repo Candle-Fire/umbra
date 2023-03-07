@@ -37,7 +37,7 @@ namespace ShadowEngine {
 		 * \brief Gets the top level type ID
 		 * \return UID of the class
 		 */
-		virtual const uint64_t GetTypeId() const = 0;
+		virtual uint64_t GetTypeId() const = 0;
 
 		virtual ~SHObject() = default;
 	};
@@ -52,7 +52,7 @@ public: \
 	static const std::string& Type();				 \
 	static uint64_t TypeId();						 \
 	const std::string& GetType() const override		{ return Type();  } \
-	const uint64_t GetTypeId() const override		{ return  type::TypeId(); } \
+	uint64_t GetTypeId() const override		{ return  type::TypeId(); } \
 private:
 
 #define SHObject_Base_Impl(type)	\
