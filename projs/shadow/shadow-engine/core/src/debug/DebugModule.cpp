@@ -1,13 +1,12 @@
 #include "debug/DebugModule.h"
 #include "imgui.h"
 #include "core/Time.h"
-#include "core/ModuleManager.h"
 #include "core/module-manager-v2.h"
 #include "core/ShadowApplication.h"
 
 SHObject_Base_Impl(ShadowEngine::Debug::DebugModule)
 
-ModuleEntry(ShadowEngine::Debug::DebugModule, DebugModule)
+MODULE_ENTRY(ShadowEngine::Debug::DebugModule, DebugModule)
 
 void ShadowEngine::Debug::DebugModule::OverlayRender() {
 
@@ -24,7 +23,7 @@ void ShadowEngine::Debug::DebugModule::OverlayRender() {
         ShadowEngine::ModuleManager &m = ShadowEngine::ShadowApplication::Get().GetModuleManager();
 
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:");
-        for (auto &module: m.getModules()) {
+        for (auto &module: m.GetModules()) {
             if(module.enabled)
                 ImGui::Text("%s", module.descriptor.name.c_str());
             else

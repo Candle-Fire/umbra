@@ -11,7 +11,7 @@ namespace ShadowEngine {
         SHObject_Base(SDL2Module)
 
     public:
-        ShadowEngine::ShadowWindow* _window;
+        ShadowEngine::ShadowWindow* window;
 
     private:
     public:

@@ -5,4 +5,4 @@
 
 SHObject_Base_Impl(TestModule)
 
-ModuleEntry(TestModule, TestModule)
+MODULE_ENTRY(TestModule, TestModule)

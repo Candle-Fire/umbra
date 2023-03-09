@@ -18,7 +18,7 @@ FILE(GLOB_RECURSE HEADERS
         shadow-utility/inc/*.h
         )
 
-add_library(shadow-engine SHARED ${SOURCES} ${HEADERS} $<TARGET_OBJECTS:imgui>)
+add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
 
 target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}

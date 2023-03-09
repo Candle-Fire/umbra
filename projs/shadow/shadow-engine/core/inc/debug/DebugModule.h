@@ -15,10 +15,6 @@ namespace ShadowEngine::Debug {
     public:
         DebugModule() : Module("module:/debug/debugger") {}
 
-        std::vector<std::string> GetDependencies() override {
-            return {"module:/test-game/TestModule"};
-        }
-
         void Render(VkCommandBuffer& commands, int frame) override {};
 
         void PreInit() override {  };

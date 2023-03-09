@@ -1,3 +1,5 @@
+#pragma execution_character_set("utf-8")
+
 #include "core/module-manager-v2.h"
 
 namespace ShadowEngine {
@@ -11,9 +13,9 @@ namespace ShadowEngine {
             return;
         }
         try {
-            auto moduleInit = assembly.lib->get_function<std::shared_ptr<ShadowEngine::Module>()>(symbolName);
+            auto module_init = assembly.lib->get_function<std::shared_ptr<ShadowEngine::Module>()>(symbolName);
 
-            holder.module = moduleInit();
+            holder.module = module_init();
         }
         catch (std::exception &e) {
             spdlog::error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id,
@@ -65,7 +67,7 @@ namespace ShadowEngine {
             }
         }
 
-        spdlog::info("Running PreInit");
+        spdlog::info("Running Init");
         for (auto &holder: this->modules) {
             if (holder.enabled) {
                 holder.module->Init();
@@ -100,19 +102,19 @@ namespace ShadowEngine {
         assembly->lib = dllptr;
     }
 
-    void ModuleManager::dfs(const ModuleHolder &moduleHolder, std::vector<ModuleHolder> &sorted) {
-        for (auto u: moduleHolder.descriptor.dependencies) {
-            if (!std::any_of(ITERATE(sorted), ModulePredicate(u)) && u != moduleHolder.descriptor.id) {
+    void ModuleManager::Dfs(const ModuleHolder &module_holder, std::vector<ModuleHolder> &sorted) {
+        for (auto u: module_holder.descriptor.dependencies) {
+            if (!std::any_of(ITERATE(sorted), ModulePredicate(u)) && u != module_holder.descriptor.id) {
                 auto it = std::find_if(ITERATE(this->modules), ModulePredicate(u));
 
                 if (it != modules.end())
-                    dfs(*it, sorted);
+                    Dfs(*it, sorted);
                 else
-                    spdlog::info("Module {0} is missing, required by {1}", u, moduleHolder.descriptor.id);
+                    spdlog::info("Module {0} is missing, required by {1}", u, module_holder.descriptor.id);
 
             }
         }
-        sorted.push_back(moduleHolder);
+        sorted.push_back(module_holder);
     }
 
     void ModuleManager::SortModules() {
@@ -121,7 +123,7 @@ namespace ShadowEngine {
 
         for (auto i: this->modules) {
             if (!std::any_of(ITERATE(sorted), ModulePredicate(i.descriptor.id)))
-                dfs(i, sorted);
+                Dfs(i, sorted);
         }
 
         this->modules = sorted;
@@ -139,9 +141,9 @@ namespace ShadowEngine {
             return;
         }
         try {
-            auto moduleInit = assembly.lib->get_function<void(ModuleManager &)>(symbolName);
+            auto module_init = assembly.lib->get_function<void(ModuleManager &)>(symbolName);
 
-            moduleInit(*this);
+            module_init(*this);
         }
         catch (std::exception &e) {
             spdlog::error("❌ Error while running the entry for assembly \"{0}\" Error: {1}", id, e.what());
