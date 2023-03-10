@@ -58,8 +58,8 @@ jobs:
     - name: Make output folder
       run: mkdir ./test-results
 
-    - name: Test shadow-file-format
-      run: ./bazel-bin/projs/shadow-file-format/test.exe -r junit -o ./test-results/shadow-file-format-test.xml
+    - name: Test shadow-assets
+      run: ./bazel-bin/projs/shadow-assets/test.exe -r junit -o ./test-results/shadow-assets-test.xml
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1

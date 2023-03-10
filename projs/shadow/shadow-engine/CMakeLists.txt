@@ -5,6 +5,8 @@ find_package(imgui REQUIRED)
 set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+add_subdirectory(shadow-assets)
+
 FILE(GLOB_RECURSE SOURCES
         core/src/**/*.cpp
         shadow-assets/src/*.cpp
