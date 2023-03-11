@@ -131,8 +131,14 @@ namespace ShadowEngine {
         ///
         void LoadModulesFromAssembly(const std::string &id);
 
+        /// @brief Runs the module startup
+        /// 
+        /// This runs the module sorting and loads assemblies for them. PreInit and Init is run by it
         void Init();
 
+        /// @brief Deactivaes the module
+        ///
+        /// @param force [BEWARE DRAGONS] This forces the deactivation even if the module stack has been finalized
         void DeactivateModule(Module* module_ptr, bool force = false){
             if(!this->finalized || force){
                 auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder& item){
@@ -144,6 +150,9 @@ namespace ShadowEngine {
             }
         }
 
+        /// @brief Returns a module by it's logical ID and casts it to T
+        /// 
+        /// @param id The module id to find
         template<class T>
         std::weak_ptr<T> GetById(const std::string &id) {
             for (const auto &i: this->modules) {
@@ -154,18 +163,23 @@ namespace ShadowEngine {
             throw std::exception(); //TODO
         }
 
+        /// @brief Retruns the full list of known modules
         const std::vector<ModuleHolder>& GetModules(){ return this->modules; }
 
+        /// @brief Returns if the module is active
+        /// @param id The id of the module to check
         bool IsModuleActive(const ID& id){
             auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
             return m != this->modules.end() && m->enabled;
         }
 
+        /// @brief Runs the calback function if the given module is active
         void IfModuleActive(const ID& id, const std::function<void()>& callback){
             if(IsModuleActive(id))
                 callback();
         }
 
+        /// @brief Runs the calback function if the given module is active
         template<class T>
         void IfModuleActive(const ID& id, const std::function<void(T&)>& callback){
             if(IsModuleActive(id)) {

@@ -7,9 +7,7 @@
 
 namespace ShadowEngine {
 
-/// <summary>
-/// ShadowModules are the base of the engine. They add core abilities.
-/// </summary>
+/// @brief ShadowModules are the base of the engine. They add core abilities.
 class Module : public SHObject {
   SHObject_Base(Module)
 
@@ -24,19 +22,13 @@ class Module : public SHObject {
         return this->id;
     }
 
-    /// <summary>
-    /// Pre Init is called when the module is added to the engine
-    /// </summary>
+    /// @brief Pre Init is called when the module is added to the engine
     virtual void PreInit() = 0;
 
-    /// <summary>
-    /// Init is called after all the modules are added
-    /// </summary>
+    /// @brief Init is called after all the modules are added
     virtual void Init() = 0;
 
-    /// <summary>
-    /// update is called each frame
-    /// </summary>
+    /// @brief update is called each frame
     virtual void Update(int frame) = 0;
 
     virtual void Recreate() = 0;
