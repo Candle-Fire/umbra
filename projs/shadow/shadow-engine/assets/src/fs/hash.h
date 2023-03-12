@@ -59,14 +59,14 @@ namespace ShadowEngine {
     struct StableHash {
         static StableHash fromLong(size_t data);
         StableHash() = default;
-        StableHash(std::string& str);
+        explicit StableHash(std::string& str);
         StableHash(const void* data, uint32_t length);
 
-        bool operator!= (StableHash& other) const { return hash != other.hash; }
-        bool operator== (StableHash& other) const { return hash == other.hash; }
-        bool operator< (StableHash& other) const { return hash < other.hash; }
+        bool operator!= (const StableHash& other) const { return hash != other.hash; }
+        bool operator== (const StableHash& other) const { return hash == other.hash; }
+        bool operator< (const StableHash& other) const { return hash < other.hash; }
 
-        size_t getHash() const { return hash; }
+        [[nodiscard]] size_t getHash() const { return hash; }
 
     private:
         size_t hash = 0;

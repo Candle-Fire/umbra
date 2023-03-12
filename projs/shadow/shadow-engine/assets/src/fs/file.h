@@ -1,6 +1,10 @@
 #pragma once
 #include <fs/iostream.h>
+#include <fs/path.h>
+#include <management/delegate.h>
 #include <memory>
+
+template <class T> struct Delegate;
 
 namespace ShadowEngine {
 
@@ -48,7 +52,6 @@ namespace ShadowEngine {
         std::string filename;
     };
 
-    template <class T> struct Delegate;
 
     /**
      * A generic Filesystem API.
@@ -68,9 +71,9 @@ namespace ShadowEngine {
         };
 
         // Create a Filesystem that interacts with files on disk.
-        static std::unique_ptr<FileSystem>& createDiskFS(std::string& basePath);
+        static std::unique_ptr<FileSystem> createDiskFS(std::string& basePath);
         // Create a Virtual Filesystem based on the given path.
-        static std::unique_ptr<FileSystem>& createVFS(std::string& basePath);
+        static std::unique_ptr<FileSystem> createVFS(std::string& basePath);
 
         virtual ~FileSystem() {}
 
@@ -90,7 +93,7 @@ namespace ShadowEngine {
         virtual bool deleteFile(std::string& path) = 0;
 
         // Get the path that this FileSystem originates at. The default is "/" for VFS, and whatever the Executable Path is for Disk FS.
-        virtual std::string& getBasePath() = 0;
+        virtual std::string const& getBasePath() const = 0;
         // Set a new base path for the FileSystem. Any operations involving file paths will be relative to this new path.
         virtual void setBasePath(std::string& path) = 0;
 
@@ -100,9 +103,9 @@ namespace ShadowEngine {
         virtual bool hasWork() = 0;
 
         // Write new content to a file synchronously. The thread will be blocked when doing this.
-        virtual bool saveSync(const struct Path& file, const uint8_t* content) = 0;
+        virtual bool saveSync(const Path& file, const uint8_t* content, const size_t size) = 0;
         // Read content from a file synchronously. The thread will be blocked when doing this.
-        virtual bool readSync(const struct Path& file, struct OutputMemoryStream& content) = 0;
+        virtual bool readSync(const Path& file, struct OutputMemoryStream& content) = 0;
 
         // Read a file asynchronously. The given callback will be called with the file content once it is available.
         virtual AsyncHandle readAsync(const Path& file, const ContentCallback& callback) = 0;

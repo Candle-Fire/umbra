@@ -47,7 +47,7 @@ namespace ShadowEngine {
         Path();
         explicit Path(const std::string& str);
 
-        void operator=(const std::string& rhs);
+        Path& operator=(const std::string& rhs);
         bool operator==(const std::string& rhs);
         bool operator==(const Path& rhs);
         bool operator!=(const Path& rhs);
@@ -55,10 +55,11 @@ namespace ShadowEngine {
         // Use this to set a new value into the path; it handles the hash too.
         void set(const std::string& path);
 
-        uint32_t length() const { return path.length(); };
-        PathHash getHash() { return hash; }
-        const char* c_str() const { return path.data(); }
-        bool isEmpty() const { return path.length() == 0; }
+        [[nodiscard]] uint32_t length() const { return path.length(); };
+        [[nodiscard]] PathHash getHash() const { return hash; }
+        [[nodiscard]] const char* c_str() const { return path.data(); }
+        [[nodiscard]] std::string const& get() const { return path; }
+        [[nodiscard]] bool isEmpty() const { return path.length() == 0; }
     private:
         std::string path;
         PathHash hash;
