@@ -20,8 +20,9 @@ namespace ShadowEngine {
         path = str;
     }
 
-    void Path::operator=(const std::string &rhs) {
+    Path& Path::operator=(const std::string &rhs) {
         set(rhs);
+        return *this;
     }
 
     bool Path::operator==(const std::string &rhs) {

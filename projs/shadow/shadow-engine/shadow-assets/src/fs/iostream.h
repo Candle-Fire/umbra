@@ -34,13 +34,14 @@ namespace ShadowEngine {
     // A custom OutputStream that writes to memory.
     struct OutputMemoryStream final : OutputStream {
 
+        OutputMemoryStream();
         OutputMemoryStream(void* data, size_t size);
         OutputMemoryStream(OutputMemoryStream&& str) noexcept;
         OutputMemoryStream(const OutputMemoryStream& rhs) noexcept;
         ~OutputMemoryStream();
 
-        void operator= (const OutputMemoryStream& rhs) noexcept;
-        void operator= (OutputMemoryStream&& rhs) noexcept;
+        OutputMemoryStream& operator= (const OutputMemoryStream& rhs) noexcept;
+        OutputMemoryStream& operator= (OutputMemoryStream&& rhs) noexcept;
 
         uint8_t operator[] (size_t index) const;
         uint8_t& operator[] (size_t index);
@@ -79,6 +80,7 @@ namespace ShadowEngine {
         write(&v, sizeof(v));
     }
 
+    // A custom InputStream that writes from memory.
     struct InputMemoryStream final : InputStream {
         InputMemoryStream(const void* data, size_t size);
         explicit InputMemoryStream(const OutputMemoryStream& blob);
