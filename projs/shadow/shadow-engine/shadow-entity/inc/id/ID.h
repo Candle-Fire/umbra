@@ -18,12 +18,13 @@ namespace SE {
         explicit IDContainer(uint64_t v) : id(v) {}
 
         // Check if the ID is valid (non-zero)
-        __inline bool Valid() const { return id != 0; }
+        __inline virtual bool Valid() const { return id != 0; }
         // Set this ID to be invalid (zero).
-        __inline void Invalidate() { id = 0; }
+        __inline virtual void Invalidate() { id = 0; }
         // Check for in/equality against another ID.
-        __inline bool operator==(IDContainer const& other) const { return id == other.id; }
-        __inline bool operator!=(IDContainer const& other) const { return id != other.id; }
+        __inline virtual bool operator==(IDContainer const& other) const { return id == other.id; }
+        __inline virtual bool operator!=(IDContainer const& other) const { return id != other.id; }
+        __inline virtual bool operator<(IDContainer const& other) const { return id < other.id; }
 
         uint64_t id;
     };
