@@ -1,9 +1,4 @@
-//
-// Created by dpete on 31/08/2022.
-//
-
-#ifndef UMBRA_DEBUGMODULE_H
-#define UMBRA_DEBUGMODULE_H
+#pragma once
 
 #include "SDL_events.h"
 #include "core/Module.h"
@@ -18,6 +13,8 @@ namespace ShadowEngine::Debug {
         bool active;
 
     public:
+        DebugModule() : Module("module:/debug/debugger") {}
+
         void Render(VkCommandBuffer& commands, int frame) override {};
 
         void PreInit() override {  };
@@ -42,5 +39,3 @@ namespace ShadowEngine::Debug {
     };
 
 }
-
-#endif //UMBRA_DEBUGMODULE_H

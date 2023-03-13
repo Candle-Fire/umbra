@@ -34,7 +34,9 @@ target_include_directories(shadow-engine
 
 target_link_libraries(shadow-engine
         PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui
+        PRIVATE -static-libgcc -static-libstdc++
 )
+
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)

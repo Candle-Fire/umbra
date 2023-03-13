@@ -1,9 +1,4 @@
-//
-// Created by dpete on 30/08/2022.
-//
-
-#ifndef UMBRA_SDL2MODULE_H
-#define UMBRA_SDL2MODULE_H
+#pragma once
 
 #include "Module.h"
 #include "ShadowWindow.h"
@@ -16,9 +11,14 @@ namespace ShadowEngine {
         SHObject_Base(SDL2Module)
 
     public:
-        ShadowEngine::ShadowWindow* _window;
+        ShadowEngine::ShadowWindow* window;
 
     private:
+    public:
+        SDL2Module() : Module("module:/platform/sdl2") {}
+
+    private:
+
         void Init() override;
 
         void PreInit() override;
@@ -45,5 +45,3 @@ namespace ShadowEngine {
     };
 
 }
-
-#endif //UMBRA_SDL2MODULE_H

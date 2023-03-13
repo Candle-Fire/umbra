@@ -2,13 +2,11 @@
 
 #include "core/ShadowApplication.h"
 #include "core/Time.h"
-#include "core/SDL2Module.h"
-#include "debug/DebugModule.h"
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
+#include "vlkx/vulkan/VulkanModule.h"
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
-#include <vlkx/vulkan/VulkanModule.h>
 #include <spdlog/spdlog.h>
 
 #define CATCH(x) \
@@ -16,97 +14,97 @@
 
 namespace ShadowEngine {
 
-    dylib* gameLib;
+dylib *gameLib;
 
-	ShadowApplication* ShadowApplication::instance = nullptr;
+ShadowApplication *ShadowApplication::instance = nullptr;
 
-    std::unique_ptr<vlkx::RenderCommand> renderCommands;
+std::unique_ptr<vlkx::RenderCommand> renderCommands;
 
-    ShadowApplication::ShadowApplication(int argc, char* argv[])
-	{
-		instance = this;
+std::weak_ptr<VulkanModule> renderer;
 
-		if(argc > 1)
-		{
-			for (size_t i = 0; i < argc; i++)
-			{
-				std::string param(argv[i]);
-				if(param == "-no-gui")
-				{
-					this->no_gui = true;
-				}
-                if(param == "-game")
-                {
-                    this->game = argv[i+1];
-                }
-			}
-		}
-	}
+ShadowApplication::ShadowApplication(int argc, char *argv[]) {
+    instance = this;
 
-	ShadowApplication::~ShadowApplication()
-	{
-	}
-
-    void ShadowApplication::loadGame(){
-        if(game.empty())
-            return;
-
-        void (*gameInti)(ShadowApplication*);
-
-        try {
-            gameLib = new dylib("./", game);
-
-            gameInti = gameLib->get_function<void(ShadowApplication*)>("shadow_main");
-
-            gameInti(this);
+    if (argc > 1) {
+        for (size_t i = 0; i < argc; i++) {
+            std::string param(argv[i]);
+            if (param == "-debug") {
+                this->debug = true;
+            }
+            if (param == "-game") {
+                this->game = argv[i + 1];
+            }
         }
-        catch (std::exception& e) {
-            spdlog::error(e.what());
-            exit(1);
-        }
-
+    }
+    SetConsoleOutputCP(CP_UTF8);
+    CONSOLE_FONT_INFOEX cfi;
+    cfi.cbSize = sizeof cfi;
+    cfi.nFont = 0;
+    cfi.dwFontSize.X = 0;
+    cfi.dwFontSize.Y = 14;
+    cfi.FontFamily = FF_DONTCARE;
+    cfi.FontWeight = FW_NORMAL;
+    wcscpy_s(cfi.FaceName, LF_FACESIZE, L"Lucida Console");
+    if (SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi) == 0) {
+        // handle error
     }
 
-	void ShadowApplication::Init()
-	{
-        moduleManager.PushModule(std::make_shared<SDL2Module>(),"core");
-        auto renderer = std::make_shared<VulkanModule>();
-        renderer->EnableEditor();
-        moduleManager.PushModule(renderer, "renderer");
+    if (this->debug)
+        spdlog::set_level(spdlog::level::debug);
+}
 
-        loadGame();
+ShadowApplication::~ShadowApplication() {
+}
 
-        moduleManager.PushModule(std::make_shared<Debug::DebugModule>(), "core");
+void ShadowApplication::Init() {
+    moduleManager.AddAssembly({.id="assembly:/core", .path="shadow-engine"});
+    moduleManager.LoadModulesFromAssembly("assembly:/core");
 
-        moduleManager.Init();
-        renderCommands = std::make_unique<vlkx::RenderCommand>(2);
-	}
+    if (!game.empty()) {
+        spdlog::info("Loading Game: {0}", game);
+        moduleManager.AddAssembly({.id="assembly:/" + game, .path=game});
+        moduleManager.LoadModulesFromAssembly("assembly:/" + game);
+    }
 
-	void ShadowApplication::Start()
-	{
-        SDL_Event event;
-		while (running)
-		{
-            while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                moduleManager.Event(&event);
-                if (event.type == SDL_QUIT)
-                    running = false;
-            }
+    //auto renderer = std::make_shared<VulkanModule>();
+    //renderer->EnableEditor();
+    //moduleManager.PushModule(renderer, "renderer");
 
-            moduleManager.PreRender();
+    //loadGame();
 
-            moduleManager.renderer->BeginRenderPass(renderCommands);
+    moduleManager.Init();
 
-            moduleManager.AfterFrameEnd();
+    renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
 
-            renderCommands->nextFrame();
-            Time::UpdateTime();
-		}
+    renderCommands = std::make_unique<vlkx::RenderCommand>(2);
+}
 
-        moduleManager.Destroy();
+void ShadowApplication::Start() {
+    SDL_Event event;
+    while (running) {
+        while (SDL_PollEvent(&event)) {  // poll until all events are handled!
+            moduleManager.Event(&event);
+            if (event.type == SDL_QUIT)
+                running = false;
+        }
 
-        delete gameLib;
-	}
+        moduleManager.PreRender();
 
-    ShadowApplication& ShadowApplication::Get() { return *instance; };
+        if (!renderer.expired()) {
+            auto r = renderer.lock();
+            r->BeginRenderPass(renderCommands);
+        }
+
+        moduleManager.AfterFrameEnd();
+
+        renderCommands->nextFrame();
+        Time::UpdateTime();
+    }
+
+    //moduleManager.Destroy();
+
+    delete gameLib;
+}
+
+ShadowApplication &ShadowApplication::Get() { return *instance; };
 }
