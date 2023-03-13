@@ -19,8 +19,8 @@ namespace ShadowEngine {
         // Hash arbitrary data.
         HeapHash(const void* data, uint32_t length);
 
-        bool operator!= (HeapHash& other) const { return hash != other.hash; }
-        bool operator== (HeapHash& other) const { return hash == other.hash; }
+        bool operator!= (const HeapHash& other) const { return hash != other.hash; }
+        bool operator== (const HeapHash& other) const { return hash == other.hash; }
 
         size_t getHash() const { return hash; }
     private:
