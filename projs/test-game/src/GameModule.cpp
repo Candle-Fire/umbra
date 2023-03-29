@@ -98,8 +98,8 @@ void GameModule::OverlayRender() {
         ImGui::Text("Such text from curle's branch");
     ImGui::End();
 
-    bool open = false;
-    ImGui::ShowDemoWindow(&open);
+    //bool open = false;
+    //ImGui::ShowDemoWindow(&open);
 }
 
 void GameModule::AfterFrameEnd() {

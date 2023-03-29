@@ -2,54 +2,57 @@
 
 #include <memory>
 #include <vector>
+#include <cassert>
 
 #include "SHObject.h"
 
 namespace ShadowEngine::Entities {
 
-    using Rtm_UUID = int;
+    typedef int RtmUuid;
 
-    constexpr Rtm_UUID INVALID_UID = -1;
+    constexpr RtmUuid INVALID_UID = -1;
 
-/**
- * Runtime pointer to an Entity
- * It tracks the UUID of the linked entity
- * @tparam Type
- */
+    class NodeBase;
+
+    /**
+     * Runtime pointer to an Entity
+     * It tracks the UUID of the linked entity
+     * @tparam Type
+     */
     template<class Type>
     class rtm_ptr {
-    private:
+      private:
         Type *m_ptr;
 
-        Rtm_UUID m_uid;
+        RtmUuid m_uid;
 
-    public:
-        rtm_ptr(Type *ptr) : m_ptr(ptr), m_uid(ptr->m_runtimeUID) {}
+      public:
+        rtm_ptr(Type *ptr) : m_ptr(ptr), m_uid(ptr->m_runtime_uid) {}
 
         rtm_ptr() : m_ptr(nullptr) {}
 
         template<class T>
         explicit rtm_ptr(const rtm_ptr<T> &o) {
-            m_ptr = (Type *) o.getInternalPointer();
-            m_uid = o.getInternalUID();
+            m_ptr = (Type *) o.GetInternalPointer();
+            m_uid = o.GetInternalUid();
         }
 
         Type *operator->() const {
-            if (m_ptr->m_runtimeUID != m_uid) {
-                assert(m_ptr->m_runtimeUID == m_uid);
+            if (m_ptr->m_runtime_uid != m_uid) {
+                assert(m_ptr->m_runtime_uid == m_uid);
                 return nullptr;
             }
             return ((Type *) m_ptr);
         }
 
-        bool isValid() const { return m_ptr != nullptr && m_ptr->m_runtimeUID == m_uid; }
+        bool IsValid() const { return m_ptr != nullptr && m_ptr->m_runtime_uid == m_uid; }
 
-        inline operator bool() const { return this->isValid(); }
+        inline operator bool() const { return this->IsValid(); }
 
         template<class T>
         inline bool operator==(rtm_ptr<T> o) const {
             return m_ptr == o.m_ptr &&
-                   m_uid == o.m_uid;
+                m_uid == o.m_uid;
         }
 
         template<class T>
@@ -57,28 +60,34 @@ namespace ShadowEngine::Entities {
             return rtm_ptr<T>(m_ptr);
         }
 
-        void setNull() {
+        void SetNull() {
             m_ptr = nullptr;
             m_uid = -1;
         }
 
-        void *getInternalPointer() const {
+        void *GetInternalPointer() const {
             return (void *) m_ptr;
         }
 
-        int getInternalUID() const { return m_uid; }
+        NodeBase *GetAsNodeBase() const {
+            return (NodeBase *) m_ptr;
+        }
+
+        Type *Get() const {
+            return m_ptr;
+        }
+
+        int GetInternalUid() const { return m_uid; }
 
     };
 
-
     class Node;
 
-
-/**
- * The base class for all things in the scene graph
- */
-    class NodeBase : SHObject {
-    SHObject_Base(NodeBase)
+    /**
+     * The base class for all things in the scene graph
+     */
+    class NodeBase : public SHObject {
+      SHObject_Base(NodeBase)
 
         /**
          * <summary>
@@ -86,31 +95,46 @@ namespace ShadowEngine::Entities {
          * </summary>
          * This ID will be only assigned to this Entity instance
          * It can be used to look up entities, but it is not recommended as it is a slow process
-         * For Entity Lookup use the m_runtimeIndex
+         * For Entity Lookup use the m_runtime_index
          */
-        Rtm_UUID m_runtimeUID;
+        RtmUuid m_runtime_uid;
 
-        int m_runtimeIndex;
+        /**
+         * @brief The index of this entity in the Entity Look Up Table
+         * This is a fast way to access the entity, but it is not unique
+         * If an Entity is freed up it's index will be given out to another Entity of the same type
+         */
+        int m_runtime_index;
 
-        rtm_ptr<Node> parent;
-
-    protected:
+      protected:
         NodeBase() {};
 
-    public:
+        rtm_ptr<NodeBase> parent;
+      public:
+        template<class T> friend
+        class rtm_ptr;
+
+        friend class NodeManager;
+
         virtual ~NodeBase() {};
+
+        void SetParent(rtm_ptr<NodeBase> parent) {
+            this->parent = parent;
+        }
     };
 
 //###########################################################
 //#################### Leaf nodes ###########################
 //###########################################################
 
+    // TODO: I don't think there can be any other types of leaf nodes than components, this is only here to make the
+    //  inheritance names better
     class LeafNode : public NodeBase {
-
+      SHObject_Base(LeafNode)
     };
 
     class Component : public LeafNode {
-
+      SHObject_Base(Component)
     };
 
 
@@ -118,23 +142,57 @@ namespace ShadowEngine::Entities {
 //#################### Complex nodes ########################
 //###########################################################
 
+    // TODO: same with these the only difference is that Actors have a name as well.
+    //  These two can be merged together if no use is found for unnamed full nodes
+
     class Node : public NodeBase {
+      SHObject_Base(Node)
         std::vector<rtm_ptr<NodeBase>> hierarchy;
         std::vector<rtm_ptr<NodeBase>> internal_hierarchy;
 
+      public:
+        std::vector<rtm_ptr<NodeBase>> &GetHierarchy() { return hierarchy; }
 
+        /**
+         * Adds a child to this node's hierarchy
+         * @param child
+         */
+        void AddChild(rtm_ptr<NodeBase> child);
+
+        /**
+         * Adds a child to this node's internal hierarchy
+         * @param child
+         */
+        void AddInternalChild(rtm_ptr<NodeBase> child);
     };
 
-
     class Actor : public Node {
+      SHObject_Base(Actor)
         /**
          * The name of this actor
          */
         std::string name;
+
+      public:
+        virtual void Build() = 0;
+
+        std::string GetName() const { return name; }
+
+        void SetName(std::string name) { this->name = name; }
     };
 
     class Scene : public Node {
+      SHObject_Base(Scene)
         std::vector<rtm_ptr<NodeBase>> static_hierarchy;
+    };
+
+    class RootNode : public NodeBase {
+      SHObject_Base(RootNode)
+        std::vector<rtm_ptr<Scene>> scenes;
+      public:
+        void AddScene(rtm_ptr<Scene> scene);
+
+        std::vector<rtm_ptr<Scene>> &GetScenes() { return scenes; }
     };
 
 }

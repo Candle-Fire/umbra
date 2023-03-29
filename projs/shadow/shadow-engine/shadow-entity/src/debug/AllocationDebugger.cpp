@@ -2,6 +2,6 @@
 
 namespace ShadowEngine::Entities::Debugger {
 
-    EntitySystem* AllocationDebugger::entitySystem = nullptr;
+    //EntitySystem* AllocationDebugger::entitySystem = nullptr;
 
 }

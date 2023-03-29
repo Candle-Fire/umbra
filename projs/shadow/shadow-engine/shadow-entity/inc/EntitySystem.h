@@ -1,56 +1,57 @@
 #pragma once
 
 #include "core/Module.h"
-#include "Scene.h"
+
+#include "graph/graph.h"
+#include "NodeManager.h"
+
 //Holds the reference to the active scene
 
 namespace ShadowEngine::Entities {
 
-	/**
-	 * The module that manages all the entities and Scenes
-	 */
-	class EntitySystem : public ShadowEngine::Module
-	{
-		SHObject_Base(EntitySystem)
-	private:
+    /**
+     * The module that manages all the entities and Scenes
+     */
+    class EntitySystem : public ShadowEngine::Module {
+      SHObject_Base(EntitySystem)
+      private:
+        NodeManager nodeManager;
 
-		/**
-		 * The main reference to the EntityManager
-		 */
-		EntityManager* entityMgr;
+        rtm_ptr<RootNode> root;
 
-		/**
-		 * Reference to the active scene
-		 */
-		rtm_ptr<Scene> activeScene;
+      public:
+        EntitySystem();
 
-	public:
-		EntitySystem();
         ~EntitySystem() override;
 
         std::string GetName() override { return "EntitySystem"; };
 
-        EntityManager* GetEntityMgr(){return entityMgr;};
+        rtm_ptr<RootNode> GetRoot() { return root; }
 
-		void PreInit() override {};
-		void Init() override;
-		void Update(int frame) override;
 
-		void Render(VkCommandBuffer& commands, int frame) override {};
-		void LateRender(VkCommandBuffer& commands, int frame) override {};
+        // event functions
+
+        void PreInit() override {};
+
+        void Init() override;
+
+        void Update(int frame) override;
+
+        void Render(VkCommandBuffer &commands, int frame) override {};
+
+        void LateRender(VkCommandBuffer &commands, int frame) override {};
 
         void Recreate() override {}
+
         void PreRender() override {}
+
         void OverlayRender() override;
+
         void AfterFrameEnd() override {}
+
         void Destroy() override {}
+
         void Event(SDL_Event *e) override {}
-
-
-        void LoadEmptyScene();
-		void LoadScene(Scene* scene);
-
-		rtm_ptr<Scene> GetActiveScene();
-	};
+    };
 
 }

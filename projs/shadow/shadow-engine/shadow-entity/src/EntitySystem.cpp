@@ -1,67 +1,43 @@
 #include "../inc/EntitySystem.h"
 #include "core/Time.h"
 #include "debug/AllocationDebugger.h"
-#include "entities/NullEntity.h"
 #include "editor/HierarchyWindow.h"
+#include "entities/NullActor.h"
 //#include <ShadowTime.h>
 
 namespace ShadowEngine::Entities {
 
     SHObject_Base_Impl(EntitySystem)
 
-	EntitySystem::EntitySystem() : entityMgr(new EntityManager()), activeScene()
-	{
+    void EntitySystem::OverlayRender() {
+        //ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
+        ShadowEngine::Entities::Editor::HierarchyWindow::Draw();
+    }
 
-	}
+    EntitySystem::EntitySystem() {
+        //Create the root node
+        root = nodeManager.MakeNode<RootNode>();
 
-	void EntitySystem::Init()
-	{
-		LoadEmptyScene();
-        activeScene->AddChildEntity<Builtin::NullEntity>();
-	}
+        //Add a scene to the root
+        auto scene = nodeManager.MakeNode<Scene>();
+        root->AddScene(scene);
+        //Add 10 NullActors to the scene
+        for (int i = 0; i < 10; i++) {
+            auto actor = nodeManager.MakeNode<Builtin::NullActor>();
+            scene->AddChild(actor);
+        }
 
-	void EntitySystem::Update(int frame)
-	{
-		auto dt = Time::deltaTime_ms;
-	}
-
-	rtm_ptr<Scene> EntitySystem::GetActiveScene()
-	{
-		return activeScene;
-	}
-
-	void EntitySystem::LoadEmptyScene()
-	{
-		if (activeScene)
-		{
-			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
-		}
-
-		activeScene = entityMgr->AddEntity<Scene>();
-	}
-
-	void EntitySystem::LoadScene(Scene* scene)
-	{
-		if (activeScene)
-		{
-			//SH_CORE_CRITICAL("Scene wasn't unloaded.");
-		}
-
-		//activeScene.reset(scene);
-
-		//scene->Init();
-
-		//SH_CORE_TRACE("SceneLoaded");
-	}
+    }
 
     EntitySystem::~EntitySystem() {
 
     }
 
-    void EntitySystem::OverlayRender() {
+    void EntitySystem::Init() {
 
-        ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
-        ShadowEngine::Entities::Editor::HierarchyWindow::Draw();
+    }
+
+    void EntitySystem::Update(int frame) {
 
     }
 

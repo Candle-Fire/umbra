@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "EntitySystem.h"
 #include "imgui.h"
 #include "core/ModuleManager.h"
@@ -13,11 +12,12 @@ namespace ShadowEngine::Entities::Editor {
 
         static ShadowEngine::Entities::EntitySystem *entitySystem;
 
-    public:
+      public:
         static void Draw() {
 
             if (entitySystem == nullptr)
-                entitySystem = ShadowEngine::ModuleManager::instance->GetModuleByType<ShadowEngine::Entities::EntitySystem>();
+                entitySystem =
+                    ShadowEngine::ModuleManager::instance->GetModuleByType<ShadowEngine::Entities::EntitySystem>();
 
             DebugHierarchy();
 
