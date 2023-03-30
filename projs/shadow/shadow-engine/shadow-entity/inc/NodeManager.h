@@ -8,6 +8,12 @@
 #include "SHObject.h"
 #include "graph/graph.h"
 
+template<typename T>
+using remove_reference_t = typename std::remove_reference<T>::type;
+
+#define FLECS_MOV(...) \
+  static_cast<remove_reference_t<decltype(__VA_ARGS__)>&&>(__VA_ARGS__)
+
 namespace ShadowEngine::Entities {
 
     template<class T>
@@ -102,6 +108,24 @@ namespace ShadowEngine::Entities {
       public:
         NodeManager();
 
+        template<typename T>
+        rtm_ptr<T> TakeNode(const T &node) {
+            // acquire memory for new entity object of type Type
+            void *pObjectMemory = GetNodeContainer<T>()->CreateObject();
+
+            T *nodespace = ((T *) pObjectMemory);
+
+            *nodespace = node;
+
+            //Assign the index and the UID to the object
+            int runtimeIndex = this->AssignIndexToNode((T *) pObjectMemory);
+            ((T *) pObjectMemory)->m_runtime_index = runtimeIndex;
+            ((T *) pObjectMemory)->m_runtime_uid = nextUID;
+            nextUID++;
+
+            return rtm_ptr((T *) pObjectMemory);
+        }
+
         /**
          * @brief Instantiates a new entity
          * @tparam T Type of the Entity
@@ -110,21 +134,21 @@ namespace ShadowEngine::Entities {
          * @return
          */
         template<typename T, class ...ARGS>
-        rtm_ptr<T> MakeNode(ARGS &&... args) {
+        rtm_ptr<T> ConstructNode(ARGS &&... args) {
             //The type ID of the Entity we are trying to add
             const int CTID = T::TypeId();
 
             // acquire memory for new entity object of type Type
             void *pObjectMemory = GetNodeContainer<T>()->CreateObject();
 
+            // create Entity in place
+            NodeBase *component = new(pObjectMemory)T(std::forward<ARGS>(args)...);
+
             //Assign the index and the UID to the object
             int runtimeIndex = this->AssignIndexToNode((T *) pObjectMemory);
             ((T *) pObjectMemory)->m_runtime_index = runtimeIndex;
             ((T *) pObjectMemory)->m_runtime_uid = nextUID;
             nextUID++;
-
-            // create Entity in place
-            NodeBase *component = new(pObjectMemory)T(std::forward<ARGS>(args)...);
 
             return rtm_ptr((T *) component);
         }

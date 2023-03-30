@@ -81,8 +81,6 @@ namespace ShadowEngine::Entities {
 
     };
 
-    class Node;
-
     /**
      * The base class for all things in the scene graph
      */

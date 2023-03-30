@@ -16,15 +16,17 @@ namespace ShadowEngine::Entities {
 
     EntitySystem::EntitySystem() {
         //Create the root node
-        root = nodeManager.MakeNode<RootNode>();
+        root = nodeManager.ConstructNode<RootNode>();
 
         //Add a scene to the root
-        auto scene = nodeManager.MakeNode<Scene>();
+        auto scene = nodeManager.ConstructNode<Scene>();
         root->AddScene(scene);
         //Add 10 NullActors to the scene
         for (int i = 0; i < 10; i++) {
-            auto actor = nodeManager.MakeNode<Builtin::NullActor>();
-            scene->AddChild(actor);
+            scene->AddChild(nodeManager.TakeNode(Builtin::NullActor()));
+
+            //auto actor = nodeManager.ConstructNode<Builtin::NullActor>();
+            //scene->AddChild(actor);
         }
 
     }
