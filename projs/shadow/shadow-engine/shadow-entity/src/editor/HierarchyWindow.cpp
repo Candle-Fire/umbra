@@ -20,27 +20,29 @@ namespace ShadowEngine::Entities::Editor {
 
     void DrawTree(rtm_ptr<NodeBase> node) {
         ImGuiTreeNodeFlags flags = treeSelectableFlags(selected_ent, node);
-        // If the node can't be casted to a Node, it's a leaf
-        Node *h_node = dynamic_cast<Node *>(node.Get());
-        if (h_node == nullptr) {
-            ImGui::TreeNodeEx((void *) &node,
-                              ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | flags,
-                              node->GetType().c_str());
-            return;
-        }
 
-        if (h_node->GetHierarchy().size() <= 0)
+        const char *name = (char *) node->GetType().c_str();
+
+        Node *h_node = dynamic_cast<Node *>(node.Get());
+
+        if (h_node == nullptr || h_node->GetHierarchy().size() <= 0)
             flags |= ImGuiTreeNodeFlags_Leaf;
 
-        if (ImGui::TreeNodeEx((void *) &node, flags, node->GetType().c_str())) {
+        if (Actor *h_actor = dynamic_cast<Actor *>(node.Get())) {
+            name = h_actor->GetName().c_str();
+        }
+
+        if (ImGui::TreeNodeEx(node.GetInternalPointer(), flags, name)) {
 
             if (ImGui::IsItemClicked()) {
                 selected_ent = node;
                 selected_inspector = node;
             }
 
-            for (auto &child : h_node->GetHierarchy()) {
-                DrawTree(child);
+            if (h_node != nullptr) {
+                for (auto &child : h_node->GetHierarchy()) {
+                    DrawTree(child);
+                }
             }
 
             ImGui::TreePop();
@@ -58,7 +60,7 @@ namespace ShadowEngine::Entities::Editor {
         auto root = entitySystem->GetRoot();
 
         //Draw each scene in the root
-        for (auto &scene : root->GetScenes()) {
+        for (auto &scene : root.GetScenes()) {
             DrawTree(scene);
         }
 

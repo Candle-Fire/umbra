@@ -3,7 +3,7 @@
 #include "debug/AllocationDebugger.h"
 #include "editor/HierarchyWindow.h"
 #include "entities/NullActor.h"
-//#include <ShadowTime.h>
+#include "entities/Position.h"
 
 namespace ShadowEngine::Entities {
 
@@ -16,17 +16,23 @@ namespace ShadowEngine::Entities {
 
     EntitySystem::EntitySystem() {
         //Create the root node
-        root = nodeManager.ConstructNode<RootNode>();
 
-        //Add a scene to the root
-        auto scene = nodeManager.ConstructNode<Scene>();
-        root->AddScene(scene);
-        //Add 10 NullActors to the scene
-        for (int i = 0; i < 10; i++) {
-            scene->AddChild(nodeManager.TakeNode(Builtin::NullActor()));
 
-            //auto actor = nodeManager.ConstructNode<Builtin::NullActor>();
-            //scene->AddChild(actor);
+        //AddChild a new scene to the root
+        auto scene = root.GetManager().ConstructNode<Scene>();
+        root.AddScene(scene);
+
+        //AddChild 10 NullActors to the scene
+        for (int i = 0; i < 100; i++) {
+            auto child = scene->Add<Builtin::NullActor>({});
+            child->SetName("NullActor " + std::to_string(i));
+        }
+
+        //AddChild 10 Entities to the scene with a Position component on each
+        for (int i = 0; i < 100; i++) {
+            auto child = scene->Add<Builtin::NullActor>({});
+            child->SetName("NullActor " + std::to_string(i));
+            child->Add<Builtin::Position>({10.0f * i, 10, 10});
         }
 
     }
