@@ -2,6 +2,18 @@
 
 namespace ShadowEngine::Entities::Debugger {
 
-    //EntitySystem* AllocationDebugger::entitySystem = nullptr;
+    EntitySystem *AllocationDebugger::entitySystem = nullptr;
+
+    void AllocationDebugger::DrawAllocationDebugger() {
+        if (ImGui::Begin("Allocation Debugger")) {
+            auto &mgr = entitySystem->GetRoot().GetManager();
+
+            for (auto allocator : mgr.m_NodeContainerRegistry) {
+                ImGui::Text("%i", allocator.first);
+            }
+
+        }
+        ImGui::End();
+    }
 
 }

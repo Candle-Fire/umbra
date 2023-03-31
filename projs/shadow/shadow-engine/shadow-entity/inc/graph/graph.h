@@ -13,6 +13,9 @@ namespace ShadowEngine::Entities {
 
     constexpr RtmUuid INVALID_UID = -1;
 
+    namespace Debugger {
+        class AllocationDebugger;
+    }
     class NodeBase;
 
     class Node;
@@ -273,6 +276,8 @@ namespace ShadowEngine::Entities {
         void ReleaseIndex(int id);
 
       public:
+        friend class ShadowEngine::Entities::Debugger::AllocationDebugger;
+
         NodeManager();
 
         template<class T>

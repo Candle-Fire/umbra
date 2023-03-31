@@ -24,7 +24,7 @@ namespace ShadowEngine::Entities {
 
         std::string GetName() override { return "EntitySystem"; };
 
-        World GetRoot() { return root; }
+        World &GetRoot() { return root; }
 
 
         // event functions
