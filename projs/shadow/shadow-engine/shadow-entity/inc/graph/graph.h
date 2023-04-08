@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <functional>
+#include <span>
 
 #include "SHObject.h"
 #include "NodeManager.h"
@@ -19,6 +21,8 @@ namespace ShadowEngine::Entities {
     class NodeBase;
 
     class Node;
+
+    class Actor;
 
     class Scene;
 
@@ -117,7 +121,7 @@ namespace ShadowEngine::Entities {
       protected:
         NodeBase() {};
 
-        rtm_ptr<NodeBase> parent;
+        rtm_ptr<Node> parent;
         rtm_ptr<Scene> m_scene;
         World *m_world;
       public:
@@ -128,11 +132,15 @@ namespace ShadowEngine::Entities {
 
         virtual ~NodeBase() {};
 
-        void SetParent(const rtm_ptr<NodeBase> &parent);
+        void SetParent(const rtm_ptr<Node> &parent);
+
+        rtm_ptr<Node> GetParent() const { return parent; }
 
         void SetScene(const rtm_ptr<Scene> &scene);
 
         void SetWorld(World *world);
+
+        void Destroy();
     };
 
 //###########################################################
@@ -157,6 +165,9 @@ namespace ShadowEngine::Entities {
     // TODO: same with these the only difference is that Actors have a name as well.
     //  These two can be merged together if no use is found for unnamed full nodes
 
+    template<typename T>
+    concept IsActor = std::derived_from<T, Actor>;
+
     class Node : public NodeBase {
       SHObject_Base(Node)
         std::vector<rtm_ptr<NodeBase>> hierarchy;
@@ -165,14 +176,22 @@ namespace ShadowEngine::Entities {
       public:
         std::vector<rtm_ptr<NodeBase>> &GetHierarchy() { return hierarchy; }
 
-        void AddChild(const rtm_ptr<NodeBase> &child);
+        void AddChild(const rtm_ptr<NodeBase> &child, bool internal = false);
 
         template<class T>
-        rtm_ptr<T> Add(const T &child);
+        requires (not IsActor<T>)
+        rtm_ptr<T> Add(const T &node, bool internal = false);
+
+        template<class T>
+        requires (IsActor<T>)
+        rtm_ptr<T> Add(const T &node, bool internal = false);
+
+        void RemoveChild(const rtm_ptr<NodeBase> &child, bool internal = false);
     };
 
     class Actor : public Node {
       SHObject_Base(Actor)
+      protected:
         /**
          * The name of this actor
          */
@@ -190,9 +209,15 @@ namespace ShadowEngine::Entities {
       SHObject_Base(Entity)
     };
 
-    class Scene : public Node {
+    class Scene : public Actor {
       SHObject_Base(Scene)
         std::vector<rtm_ptr<NodeBase>> static_hierarchy;
+      public:
+        Scene(std::string name) : Actor() { this->name = name; }
+
+        void Build() override {};
+
+        std::vector<rtm_ptr<NodeBase>> &GetStaticHierarchy() { return static_hierarchy; }
     };
 
     /**
@@ -275,17 +300,6 @@ namespace ShadowEngine::Entities {
          */
         void ReleaseIndex(int id);
 
-      public:
-        friend class ShadowEngine::Entities::Debugger::AllocationDebugger;
-
-        NodeManager();
-
-        template<class T>
-        rtm_ptr<T> Add(const T &node) {
-            rtm_ptr<T> ptr = TakeNode(node);
-            return ptr;
-        }
-
         template<typename T>
         rtm_ptr<T> TakeNode(const T &node) {
             // acquire memory for new entity object of type Type
@@ -302,12 +316,24 @@ namespace ShadowEngine::Entities {
             return rtm_ptr((T *) pObjectMemory);
         }
 
+      public:
+        friend class ShadowEngine::Entities::Debugger::AllocationDebugger;
+
+        NodeManager();
+
+        template<class T>
+        rtm_ptr<T> Add(const T &node) {
+            rtm_ptr<T> ptr = TakeNode(node);
+            return ptr;
+        }
+
         /**
          * @brief Instantiates a new entity
          * @tparam T Type of the Entity
          * @tparam ARGS Constructor parameters of the Entity
          * @param args Constructor parameters of the Entity
          * @return
+         * @obsolete
          */
         template<typename T, class ...ARGS>
         rtm_ptr<T> ConstructNode(ARGS &&... args) {
@@ -331,25 +357,15 @@ namespace ShadowEngine::Entities {
 
         void DestroyNode(int node_index, int typeID);
 
-        /**
-         * @brief Destroys the node with the given index
-         * @tparam T The type of the entity to remove
-         * @param node_index The entity index to be removed
-         */
-        template<class T>
-        void DestroyNode(const int node_index) {
-            this->DestroyNode(node_index, T::TypeID());
-        }
-
         template<class T>
         requires std::is_base_of<NodeBase, T>::value
         void DestroyNode(T *node) {
-            RemoveEntity<T>(node->m_runtime_index);
+            DestroyNode(node->m_runtime_index, node->GetTypeId());
         }
 
         template<class T>
-        void RemoveEntity(rtm_ptr<T> entity) {
-            this->DestroyNode(entity->m_runtime_index, entity->GetTypeId());
+        void DestroyNode(rtm_ptr<T> node) {
+            DestroyNode(node->m_runtime_index, node->GetTypeId());
         }
 
         template<class T>
@@ -367,34 +383,122 @@ namespace ShadowEngine::Entities {
         }
     };
 
-    class World : SHObject {
-      SHObject_Base(World)
-        std::vector<rtm_ptr<Scene>> scenes;
+    class SystemBase {
+      protected:
 
-        NodeManager manager;
       public:
-        void AddScene(rtm_ptr<Scene> scene);
+        virtual ~SystemBase() = default;
 
-        std::vector<rtm_ptr<Scene>> GetScenes() const { return scenes; }
+        virtual void run(NodeManager &nmgr) = 0;
+    };
 
-        NodeManager &GetManager() { return manager; }
+    template<class Target> requires std::derived_from<Target, NodeBase>
+    class System : public SystemBase {
+        std::function<void(Target &node)> m_Func;
 
-        template<class T>
-        requires std::derived_from<T, NodeBase>
-        rtm_ptr<T> Add(const T &node, rtm_ptr<Node> parent = nullptr) {
-            auto ptr = manager.Add(node);
-            ptr->SetWorld(this);
+      public:
+        System<Target> &forEach(std::function<void(Target &)> func) {
+            this->m_Func = func;
+            return *this;
+        }
 
-            if (parent)
-                parent->AddChild(ptr);
+        void run(NodeManager &nmgr) override {
+            auto &container = *nmgr.GetContainerByType<Target>();
 
-            return ptr;
+            for (auto it = container.begin(), end = container.end(); it != end; ++it) {
+                m_Func(*it);
+            }
         }
     };
 
+    class SystemManager {
+        NodeManager &nodeManager;
+
+        //vector storing the systems
+        std::vector<std::unique_ptr<SystemBase>> m_Systems;
+      public:
+        SystemManager(NodeManager &nmgr) : nodeManager(nmgr) {
+
+        }
+
+        template<class T>
+        System<T> &system() {
+            m_Systems.push_back(std::make_unique<System<T>>());
+            return *static_cast<System<T> *>(m_Systems.back().get());
+        }
+
+        void run() {
+            for (auto &s : m_Systems) {
+                s->run(nodeManager);
+            }
+        }
+    };
+
+    class RootNode : public Node {
+      SHObject_Base(RootNode)
+    };
+
+    class World : SHObject {
+      SHObject_Base(World)
+        rtm_ptr<RootNode> root;
+
+        NodeManager manager;
+
+        SystemManager systemManager;
+      public:
+        World();
+
+        template<class T>
+        requires std::derived_from<T, NodeBase>
+        rtm_ptr<T> Add(const T &node) {
+            auto ptr = manager.Add(node);
+            ptr->SetWorld(this);
+            return ptr;
+        }
+
+        template<class T>
+        requires std::derived_from<T, Scene>
+        rtm_ptr<T> AddScene(const T &scene) {
+            return root->Add<T>(scene);
+        }
+
+        template<class T>
+        System<T> &system() {
+            return systemManager.system<T>();
+        }
+
+        void Step() {
+            systemManager.run();
+        }
+
+        NodeManager &GetManager() { return manager; }
+
+        rtm_ptr<RootNode> GetRoot() { return root; }
+
+        void Destroy(NodeBase *node);
+    };
+
     template<class T>
-    rtm_ptr<T> Node::Add(const T &child) {
-        return m_world->Add(child, this);
+    requires (not IsActor<T>)
+    rtm_ptr<T> Node::Add(const T &node, bool internal) {
+        auto ptr = m_world->Add(node);
+
+        this->AddChild(ptr, internal);
+
+        return ptr;
+    }
+
+    template<class T>
+    requires (IsActor<T>)
+    rtm_ptr<T> Node::Add(const T &node, bool internal) {
+        auto ptr = m_world->Add<T>(node);
+
+        this->AddChild(ptr, internal);
+
+        if (Actor *h_actor = dynamic_cast<Actor *>(ptr.Get()))
+            ptr->Build();
+
+        return ptr;
     }
 
 }

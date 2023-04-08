@@ -123,71 +123,78 @@ namespace ShadowEngine::Entities {
 
         using MemoryChunks = std::vector<MemoryChunk *>;
 
-        class EntityContainerIterator {
+        class Iterator {
             typename MemoryChunks::iterator m_current_chunk;
             typename MemoryChunks::iterator m_end_chunk;
 
             Element *m_current_element;
-            int index;
-
+            int m_current_element_index;
           public:
-
-            EntityContainerIterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) :
+            Iterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) :
                 m_current_chunk(begin),
                 m_end_chunk(end),
-                index(0) {
+                m_current_element_index(0) {
+
                 if (begin != end) {
                     assert((*m_current_chunk) != nullptr);
-                    m_current_element = (*m_current_chunk)->chunk_start;
+                    m_current_element = (*m_current_chunk)->chunk_start - 1;
+                    this->Next();
                 } else {
-                    m_current_element = (*std::prev(m_end_chunk))->chunk_end;
+                    m_current_element = nullptr;
                 }
-
             }
 
-            inline EntityContainerIterator &operator++() {
-                //TODO: probably a do while.... also could make the in chunk and between chunk steps a single loop
-
-                // move to next object in current chunk
-                m_current_element = &m_current_element[1];
-                index++;
-
-                while (index < MAX_OBJECTS_IN_CHUNK && ((*m_current_chunk)->metadata[index] == MemoryChunk::FreeFlag)) {
-
-                    m_current_element = &m_current_element[1];
-                    index++;
-                }
-
-
-                // if we reached end of list, move to next chunk
-                if (m_current_element == (*m_current_chunk)->chunk_end) {
-                    ++m_current_chunk;
-                    index = 0;
-                    if (m_current_chunk != m_end_chunk) {
-                        // set object iterator to begin of next chunk list
-                        assert((*m_current_chunk) != nullptr);
-                        m_current_element = (*m_current_chunk)->chunk_start;
-                    }
-                }
+            // Prefix increment
+            Iterator &operator++() {
+                //step to next element in chunk
+                Next();
 
                 return *this;
+            }
+
+            void Next() {
+                do {
+                    m_current_element_index++;
+                    m_current_element = (*m_current_chunk)->chunk_start + m_current_element_index;
+
+                    //if we are at the end of the chunk, move to the next chunk
+                    if (m_current_element == (*m_current_chunk)->chunk_end) {
+                        m_current_chunk++;
+                        if (m_current_chunk == m_end_chunk)
+                            break;
+
+                        m_current_element_index = 0;
+                        m_current_element = (*m_current_chunk)->chunk_start + m_current_element_index;
+                    }
+
+                } while (
+                    m_current_chunk != m_end_chunk &&
+                        (*m_current_chunk)->metadata[m_current_element_index] != MemoryChunk::FreeFlag);
+            }
+
+            // Postfix increment
+            Iterator operator++(int) {
+                Iterator tmp = *this;
+                ++(*this);
+                return tmp;
             }
 
             inline Type &operator*() const { return (m_current_element->element); }
 
             inline Type *operator->() const { return &(m_current_element->element); }
 
-            inline bool operator==(EntityContainerIterator &other) {
+            inline bool operator==(Iterator &other) {
                 //auto o = dynamic_cast<iterator&>(other);
                 return ((this->m_current_chunk == other.m_current_chunk)
                     && (this->m_current_element == other.m_current_element));
             }
 
-            inline bool operator!=(EntityContainerIterator &other) {
+            inline bool operator!=(Iterator &other) {
                 //auto o = dynamic_cast<iterator&>(other);
                 return ((this->m_current_chunk != other.m_current_chunk)
                     && (this->m_current_element != other.m_current_element));
             }
+
         };
 
         MemoryChunks m_chunks;
@@ -250,12 +257,15 @@ namespace ShadowEngine::Entities {
             assert(false && "Failed to delete object. Memory corruption?!");
         }
 
-        inline EntityContainerIterator begin() {
-            auto end = this->m_chunks.end();
-            return iterator(this->m_chunks.begin(), end);
+        inline Iterator begin() {
+            return Iterator(this->m_chunks.begin(),
+                            this->m_chunks.end());
         }
 
-        inline EntityContainerIterator end() { return iterator(this->m_chunks.end(), this->m_chunks.end()); }
+        inline Iterator end() {
+            return Iterator(this->m_chunks.end(),
+                            this->m_chunks.end());
+        }
 
     };
 

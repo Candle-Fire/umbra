@@ -64,6 +64,9 @@ void GameModule::Init() {
         .build();
 
     Recreate();
+
+    auto *ensys = ShadowEngine::ModuleManager::getInstance()->GetModuleByType<ShadowEngine::Entities::EntitySystem>();
+    ensys->GetWorld().AddScene(TestScene());
 }
 
 void GameModule::Recreate() {
@@ -97,9 +100,6 @@ void GameModule::OverlayRender() {
     if (ImGui::Begin("Game module window", &active, ImGuiWindowFlags_MenuBar))
         ImGui::Text("Such text from curle's branch");
     ImGui::End();
-
-    //bool open = false;
-    //ImGui::ShowDemoWindow(&open);
 }
 
 void GameModule::AfterFrameEnd() {

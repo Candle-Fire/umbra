@@ -3,7 +3,7 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+#set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 FILE(GLOB_RECURSE SOURCES
         core/src/*.cpp
@@ -27,16 +27,16 @@ add_library(shadow-engine SHARED ${SOURCES} ${HEADERS} $<TARGET_OBJECTS:imgui>)
 target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}
         PUBLIC
-            core/inc
-            shadow-entity/inc
-            shadow-renderer/inc
-            shadow-reflection/inc
-            shadow-utility/inc
-            shadow-math/inc
+        core/inc
+        shadow-entity/inc
+        shadow-renderer/inc
+        shadow-reflection/inc
+        shadow-utility/inc
+        shadow-math/inc
         ${glm_SOURCE_DIR}
         INTERFACE
-            ${imgui_SOURCE_DIR}
-            ${imgui_SOURCE_DIR}/backends)
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends)
 
 target_link_libraries(shadow-engine
         PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui

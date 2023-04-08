@@ -15,15 +15,8 @@ namespace ShadowEngine::Entities {
     }
 
     EntitySystem::EntitySystem() {
-        //AddChild a new scene to the root
-        auto scene = root.GetManager().ConstructNode<Scene>();
-        root.AddScene(scene);
-
-        //Add 100 NullActors to the scene
-        for (int i = 0; i < 100; i++) {
-            auto child = scene->Add<Builtin::NullActor>({});
-            child->SetName("NullActor " + std::to_string(i));
-        }
+        //AddChild a new scene to the world
+        auto scene = world.AddScene<Scene>({"Generated Scene"});
 
         //Add 100 NullActors to the scene with a Position component on each
         for (int i = 0; i < 100; i++) {
@@ -31,6 +24,15 @@ namespace ShadowEngine::Entities {
             child->SetName("NullActor " + std::to_string(i));
             child->Add<Builtin::Position>({10.0f * i, 10, 10});
         }
+
+        world.system<Builtin::Position>().forEach([](auto &pos) {
+            pos.y += 1.0f;
+        });
+
+        world.system<Builtin::Position>().forEach([](auto &pos) {
+            if (pos.y > 100)
+                pos.GetParent()->Destroy();
+        });
 
     }
 
@@ -43,7 +45,7 @@ namespace ShadowEngine::Entities {
     }
 
     void EntitySystem::Update(int frame) {
-
+        this->world.Step();
     }
 
 }

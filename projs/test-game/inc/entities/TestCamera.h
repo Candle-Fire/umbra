@@ -1,14 +1,11 @@
 #pragma once
-/*
-#include "Entity.h"
-#include "TransformEntity.h"
 
-class TestCamera : public ShadowEngine::Entities::TransformEntity {
-    SHObject_Base(TestCamera);
+#include "graph/graph.h"
 
-    Entity_Base(TestCamera, TransformEntity);
-
-public:
-    void Build() override;
+//Example of a 2d camera component with size
+class TestCamera : public ShadowEngine::Entities::Component {
+  SHObject_Base(TestCamera);
+  public:
+    float width;
+    float height;
 };
-*/

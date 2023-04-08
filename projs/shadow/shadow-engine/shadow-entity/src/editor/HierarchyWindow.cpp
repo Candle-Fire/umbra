@@ -57,10 +57,10 @@ namespace ShadowEngine::Entities::Editor {
 
         ImGui::Begin("Hierarchy", &shown, ImGuiWindowFlags_MenuBar);
 
-        auto root = entitySystem->GetRoot();
+        auto root = entitySystem->GetWorld().GetRoot();
 
-        //Draw each scene in the root
-        for (auto &scene : root.GetScenes()) {
+        //Draw each scene in the world
+        for (auto &scene : root->GetHierarchy()) {
             DrawTree(scene);
         }
 

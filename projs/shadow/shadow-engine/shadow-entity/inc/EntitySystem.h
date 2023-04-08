@@ -15,7 +15,7 @@ namespace ShadowEngine::Entities {
     class EntitySystem : public ShadowEngine::Module {
       SHObject_Base(EntitySystem)
       private:
-        World root;
+        World world;
 
       public:
         EntitySystem();
@@ -24,7 +24,7 @@ namespace ShadowEngine::Entities {
 
         std::string GetName() override { return "EntitySystem"; };
 
-        World &GetRoot() { return root; }
+        World &GetWorld() { return world; }
 
 
         // event functions

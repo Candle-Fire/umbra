@@ -2,9 +2,13 @@
 
 #include "graph/graph.h"
 
-class Player : public ShadowEngine::Entities::Actor{
-    SHObject_Base(Player);
+class Player : public ShadowEngine::Entities::Actor {
+  SHObject_Base(Player);
 
-public:
+  public:
+    Player(std::string name) : Actor() {
+        this->name = name;
+    }
+
     void Build() override;
 };
