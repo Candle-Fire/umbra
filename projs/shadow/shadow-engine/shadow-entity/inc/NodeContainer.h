@@ -2,6 +2,10 @@
 
 #include <string>
 #include <cstring>
+#include <span>
+#include <vector>
+#include <cstdint>
+#include <assert.h>
 
 namespace ShadowEngine::Entities {
 
@@ -63,6 +67,7 @@ namespace ShadowEngine::Entities {
 
             int count;
             static const bool FreeFlag = true;   //TODO: WTF?
+            static const bool InUseFlag = false;   //TODO: WTF?
             bool metadata[MAX_OBJECTS_IN_CHUNK];
 
             //Points to the next free element in the pool
@@ -75,6 +80,8 @@ namespace ShadowEngine::Entities {
                 std::memset(chunk_start, -1, ALLOC_SIZE);
 
                 chunk_end = &chunk_start[MAX_OBJECTS_IN_CHUNK];
+
+                metadata[0] = FreeFlag;
 
                 //Sets up the free linked list
                 for (size_t i = 1; i < MAX_OBJECTS_IN_CHUNK; i++) {
@@ -91,7 +98,7 @@ namespace ShadowEngine::Entities {
              * calling the constructor on that are if not done.
              * @return pointer to the new allocation, or nullptr if no free space available
              */
-            Type *Allocate() {
+            Type *allocate() {
                 if (nextFree == nullptr)
                     return nullptr;
                 count++;
@@ -119,29 +126,87 @@ namespace ShadowEngine::Entities {
                 int i = ((Element *) ptr - (Element *) chunk_start);
                 metadata[i] = FreeFlag;
             }
+
+            class Iterator {
+                MemoryChunk *chunk;
+                int index;
+              public:
+                Iterator(MemoryChunk *chunk, int pos) : chunk(chunk), index(pos) {
+                    while (chunk->metadata[index] != InUseFlag && index < MAX_OBJECTS_IN_CHUNK) {
+                        index++;
+                    }
+                }
+
+                // Prefix increment
+                Iterator &operator++() {
+                    //step to next element in chunk
+                    Next();
+                    return *this;
+                }
+
+                Iterator operator++(int) {
+                    Iterator tmp = *this;
+                    ++(*this);
+                    return tmp;
+                }
+
+                void Next() {
+                    do {
+                        index++;
+                    } while (chunk->metadata[index] != InUseFlag && index < MAX_OBJECTS_IN_CHUNK);
+                }
+
+                inline Type &operator*() const { return (chunk->chunk_start[index].element); }
+
+                inline Type *operator->() const { return &(chunk->chunk_start[index].element); }
+
+                inline bool operator==(const Iterator &other) const {
+                    return ((this->chunk == other.chunk)
+                        && (this->index == other.index));
+                }
+
+                inline bool operator!=(const Iterator &other) const {
+                    return ((this->chunk != other.chunk)
+                        || (this->index != other.index));
+                }
+
+                int GetIndex() const { return index; }
+
+                MemoryChunk *GetChunk() const { return chunk; }
+            };
+
+            inline Iterator begin() {
+                return Iterator(this, 0);
+            }
+
+            inline Iterator end() {
+                return Iterator(this, MAX_OBJECTS_IN_CHUNK);
+            }
+
         };
 
         using MemoryChunks = std::vector<MemoryChunk *>;
 
         class Iterator {
-            typename MemoryChunks::iterator m_current_chunk;
-            typename MemoryChunks::iterator m_end_chunk;
+            NodeContainer<Type> *container;
+            int chunk_index;
 
-            Element *m_current_element;
-            int m_current_element_index;
+            MemoryChunk::Iterator element;
           public:
-            Iterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) :
-                m_current_chunk(begin),
-                m_end_chunk(end),
-                m_current_element_index(0) {
+            Iterator(NodeContainer<Type> *container, int chunk_index) :
+                container(container),
+                chunk_index(chunk_index) {
 
-                if (begin != end) {
-                    assert((*m_current_chunk) != nullptr);
-                    m_current_element = (*m_current_chunk)->chunk_start - 1;
-                    this->Next();
-                } else {
-                    m_current_element = nullptr;
+                if (chunk_index < container->m_chunks.size()) {
+                    element = container->m_chunks[chunk_index]->begin();
                 }
+
+                while (element == container->m_chunks[chunk_index]->end() &&
+                    chunk_index < container->m_chunks.size()) {
+                    chunk_index++;
+                    element = container->m_chunks[chunk_index]->begin();
+                }
+
             }
 
             // Prefix increment
@@ -153,23 +218,12 @@ namespace ShadowEngine::Entities {
             }
 
             void Next() {
-                do {
-                    m_current_element_index++;
-                    m_current_element = (*m_current_chunk)->chunk_start + m_current_element_index;
-
-                    //if we are at the end of the chunk, move to the next chunk
-                    if (m_current_element == (*m_current_chunk)->chunk_end) {
-                        m_current_chunk++;
-                        if (m_current_chunk == m_end_chunk)
-                            break;
-
-                        m_current_element_index = 0;
-                        m_current_element = (*m_current_chunk)->chunk_start + m_current_element_index;
-                    }
-
-                } while (
-                    m_current_chunk != m_end_chunk &&
-                        (*m_current_chunk)->metadata[m_current_element_index] != MemoryChunk::FreeFlag);
+                element++;
+                while (element == container->m_chunks[chunk_index]->end() &&
+                    chunk_index < container->m_chunks.size()) {
+                    chunk_index++;
+                    element = container->m_chunks[chunk_index]->begin();
+                }
             }
 
             // Postfix increment
@@ -179,20 +233,20 @@ namespace ShadowEngine::Entities {
                 return tmp;
             }
 
-            inline Type &operator*() const { return (m_current_element->element); }
+            inline Type &operator*() const { return (*element); }
 
-            inline Type *operator->() const { return &(m_current_element->element); }
+            inline Type *operator->() const { return &(*element); }
 
-            inline bool operator==(Iterator &other) {
-                //auto o = dynamic_cast<iterator&>(other);
-                return ((this->m_current_chunk == other.m_current_chunk)
-                    && (this->m_current_element == other.m_current_element));
+            inline bool operator==(const Iterator &other) const {
+                return ((this->container == other.container)
+                    && (this->chunk_index == other.chunk_index)
+                    && (this->element == other.element));
             }
 
-            inline bool operator!=(Iterator &other) {
-                //auto o = dynamic_cast<iterator&>(other);
-                return ((this->m_current_chunk != other.m_current_chunk)
-                    && (this->m_current_element != other.m_current_element));
+            inline bool operator!=(const Iterator &other) const {
+                return ((this->container != other.container)
+                    || (this->chunk_index != other.chunk_index)
+                    || (this->element != other.element));
             }
 
         };
@@ -213,7 +267,7 @@ namespace ShadowEngine::Entities {
                 if (chunk->count > MAX_OBJECTS_IN_CHUNK)
                     continue;
 
-                slot = chunk->Allocate();
+                slot = chunk->allocate();
                 if (slot != nullptr) {
                     //chunk->objects.push_back((OBJECT_TYPE*)slot);
                     break;
@@ -225,13 +279,13 @@ namespace ShadowEngine::Entities {
 
             // all chunks are full... allocate a new one
             if (slot == nullptr) {
-                //Allocator* allocator = new Allocator(ALLOC_SIZE, Allocate(ALLOC_SIZE, this->m_AllocatorTag), sizeof(OBJECT_TYPE), alignof(OBJECT_TYPE));
+                //Allocator* allocator = new Allocator(ALLOC_SIZE, allocate(ALLOC_SIZE, this->m_AllocatorTag), sizeof(OBJECT_TYPE), alignof(OBJECT_TYPE));
                 MemoryChunk *newChunk = new MemoryChunk();
 
                 // put new chunk in front
                 this->m_chunks.push_back(newChunk);
 
-                slot = newChunk->Allocate();
+                slot = newChunk->allocate();
 
                 assert(slot != nullptr && "Unable to create new object. Out of memory?!");
                 //newChunk->objects.clear();
@@ -239,6 +293,10 @@ namespace ShadowEngine::Entities {
             }
 
             return slot;
+        }
+
+        Type *AllocateWithType() {
+            return (Type *) CreateObject();
         }
 
         void DestroyObject(void *object) {
@@ -258,15 +316,19 @@ namespace ShadowEngine::Entities {
         }
 
         inline Iterator begin() {
-            return Iterator(this->m_chunks.begin(),
-                            this->m_chunks.end());
+            return Iterator(this, 0);
         }
 
         inline Iterator end() {
-            return Iterator(this->m_chunks.end(),
-                            this->m_chunks.end());
+            return Iterator(this, m_chunks.size());
         }
 
     };
+
+    template<typename T>
+    std::ostream &operator<<(std::ostream &os, typename NodeContainer<T>::MemoryChunk::Iterator const &value) {
+        os << "{chunk: " << value.GetChunk() << " index: " << value.GetIndex() << "}";
+        return os;
+    }
 
 }

@@ -48,10 +48,10 @@ target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
 
 
-
-
-
-add_executable(shadow-engine-test shadow-entity/src/tests/test.test.cpp)
+add_executable(shadow-engine-test
+        tests/test.main.cpp
+        shadow-entity/src/tests/test.test.cpp
+        )
 
 target_include_directories(shadow-engine-test
         PUBLIC shadow-entity/inc
