@@ -14,7 +14,7 @@ namespace ShadowEngine::Entities {
     class INodeContainer {
       public:
 
-        virtual void *CreateObject() = 0;
+        virtual void *allocate() = 0;
 
         virtual void DestroyObject(void *object) = 0;
     };
@@ -131,6 +131,8 @@ namespace ShadowEngine::Entities {
                 MemoryChunk *chunk;
                 int index;
               public:
+                Iterator() : chunk(nullptr), index(0) {}
+
                 Iterator(MemoryChunk *chunk, int pos) : chunk(chunk), index(pos) {
                     while (chunk->metadata[index] != InUseFlag && index < MAX_OBJECTS_IN_CHUNK) {
                         index++;
@@ -201,10 +203,14 @@ namespace ShadowEngine::Entities {
                     element = container->m_chunks[chunk_index]->begin();
                 }
 
-                while (element == container->m_chunks[chunk_index]->end() &&
-                    chunk_index < container->m_chunks.size()) {
+                while (chunk_index < container->m_chunks.size() &&
+                    element == container->m_chunks[chunk_index]->end()) {
                     chunk_index++;
-                    element = container->m_chunks[chunk_index]->begin();
+                    if (chunk_index < container->m_chunks.size()) {
+                        element = container->m_chunks[chunk_index]->begin();
+                    } else {
+                        element = typename MemoryChunk::Iterator(); // Set element to the end iterator of the last chunk
+                    }
                 }
 
             }
@@ -219,10 +225,14 @@ namespace ShadowEngine::Entities {
 
             void Next() {
                 element++;
-                while (element == container->m_chunks[chunk_index]->end() &&
-                    chunk_index < container->m_chunks.size()) {
+                while (chunk_index < container->m_chunks.size() &&
+                    element == container->m_chunks[chunk_index]->end()) {
                     chunk_index++;
-                    element = container->m_chunks[chunk_index]->begin();
+                    if (chunk_index < container->m_chunks.size()) {
+                        element = container->m_chunks[chunk_index]->begin();
+                    } else {
+                        element = typename MemoryChunk::Iterator(); // Set element to the end iterator of the last chunk
+                    }
                 }
             }
 
@@ -249,6 +259,12 @@ namespace ShadowEngine::Entities {
                     || (this->element != other.element));
             }
 
+            NodeContainer<Type> *GetContainer() const { return container; }
+
+            int GetChunkIndex() const { return chunk_index; }
+
+            MemoryChunk::Iterator GetElement() const { return element; }
+
         };
 
         MemoryChunks m_chunks;
@@ -259,7 +275,7 @@ namespace ShadowEngine::Entities {
             m_chunks.clear();
         }
 
-        void *CreateObject() {
+        void *allocate() {
             void *slot = nullptr;
 
             // get next free slot
@@ -295,8 +311,8 @@ namespace ShadowEngine::Entities {
             return slot;
         }
 
-        Type *AllocateWithType() {
-            return (Type *) CreateObject();
+        Type *allocateWithType() {
+            return (Type *) allocate();
         }
 
         void DestroyObject(void *object) {
@@ -315,13 +331,9 @@ namespace ShadowEngine::Entities {
             assert(false && "Failed to delete object. Memory corruption?!");
         }
 
-        inline Iterator begin() {
-            return Iterator(this, 0);
-        }
+        inline Iterator begin() { return Iterator(this, 0); }
 
-        inline Iterator end() {
-            return Iterator(this, m_chunks.size());
-        }
+        inline Iterator end() { return Iterator(this, m_chunks.size()); }
 
     };
 

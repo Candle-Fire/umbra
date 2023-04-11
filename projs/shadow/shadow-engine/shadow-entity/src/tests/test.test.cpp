@@ -152,10 +152,26 @@ SCENARIO("Node Container", "[NodeContainer]") {
         WHEN("iterating") {
 
             auto begin = container.begin();
-            //REQUIRE(begin.GetChunk() == &chunk);
+            REQUIRE(begin.GetContainer() == &container);
+
+            THEN("begin is at the end of the chunks") {
+                REQUIRE(begin.GetChunkIndex() == container.m_chunks.size());
+            }
+
+            THEN("begin is at the end of the chunk") {
+                REQUIRE(begin.GetElement() == NodeContainer<TestClass>::MemoryChunk::Iterator());
+            }
 
             auto end = container.end();
-            //REQUIRE(end.GetChunk() == &chunk);
+            REQUIRE(end.GetContainer() == &container);
+
+            THEN("end is at the end of the chunks") {
+                REQUIRE(begin.GetChunkIndex() == container.m_chunks.size());
+            }
+
+            THEN("end is at the end of the chunk") {
+                REQUIRE(begin.GetElement() == NodeContainer<TestClass>::MemoryChunk::Iterator());
+            }
 
             THEN("begin is equal to end") {
                 REQUIRE(begin == end);
@@ -168,6 +184,55 @@ SCENARIO("Node Container", "[NodeContainer]") {
 
             THEN("should not iterate") {
                 REQUIRE(count == 0);
+            }
+        }
+    }
+
+    GIVEN("container with X allocations") {
+
+        int count = GENERATE(1, 10, 2024, 4 * 2024);
+        CAPTURE(count);
+
+        for (int i = 0; i < count; ++i) {
+            TestClass *ptr = container.allocateWithType();
+        }
+
+        WHEN("iterating") {
+
+            auto begin = container.begin();
+            REQUIRE(begin.GetContainer() == &container);
+
+            THEN("begin is at the first of the chunks") {
+                REQUIRE(begin.GetChunkIndex() == 0);
+            }
+
+            THEN("begin is at the first of the chunk") {
+                REQUIRE(begin.GetElement() == container.m_chunks[0]->begin());
+            }
+
+            auto end = container.end();
+            REQUIRE(end.GetContainer() == &container);
+
+            THEN("end is at the end of the chunks") {
+                REQUIRE(end.GetChunkIndex() == container.m_chunks.size());
+            }
+
+            THEN("end is at the end of the chunk") {
+                REQUIRE(end.GetElement() == NodeContainer<TestClass>::MemoryChunk::Iterator());
+            }
+
+            THEN("begin is not equal to end") {
+                REQUIRE(begin != end);
+            }
+
+            THEN("should iterate X times") {
+
+                int iterCount = 0;
+                for (auto &a : container) {
+                    iterCount++;
+                }
+
+                REQUIRE(iterCount == count);
             }
         }
     }

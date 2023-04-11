@@ -303,7 +303,7 @@ namespace ShadowEngine::Entities {
         template<typename T>
         rtm_ptr<T> TakeNode(const T &node) {
             // acquire memory for new entity object of type Type
-            void *pObjectMemory = GetNodeContainer<T>()->CreateObject();
+            void *pObjectMemory = GetNodeContainer<T>()->allocate();
 
             new(pObjectMemory)T(node);
 
@@ -341,7 +341,7 @@ namespace ShadowEngine::Entities {
             const int CTID = T::TypeId();
 
             // acquire memory for new entity object of type Type
-            void *pObjectMemory = GetNodeContainer<T>()->CreateObject();
+            void *pObjectMemory = GetNodeContainer<T>()->allocate();
 
             // create Entity in place
             NodeBase *component = new(pObjectMemory)T(std::forward<ARGS>(args)...);
