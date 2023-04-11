@@ -13,6 +13,8 @@ FILE(GLOB_RECURSE SOURCES
         shadow-utility/src/*.cpp
         shadow-math/src/*.cpp
         )
+list(FILTER SOURCES EXCLUDE REGEX ".*.test.cpp$")
+
 FILE(GLOB_RECURSE HEADERS
         core/inc/*.h
         shadow-entity/inc/*.h

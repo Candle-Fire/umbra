@@ -195,9 +195,9 @@ namespace ShadowEngine::Entities {
 
             MemoryChunk::Iterator element;
           public:
-            Iterator(NodeContainer<Type> *container, int chunk_index) :
+            Iterator(NodeContainer<Type> *container, int c_index) :
                 container(container),
-                chunk_index(chunk_index) {
+                chunk_index(c_index) {
 
                 if (chunk_index < container->m_chunks.size()) {
                     element = container->m_chunks[chunk_index]->begin();
@@ -336,11 +336,5 @@ namespace ShadowEngine::Entities {
         inline Iterator end() { return Iterator(this, m_chunks.size()); }
 
     };
-
-    template<typename T>
-    std::ostream &operator<<(std::ostream &os, typename NodeContainer<T>::MemoryChunk::Iterator const &value) {
-        os << "{chunk: " << value.GetChunk() << " index: " << value.GetIndex() << "}";
-        return os;
-    }
 
 }

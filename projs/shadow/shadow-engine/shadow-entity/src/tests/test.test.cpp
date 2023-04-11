@@ -237,4 +237,60 @@ SCENARIO("Node Container", "[NodeContainer]") {
         }
     }
 
+    GIVEN("container with X allocations and all de-allocated") {
+
+        int count = GENERATE(1, 10, 2024, 4 * 2024);
+        CAPTURE(count);
+
+        std::vector<TestClass *> ptrs;
+
+        for (int i = 0; i < count; ++i) {
+            TestClass *ptr = container.allocateWithType();
+            ptrs.push_back(ptr);
+        }
+
+        for (int i = 0; i < count; ++i) {
+            container.DestroyObject(ptrs[i]);
+        }
+
+        WHEN("iterating") {
+
+            auto begin = container.begin();
+            REQUIRE(begin.GetContainer() == &container);
+
+            THEN("begin is at the end of the chunks") {
+                REQUIRE(begin.GetChunkIndex() == container.m_chunks.size());
+            }
+
+            THEN("begin is at the end of the chunk") {
+                REQUIRE(begin.GetElement() == NodeContainer<TestClass>::MemoryChunk::Iterator());
+            }
+
+            auto end = container.end();
+            REQUIRE(end.GetContainer() == &container);
+
+            THEN("end is at the end of the chunks") {
+                REQUIRE(end.GetChunkIndex() == container.m_chunks.size());
+            }
+
+            THEN("end is at the end of the chunk") {
+                REQUIRE(end.GetElement() == NodeContainer<TestClass>::MemoryChunk::Iterator());
+            }
+
+            THEN("begin is not equal to end") {
+                REQUIRE(begin == end);
+            }
+
+            THEN("should iterate X times") {
+
+                int iterCount = 0;
+                for (auto &a : container) {
+                    iterCount++;
+                }
+
+                REQUIRE(iterCount == 0);
+            }
+        }
+    }
+
 }
