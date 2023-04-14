@@ -12,7 +12,7 @@ namespace ShadowEngine::Entities {
     /**
      * The module that manages all the entities and Scenes
      */
-    class EntitySystem : public ShadowEngine::Module {
+    class API EntitySystem : public ShadowEngine::Module {
       SHObject_Base(EntitySystem)
       private:
         World world;

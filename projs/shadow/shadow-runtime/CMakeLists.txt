@@ -17,3 +17,5 @@ add_custom_command(TARGET shadow-runtime
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/vlkx-resources ${CMAKE_CURRENT_BINARY_DIR}/vlkx-resources
         )
+
+SET_TARGET_PROPERTIES(shadow-runtime PROPERTIES LINK_FLAGS "/PROFILE")

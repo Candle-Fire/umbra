@@ -5,7 +5,7 @@
 namespace ShadowEngine::Entities::Builtin {
 
     //Basic NullActor inherited from Actor
-    class NullActor : public Actor {
+    class API NullActor : public Actor {
       SHObject_Base(NullActor)
 
       public:

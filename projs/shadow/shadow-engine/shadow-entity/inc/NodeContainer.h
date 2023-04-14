@@ -195,44 +195,46 @@ namespace ShadowEngine::Entities {
 
             MemoryChunk::Iterator element;
           public:
-            Iterator(NodeContainer<Type> *container, int c_index) :
-                container(container),
+            Iterator(NodeContainer<Type> *cont, int c_index) :
+                container(cont),
                 chunk_index(c_index) {
 
                 if (chunk_index < container->m_chunks.size()) {
                     element = container->m_chunks[chunk_index]->begin();
                 }
 
-                while (chunk_index < container->m_chunks.size() &&
-                    element == container->m_chunks[chunk_index]->end()) {
-                    chunk_index++;
-                    if (chunk_index < container->m_chunks.size()) {
-                        element = container->m_chunks[chunk_index]->begin();
-                    } else {
-                        element = typename MemoryChunk::Iterator(); // Set element to the end iterator of the last chunk
-                    }
-                }
-
+                SeekNextValid();
             }
 
             // Prefix increment
             Iterator &operator++() {
                 //step to next element in chunk
-                Next();
+                element++;
+                SeekNextValid();
 
                 return *this;
             }
 
-            void Next() {
-                element++;
-                while (chunk_index < container->m_chunks.size() &&
-                    element == container->m_chunks[chunk_index]->end()) {
-                    chunk_index++;
-                    if (chunk_index < container->m_chunks.size()) {
-                        element = container->m_chunks[chunk_index]->begin();
-                    } else {
-                        element = typename MemoryChunk::Iterator(); // Set element to the end iterator of the last chunk
-                    }
+            void SeekNextValid() {
+                while (!IsEndChunk() && !IsValid()) {
+                    Step();
+                }
+            }
+
+            [[nodiscard]] inline bool IsEndChunk() const {
+                return (chunk_index >= container->m_chunks.size());
+            }
+
+            [[nodiscard]] inline bool IsValid() const {
+                return !(element == container->m_chunks[chunk_index]->end());
+            }
+
+            void Step() {
+                chunk_index++;
+                if (IsEndChunk()) {
+                    element = typename MemoryChunk::Iterator();
+                } else {
+                    element = container->m_chunks[chunk_index]->begin();
                 }
             }
 

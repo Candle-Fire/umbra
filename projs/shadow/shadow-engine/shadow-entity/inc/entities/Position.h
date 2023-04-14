@@ -5,7 +5,7 @@
 //Position component in the builtin namespace
 namespace ShadowEngine::Entities::Builtin {
 
-    class Position : public ShadowEngine::Entities::Component {
+    class API Position : public ShadowEngine::Entities::Component {
       SHObject_Base(Position)
       public:
         float x = 0;

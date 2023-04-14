@@ -13,7 +13,7 @@ namespace ShadowEngine {
 	/// <summary>
 	/// Represents the application
 	/// </summary>
-    class ShadowApplication
+    class API ShadowApplication
 	{
 		/// <summary>
 		/// This is the singleton instance

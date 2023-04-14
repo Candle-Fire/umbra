@@ -50,6 +50,8 @@ namespace ShadowEngine::Entities {
 
     SHObject_Base_Impl(Actor)
 
+    SHObject_Base_Impl(Entity)
+
     SHObject_Base_Impl(Scene)
 
     SHObject_Base_Impl(RootNode)

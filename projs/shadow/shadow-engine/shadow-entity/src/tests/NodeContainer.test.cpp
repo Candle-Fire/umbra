@@ -4,11 +4,8 @@
 
 #include "NodeContainer.h"
 
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch.hpp>
-
-uint32_t factorial(uint32_t number) {
-    return number <= 1 ? number : factorial(number - 1) * number;
-}
 
 using ShadowEngine::Entities::NodeContainer;
 
@@ -292,5 +289,22 @@ SCENARIO("Node Container", "[NodeContainer]") {
             }
         }
     }
+
+}
+
+TEST_CASE("Node Container Benchmarks", "[NodeContainer]") {
+    NodeContainer<TestClass> container;
+
+    BENCHMARK("Allocate 1000") {
+                                   for (int i = 0; i < 1000; i++) {
+                                       container.allocateWithType();
+                                   }
+                               };
+
+    BENCHMARK("Allocate 1000000") {
+                                      for (int i = 0; i < 1000000; i++) {
+                                          container.allocateWithType();
+                                      }
+                                  };
 
 }

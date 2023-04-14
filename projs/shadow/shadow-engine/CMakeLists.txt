@@ -15,26 +15,21 @@ FILE(GLOB_RECURSE SOURCES
         )
 list(FILTER SOURCES EXCLUDE REGEX ".*.test.cpp$")
 
-FILE(GLOB_RECURSE HEADERS
-        core/inc/*.h
-        shadow-entity/inc/*.h
-        shadow-renderer/inc/*.h
-        shadow-reflection/inc/*.h
-        shadow-utility/inc/*.h
-        shadow-math/inc/*.h
-        )
-
-add_library(shadow-engine SHARED ${SOURCES} ${HEADERS} $<TARGET_OBJECTS:imgui>)
-
-target_include_directories(shadow-engine
-        PRIVATE ${SDL2_INCLUDE_DIRS}
-        PUBLIC
+SET(IncludeDirs
         core/inc
         shadow-entity/inc
         shadow-renderer/inc
         shadow-reflection/inc
         shadow-utility/inc
         shadow-math/inc
+        )
+
+
+add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
+
+target_include_directories(shadow-engine
+        PRIVATE ${SDL2_INCLUDE_DIRS}
+        PUBLIC ${IncludeDirs}
         ${glm_SOURCE_DIR}
         INTERFACE
         ${imgui_SOURCE_DIR}
@@ -47,21 +42,27 @@ target_link_libraries(shadow-engine
 
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
-target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
+#target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
 
 
 add_executable(shadow-engine-test
         tests/test.main.cpp
-        shadow-entity/src/tests/test.test.cpp
-        )
+        shadow-entity/src/tests/NodeContainer.test.cpp
+        shadow-entity/src/tests/EntitySystem.test.cpp)
 
-target_include_directories(shadow-engine-test
-        PUBLIC shadow-entity/inc
-        )
+target_include_directories(shadow-engine-test PUBLIC ${IncludeDirs} PRIVATE ${SDL2_INCLUDE_DIRS})
 
 target_link_libraries(shadow-engine-test
-        PUBLIC Catch2::Catch2
+        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui Catch2::Catch2 shadow-engine
+        #-static -static-libgcc -static-libstdc++
         )
+
+add_custom_command(TARGET shadow-engine-test POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:shadow-engine-test> $<TARGET_FILE_DIR:shadow-engine-test>
+        COMMAND_EXPAND_LISTS
+        )
+
+SET_TARGET_PROPERTIES(shadow-engine-test PROPERTIES LINK_FLAGS "/PROFILE")
 
 include(CTest)
 include(Catch)

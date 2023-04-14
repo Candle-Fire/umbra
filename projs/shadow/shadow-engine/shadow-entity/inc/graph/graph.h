@@ -34,7 +34,7 @@ namespace ShadowEngine::Entities {
      * @tparam Type
      */
     template<class Type>
-    class rtm_ptr {
+    class API rtm_ptr {
       private:
         Type *m_ptr;
 
@@ -98,7 +98,7 @@ namespace ShadowEngine::Entities {
     /**
      * The base class for all things in the scene graph
      */
-    class NodeBase : public SHObject {
+    class API NodeBase : public SHObject {
       SHObject_Base(NodeBase)
 
         /**
@@ -149,11 +149,11 @@ namespace ShadowEngine::Entities {
 
     // TODO: I don't think there can be any other types of leaf nodes than components, this is only here to make the
     //  inheritance names better
-    class LeafNode : public NodeBase {
+    class API LeafNode : public NodeBase {
       SHObject_Base(LeafNode)
     };
 
-    class Component : public LeafNode {
+    class API Component : public LeafNode {
       SHObject_Base(Component)
     };
 
@@ -168,7 +168,7 @@ namespace ShadowEngine::Entities {
     template<typename T>
     concept IsActor = std::derived_from<T, Actor>;
 
-    class Node : public NodeBase {
+    class API Node : public NodeBase {
       SHObject_Base(Node)
         std::vector<rtm_ptr<NodeBase>> hierarchy;
         std::vector<rtm_ptr<NodeBase>> internal_hierarchy;
@@ -189,7 +189,7 @@ namespace ShadowEngine::Entities {
         void RemoveChild(const rtm_ptr<NodeBase> &child, bool internal = false);
     };
 
-    class Actor : public Node {
+    class API Actor : public Node {
       SHObject_Base(Actor)
       protected:
         /**
@@ -205,11 +205,11 @@ namespace ShadowEngine::Entities {
         void SetName(std::string name) { this->name = name; }
     };
 
-    class Entity : public Node {
+    class API Entity : public Node {
       SHObject_Base(Entity)
     };
 
-    class Scene : public Actor {
+    class API Scene : public Actor {
       SHObject_Base(Scene)
         std::vector<rtm_ptr<NodeBase>> static_hierarchy;
       public:
@@ -224,7 +224,7 @@ namespace ShadowEngine::Entities {
      * It is responsible for the allocation of nodes and does not care about the graph of them
      * @brief Manages the memory and IDs of entities
      */
-    class NodeManager {
+    class API NodeManager {
         //Map the runtime index of the entity to the container
         using NodeContainerRegistry = std::unordered_map<TypeID, INodeContainer *>;
 
@@ -259,6 +259,14 @@ namespace ShadowEngine::Entities {
         int nextUID = 0;
 
         /**
+         * @brief Returns the correct container for the entity type.
+         * Does not create a new one if it does not exist
+         * @param typeID The type ID of the entity
+         * @return The entity container accosted with this type
+         */
+        INodeContainer *GetNodeContainer(int typeID);
+
+        /**
          * @brief Returns the correct container for the entity type,
          * creating a new one if it does not exist
          * @tparam T The type of the entity
@@ -278,14 +286,6 @@ namespace ShadowEngine::Entities {
 
             return container;
         }
-
-        /**
-         * @brief Returns the correct container for the entity type.
-         * Does not create a new one if it does not exist
-         * @param typeID The type ID of the entity
-         * @return The entity container accosted with this type
-         */
-        inline INodeContainer *GetNodeContainer(int typeID);
 
         /**
          * @brief Assigns the next free LUT index to this entity
@@ -383,17 +383,16 @@ namespace ShadowEngine::Entities {
         }
     };
 
-    class SystemBase {
-      protected:
-
+    class API SystemBase {
       public:
-        virtual ~SystemBase() = default;
+        //SystemBase() {}
+        //virtual ~SystemBase() = default;
 
         virtual void run(NodeManager &nmgr) = 0;
     };
 
     template<class Target> requires std::derived_from<Target, NodeBase>
-    class System : public SystemBase {
+    class API System : public SystemBase {
         std::function<void(Target &node)> m_Func;
 
       public:
@@ -411,20 +410,22 @@ namespace ShadowEngine::Entities {
         }
     };
 
-    class SystemManager {
+    class API SystemManager {
         NodeManager &nodeManager;
 
         //vector storing the systems
-        std::vector<std::unique_ptr<SystemBase>> m_Systems;
+        std::vector<std::shared_ptr<SystemBase>> m_Systems;
+
       public:
         SystemManager(NodeManager &nmgr) : nodeManager(nmgr) {
 
         }
 
         template<class T>
-        System<T> &system() {
-            m_Systems.push_back(std::make_unique<System<T>>());
-            return *static_cast<System<T> *>(m_Systems.back().get());
+        std::shared_ptr<System<T>> system() {
+            auto ptr = std::make_unique<System<T>>();
+            m_Systems.push_back(std::make_shared<System<T>>());
+            return std::dynamic_pointer_cast<System<T>>(m_Systems.back());
         }
 
         void run() {
@@ -434,11 +435,11 @@ namespace ShadowEngine::Entities {
         }
     };
 
-    class RootNode : public Node {
+    class API RootNode : public Node {
       SHObject_Base(RootNode)
     };
 
-    class World : SHObject {
+    class API World : SHObject {
       SHObject_Base(World)
         rtm_ptr<RootNode> root;
 
@@ -463,7 +464,7 @@ namespace ShadowEngine::Entities {
         }
 
         template<class T>
-        System<T> &system() {
+        std::shared_ptr<System<T>> system() {
             return systemManager.system<T>();
         }
 
