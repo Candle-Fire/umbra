@@ -79,31 +79,15 @@ void GameModule::Recreate() {
 }
 
 void GameModule::Update(int frame) {
-    const float elapsed_time = Time::timeSinceStart;
-    const glm::mat4 model = glm::rotate(glm::mat4{1.0f},
-                                        (elapsed_time / 1000 / 2) * glm::radians(90.0f),
-                                        glm::vec3{1.0f, 1.0f, 0.0f});
-    const glm::mat4 view = glm::lookAt(glm::vec3{3.0f}, glm::vec3{0.0f},
-                                       glm::vec3{0.0f, 0.0f, 1.0f});
-    const glm::mat4 proj = glm::perspective(
-        glm::radians(45.0f), aspectRatio,
-        0.1f, 100.0f);
-    *trans_constant_->getData<Transformation>(frame) = {proj * view * model};
 }
 
 void GameModule::Render(VkCommandBuffer &commands, int frame) {
-    cube_model_->draw(commands, frame, 1);
 }
 
 void GameModule::OverlayRender() {
-    bool active = true;
-    if (ImGui::Begin("Game module window", &active, ImGuiWindowFlags_MenuBar))
-        ImGui::Text("Such text from curle's branch");
-    ImGui::End();
 }
 
 void GameModule::AfterFrameEnd() {
-    Time::UpdateTime();
 }
 
 void GameModule::LateRender(VkCommandBuffer &commands, int frame) {}

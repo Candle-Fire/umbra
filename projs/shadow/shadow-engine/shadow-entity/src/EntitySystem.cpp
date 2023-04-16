@@ -19,7 +19,7 @@ namespace ShadowEngine::Entities {
         auto scene = world.AddScene<Scene>({"Generated Scene"});
 
         //Add 100 NullActors to the scene with a Position component on each
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 100; i++) {
             auto child = scene->Add<Builtin::NullActor>({});
             child->SetName("NullActor " + std::to_string(i));
             child->Add<Builtin::Position>({10.0f * i, 10, 10});
@@ -27,11 +27,6 @@ namespace ShadowEngine::Entities {
 
         world.system<Builtin::Position>()->forEach([](auto &pos) {
             pos.y += 1.0f;
-        });
-
-        world.system<Builtin::Position>()->forEach([](auto &pos) {
-            if (pos.y > 100)
-                pos.GetParent()->Destroy();
         });
 
     }

@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 FILE(GLOB_RECURSE SOURCES
         core/src/*.cpp
+        shadow-assets/src/*.cpp
         shadow-entity/src/*.cpp
         shadow-renderer/src/*.cpp
         shadow-reflection/src/*.cpp
@@ -17,6 +18,7 @@ list(FILTER SOURCES EXCLUDE REGEX ".*.test.cpp$")
 
 SET(IncludeDirs
         core/inc
+        shadow-assets/inc
         shadow-entity/inc
         shadow-renderer/inc
         shadow-reflection/inc
@@ -42,7 +44,7 @@ target_link_libraries(shadow-engine
 
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
-#target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
+target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
 
 
 add_executable(shadow-engine-test
@@ -62,7 +64,7 @@ add_custom_command(TARGET shadow-engine-test POST_BUILD
         COMMAND_EXPAND_LISTS
         )
 
-SET_TARGET_PROPERTIES(shadow-engine-test PROPERTIES LINK_FLAGS "/PROFILE")
+#SET_TARGET_PROPERTIES(shadow-engine-test PROPERTIES LINK_FLAGS "/PROFILE")
 
 include(CTest)
 include(Catch)
