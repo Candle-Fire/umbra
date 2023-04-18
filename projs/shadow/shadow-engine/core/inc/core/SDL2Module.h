@@ -8,16 +8,16 @@
 namespace ShadowEngine {
 
     class SDL2Module : public Module {
-        SHObject_Base(SDL2Module)
+      SHObject_Base(SDL2Module)
 
-    public:
-        ShadowEngine::ShadowWindow* window;
+      public:
+        ShadowEngine::ShadowWindow *window;
 
-    private:
-    public:
-        SDL2Module() : Module("module:/platform/sdl2") {}
+      private:
+      public:
+        SDL2Module() : Module() {}
 
-    private:
+      private:
 
         void Init() override;
 
@@ -27,11 +27,11 @@ namespace ShadowEngine {
 
         void Recreate() override;
 
-        void Render(VkCommandBuffer& commands, int frame) override;
+        void Render(VkCommandBuffer &commands, int frame) override;
 
         void OverlayRender() override;
 
-        void LateRender(VkCommandBuffer& commands, int frame) override;
+        void LateRender(VkCommandBuffer &commands, int frame) override;
 
         std::string GetName() override;
 
@@ -41,7 +41,7 @@ namespace ShadowEngine {
 
         void Destroy() override;
 
-        void Event(SDL_Event* e) override;
+        void Event(SDL_Event *e) override;
     };
 
 }

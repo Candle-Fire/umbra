@@ -13,20 +13,17 @@
 namespace vlkx { class ScreenRenderPassManager; }
 
 class VulkanModule : public ShadowEngine::RendererModule {
-    SHObject_Base(VulkanModule);
-public:
+  SHObject_Base(VulkanModule);
+  public:
 
-    VulkanModule(): RendererModule("module:/renderer/vulkan") { instance = this; }
-	~VulkanModule() override;
+    VulkanModule() : RendererModule() { instance = this; }
 
-    std::vector<std::string> GetDependencies() override {
-        return {"module:/platform/sdl2"};
-    }
+    ~VulkanModule() override;
 
 #ifdef _DEBUG
-	static const bool validationRequired = true;
+    static const bool validationRequired = true;
 #else
-	static const bool validationRequired = false;
+    static const bool validationRequired = false;
 #endif
 
     void PreInit() override;
@@ -39,65 +36,72 @@ public:
 
     void PreRender() override;
 
-    void Render(VkCommandBuffer& commands, int frame) override;
+    void Render(VkCommandBuffer &commands, int frame) override;
 
     void OverlayRender() override;
 
-    void LateRender(VkCommandBuffer& commands, int frame) override;
+    void LateRender(VkCommandBuffer &commands, int frame) override;
 
     void AfterFrameEnd() override;
 
     void Destroy() override;
 
-    void Event(SDL_Event* e) override;
+    void Event(SDL_Event *e) override;
 
-    void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand>& commands) override;
+    void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) override;
 
     void EnableEditor() override;
 
     VkExtent2D GetRenderExtent() override;
 
-	// VulkanModule is a singleton class.
-	static VulkanModule* instance;
-	static VulkanModule* getInstance();
+    // VulkanModule is a singleton class.
+    static VulkanModule *instance;
 
-	// Initialize all Vulkan context and prepare validations in debug mode.
-	void initVulkan(SDL_Window* window);
-	void createAppAndVulkanInstance(bool enableValidation, ValidationAndExtension* validations);
+    static VulkanModule *getInstance();
 
-	// Start and end a frame render.
-	void startDraw();
-	void endDraw();
+    // Initialize all Vulkan context and prepare validations in debug mode.
+    void initVulkan(SDL_Window *window);
 
-	// Cleanup after the application has closed.
-	void cleanup();
+    void createAppAndVulkanInstance(bool enableValidation, ValidationAndExtension *validations);
 
-	VkInstance getVulkan() { return vulkan; }
-	VulkanDevice* getDevice() { return device; }
-	SwapChain* getSwapchain() { return swapchain; }
-	VmaAllocator getAllocator() { return allocator; }
-    SDL_Window* getWind() { return wnd; }
-    const std::unique_ptr<vlkx::ScreenRenderPassManager>& getRenderPass();
+    // Start and end a frame render.
+    void startDraw();
 
+    void endDraw();
 
-private:
+    // Cleanup after the application has closed.
+    void cleanup();
+
+    VkInstance getVulkan() { return vulkan; }
+
+    VulkanDevice *getDevice() { return device; }
+
+    SwapChain *getSwapchain() { return swapchain; }
+
+    VmaAllocator getAllocator() { return allocator; }
+
+    SDL_Window *getWind() { return wnd; }
+
+    const std::unique_ptr<vlkx::ScreenRenderPassManager> &getRenderPass();
+
+  private:
     bool editorEnabled = false;
     std::vector<VkDescriptorSet> editorRenderPlanes;
     std::vector<std::unique_ptr<vlkx::Image>> editorContentFrames;
 
     // The SDL Window contains the size of the drawable area.
-    SDL_Window* wnd;
-	// To handle the validation of Vulkan API usage
-	ValidationAndExtension* validators{};
-	// To manage interaction with the hardware
-	VulkanDevice* device{};
-	// To handle the framebuffers
-	SwapChain* swapchain{};
-	// To handle automatic management of memory.
-	VmaAllocator allocator{};
-	// To manage the Vulkan context that was passed to us by the API
-	VkInstance vulkan{};
-	// To manage the canvas that was given to us by GLFW
-	VkSurfaceKHR surface{};
+    SDL_Window *wnd;
+    // To handle the validation of Vulkan API usage
+    ValidationAndExtension *validators{};
+    // To manage interaction with the hardware
+    VulkanDevice *device{};
+    // To handle the framebuffers
+    SwapChain *swapchain{};
+    // To handle automatic management of memory.
+    VmaAllocator allocator{};
+    // To manage the Vulkan context that was passed to us by the API
+    VkInstance vulkan{};
+    // To manage the canvas that was given to us by GLFW
+    VkSurfaceKHR surface{};
 
 };

@@ -5,11 +5,11 @@
 
 class GameModule : public ShadowEngine::Module {
 
-    SHObject_Base(GameModule)
+  SHObject_Base(GameModule)
 
     std::string test = "asdasd";
-public:
-    GameModule() : Module("module:/test-game/GameModule") {}
+  public:
+    GameModule() : Module() {}
 
     void PreInit() override;
 
@@ -23,14 +23,14 @@ public:
 
     void OverlayRender() override;
 
-    void Render(VkCommandBuffer& commands, int frame) override;
+    void Render(VkCommandBuffer &commands, int frame) override;
 
-    void LateRender(VkCommandBuffer& commands, int frame) override;
+    void LateRender(VkCommandBuffer &commands, int frame) override;
 
     void AfterFrameEnd() override;
 
     void Destroy() override;
 
-    void Event(SDL_Event*) override;
+    void Event(SDL_Event *) override;
 
 };
