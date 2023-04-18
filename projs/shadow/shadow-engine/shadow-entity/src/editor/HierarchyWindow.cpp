@@ -2,7 +2,7 @@
 
 namespace ShadowEngine::Entities::Editor {
 
-    EntitySystem *HierarchyWindow::entitySystem = nullptr;
+    std::weak_ptr<ShadowEngine::Entities::EntitySystem> HierarchyWindow::entitySystem;
 
     ShadowEngine::Entities::rtm_ptr<ShadowEngine::Entities::NodeBase> selected_ent;
     ShadowEngine::Entities::rtm_ptr<ShadowEngine::Entities::NodeBase> selected_inspector;
@@ -57,13 +57,15 @@ namespace ShadowEngine::Entities::Editor {
 
         ImGui::Begin("Hierarchy", &shown, ImGuiWindowFlags_MenuBar);
 
-        auto root = entitySystem->GetWorld().GetRoot();
+        if (!entitySystem.expired()) {
+            auto a = entitySystem.lock();
+            auto root = a->GetWorld().GetRoot();
 
-        //Draw each scene in the world
-        for (auto &scene : root->GetHierarchy()) {
-            DrawTree(scene);
+            //Draw each scene in the world
+            for (auto &scene : root->GetHierarchy()) {
+                DrawTree(scene);
+            }
         }
-
         ImGui::End();
 
         ImGui::PopStyleVar(2);

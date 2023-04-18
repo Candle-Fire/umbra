@@ -2,20 +2,22 @@
 
 #include "imgui.h"
 #include "EntitySystem.h"
-#include "core/ModuleManager.h"
+#include "core/module-manager-v2.h"
+#include "core/ShadowApplication.h"
 
 namespace ShadowEngine::Entities::Debugger {
 
     class AllocationDebugger {
 
-        static ShadowEngine::Entities::EntitySystem *entitySystem;
+        static std::weak_ptr<ShadowEngine::Entities::EntitySystem> entitySystem;
 
       public:
         static void Draw() {
 
-            if (entitySystem == nullptr)
+            if (entitySystem.expired())
                 entitySystem =
-                    ShadowEngine::ModuleManager::instance->GetModuleByType<ShadowEngine::Entities::EntitySystem>();
+                    ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::Entities::EntitySystem>(
+                        "module:/entity-system");
 
             DrawAllocationDebugger();
 

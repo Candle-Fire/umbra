@@ -5,9 +5,13 @@
 #include "entities/NullActor.h"
 #include "entities/Position.h"
 
+#include "core/module-manager-v2.h"
+
 namespace ShadowEngine::Entities {
 
     SHObject_Base_Impl(EntitySystem)
+
+    MODULE_ENTRY(ShadowEngine::Entities::EntitySystem, EntitySystem)
 
     void EntitySystem::OverlayRender() {
         ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();

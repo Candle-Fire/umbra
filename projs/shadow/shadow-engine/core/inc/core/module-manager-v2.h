@@ -60,7 +60,7 @@ namespace ShadowEngine {
         /// @brief weather this module is enabled
         /// This could mean that it was not enabled for running
         /// or it was deactivated while setup (eg.: not able to run on the platform)
-        bool enabled;
+        bool enabled = true;
     };
 
 
@@ -107,7 +107,7 @@ namespace ShadowEngine {
         /// @brief Depth first sort helper
         /// @param module_holder The module that is currently being processed
         /// @param sorted The sorted modules
-        void Dfs(const ModuleHolder &module_holder, std::vector<ModuleHolder> &sorted);
+        void Dfs(ModuleHolder &module_holder, std::vector<ModuleHolder> &sorted);
 
         /// @brief Sorts the modules based on their dependencies
         void SortModules();
@@ -160,7 +160,7 @@ namespace ShadowEngine {
                     return std::dynamic_pointer_cast<T>(i.module);
                 }
             }
-            throw std::exception(); //TODO
+            throw std::logic_error("Module " + id + " could not be found");
         }
 
         /// @brief Retruns the full list of known modules
