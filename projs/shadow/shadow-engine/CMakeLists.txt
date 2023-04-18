@@ -7,12 +7,14 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 FILE(GLOB_RECURSE SOURCES
         core/src/*.cpp
+        shadow-entity/src/*.cpp
         shadow-renderer/src/*.cpp
         shadow-reflection/src/*.cpp
         shadow-utility/src/*.cpp
         )
 FILE(GLOB_RECURSE HEADERS
         core/inc/*.h
+        shadow-entity/inc/*.h
         shadow-renderer/inc/*.h
         shadow-reflection/inc/*.h
         shadow-utility/inc/*.h
@@ -24,6 +26,7 @@ target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}
         PUBLIC
             core/inc
+            shadow-entity/inc
             shadow-renderer/inc
             shadow-reflection/inc
             shadow-utility/inc
