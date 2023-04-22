@@ -75,15 +75,10 @@ namespace ShadowEngine {
 
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 
-        SH::Events::EventDispatcher<SH::Events::SDLEvent>::subscribe(
+        eventBus.subscribe<SH::Events::SDLEvent>(
             [](SH::Events::SDLEvent &e) {
                 spdlog::info(e.event.type);
             });
-
-        //subref = eventBus.subscribe<SDLEvent>(nullptr,[this](SDLEvent& e){
-        //    spdlog::info(e.event.type);
-        //    eventBus.unsubscribe<SDLEvent>(subref);
-        //});
     }
 
     void ShadowApplication::Start() {

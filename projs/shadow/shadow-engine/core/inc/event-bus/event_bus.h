@@ -30,24 +30,46 @@ namespace SH::Events {
     template<EventType T, BusID Bus = SH::Events::MainBus>
     class EventDispatcher {
       public:
-        using SubRef = Subscription<T>;
+        using SubRef = std::shared_ptr<Subscription<T>>;
         using SubscriptionList = std::vector<SubRef>;
 
         static SubscriptionList subscriptionList;
 
-        static void subscribe(std::function<const void(T &)> func) {
-            //auto sub = std::make_shared<Subscription>(func);
-            subscriptionList.push_back(Subscription(func));
+        static SubRef subscribe(std::function<const void(T &)> func) {
+            auto sub = std::make_shared<Subscription<T>>(func);
+            subscriptionList.push_back(sub);
+            return sub;
+        }
+
+        void unsubscribe(const SubRef ref) {
+            subscriptionList.erase(std::remove(subscriptionList.begin(), subscriptionList.end(), ref),
+                                   subscriptionList.end());
         }
 
         static void call(T &event) {
             for (int i = 0; i < subscriptionList.size(); ++i) {
-                subscriptionList[i].callback(event);
+                subscriptionList[i]->callback(event);
             }
         }
     };
 
     template<EventType T, BusID Bus>
     EventDispatcher<T, Bus>::SubscriptionList EventDispatcher<T, Bus>::subscriptionList;
+
+    template<BusID id>
+    class EventBus {
+        template<EventType T>
+        using Dispatcher = EventDispatcher<T, id>;
+      public:
+        template<EventType T>
+        Dispatcher<T>::SubRef subscribe(std::function<const void(T &)> func) {
+            return Dispatcher<T>::subscribe(func);
+        }
+
+        template<EventType T>
+        void fire(T &e) {
+            Dispatcher<T>::call(e);
+        }
+    };
 
 }

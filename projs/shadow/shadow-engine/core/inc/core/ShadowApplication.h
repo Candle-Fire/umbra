@@ -22,14 +22,11 @@ namespace ShadowEngine {
         static ShadowApplication *instance;
 
         /// <summary>
-        /// The active window that we are drawing to
-        /// </summary>
-        ShadowWindow *window_;
-
-        /// <summary>
         /// The module manager instance
         /// </summary>
         ModuleManager moduleManager;
+
+        SH::Events::EventBus<0> eventBus;
 
         /// <summary>
         /// Represents the running state.
@@ -40,8 +37,6 @@ namespace ShadowEngine {
         bool debug = false;
 
         std::string game = "";
-
-        void loadGame();
 
       public:
 
