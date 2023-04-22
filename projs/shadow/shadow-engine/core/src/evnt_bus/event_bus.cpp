@@ -1,10 +1,7 @@
-//
-// Created by dpete on 25/11/2022.
-//
 #include "event-bus/event_bus.h"
 #include "SHObject.h"
 
-namespace ShadowEngine {
+namespace SH::Events {
 
     SHObject_Base_Impl(Event)
 

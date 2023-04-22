@@ -2,7 +2,6 @@
 
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
-#include <vlkx/vulkan/VulkanModule.h>
 #include <spdlog/spdlog.h>
 
 #include "core/ShadowApplication.h"
@@ -10,10 +9,6 @@
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "vlkx/vulkan/VulkanModule.h"
-#include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <spdlog/spdlog.h>
-
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -24,7 +19,7 @@ namespace ShadowEngine {
 
     SHObject_Base_Impl(ShadowApplication)
 
-	ShadowApplication* ShadowApplication::instance = nullptr;
+    ShadowApplication *ShadowApplication::instance = nullptr;
 
     std::unique_ptr<vlkx::RenderCommand> renderCommands;
 
@@ -80,19 +75,26 @@ namespace ShadowEngine {
 
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 
-        subref = eventBus.subscribe<SDLEvent>(nullptr,[this](SDLEvent& e){
-            spdlog::info(e.event.type);
-            eventBus.unsubscribe<SDLEvent>(subref);
-        });
-	}
+        SH::Events::EventDispatcher<SH::Events::SDLEvent>::subscribe(
+            [](SH::Events::SDLEvent &e) {
+                spdlog::info(e.event.type);
+            });
+
+        //subref = eventBus.subscribe<SDLEvent>(nullptr,[this](SDLEvent& e){
+        //    spdlog::info(e.event.type);
+        //    eventBus.unsubscribe<SDLEvent>(subref);
+        //});
+    }
 
     void ShadowApplication::Start() {
         SDL_Event event;
         while (running) {
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
                 moduleManager.Event(&event);
-                SDLEvent e(event);
-                eventBus.fire(e);
+
+                SH::Events::SDLEvent e(event);
+                SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
+                //eventBus.fire(e);
                 if (event.type == SDL_QUIT)
                     running = false;
             }

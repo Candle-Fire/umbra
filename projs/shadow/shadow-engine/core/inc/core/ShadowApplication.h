@@ -11,16 +11,15 @@
 
 namespace ShadowEngine {
 
-	/// <summary>
-	/// Represents the application
-	/// </summary>
-    class ShadowApplication : ShadowEngine::SHObject
-	{
-    SHObject_Base(ShadowApplication)
-		/// <summary>
-		/// This is the singleton instance
-		/// </summary>
-		static ShadowApplication* instance;
+    /// <summary>
+    /// Represents the application
+    /// </summary>
+    class ShadowApplication : ShadowEngine::SHObject {
+      SHObject_Base(ShadowApplication)
+        /// <summary>
+        /// This is the singleton instance
+        /// </summary>
+        static ShadowApplication *instance;
 
         /// <summary>
         /// The active window that we are drawing to
@@ -32,11 +31,11 @@ namespace ShadowEngine {
         /// </summary>
         ModuleManager moduleManager;
 
-		/// <summary>
-		/// Represents the running state.
-		/// </summary>
-		/// If set to false the main loop will stop and continue with the shutdown.
-		bool running = true;
+        /// <summary>
+        /// Represents the running state.
+        /// </summary>
+        /// If set to false the main loop will stop and continue with the shutdown.
+        bool running = true;
 
         bool debug = false;
 
@@ -44,13 +43,15 @@ namespace ShadowEngine {
 
         void loadGame();
 
-	public:
+      public:
 
-        EventBus::EventBus eventBus;
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		ShadowApplication(int argc, char* argv[]);
+        //EventBus::EventBus eventBus;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        ShadowApplication(int argc, char *argv[]);
+
         virtual ~ShadowApplication();
 
         /// <summary>
