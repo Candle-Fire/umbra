@@ -242,12 +242,4 @@ namespace ShadowEngine {
         }
     }
 
-    void ModuleManager::Event(SDL_Event *evt) {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->Event(evt);
-            }
-        }
-    }
-
 }

@@ -22,10 +22,7 @@ namespace ShadowEngine::Entities {
 
         ~EntitySystem() override;
 
-        std::string GetName() override { return "EntitySystem"; };
-
         World &GetWorld() { return world; }
-
 
         // event functions
 
@@ -48,8 +45,6 @@ namespace ShadowEngine::Entities {
         void AfterFrameEnd() override {}
 
         void Destroy() override {}
-
-        void Event(SDL_Event *e) override {}
     };
 
 }

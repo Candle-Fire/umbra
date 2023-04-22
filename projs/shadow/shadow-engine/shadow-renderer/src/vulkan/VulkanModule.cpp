@@ -281,8 +281,6 @@ void VulkanModule::Render(VkCommandBuffer &commands, int frame) {}
 
 void VulkanModule::Update(int frame) {}
 
-void VulkanModule::Event(SDL_Event *e) { (void) e; }
-
 void VulkanModule::LateRender(VkCommandBuffer &commands, int frame) {
 }
 

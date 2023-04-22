@@ -15,22 +15,19 @@ class GameModule : public ShadowEngine::Module {
 
     void Init() override;
 
-    void Update(int frame) override;
+    void Update(int frame) override {};
 
-    void PreRender() override;
+    void PreRender() override {};
 
-    void Recreate() override;
+    void Recreate() override {};
 
-    void OverlayRender() override;
+    void OverlayRender() override {};
 
-    void Render(VkCommandBuffer &commands, int frame) override;
+    void Render(VkCommandBuffer &commands, int frame) override {};
 
-    void LateRender(VkCommandBuffer &commands, int frame) override;
+    void LateRender(VkCommandBuffer &commands, int frame) override {};
 
-    void AfterFrameEnd() override;
+    void AfterFrameEnd() override {};
 
-    void Destroy() override;
-
-    void Event(SDL_Event *) override;
-
+    void Destroy() override {};
 };

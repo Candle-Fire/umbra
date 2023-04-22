@@ -46,8 +46,4 @@ class CoreModule : public ShadowEngine::Module {
     void Destroy() override {
 
     }
-
-    void Event(SDL_Event *e) override {
-
-    }
 };

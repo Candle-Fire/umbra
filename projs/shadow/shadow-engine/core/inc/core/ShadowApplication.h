@@ -56,19 +56,12 @@ namespace ShadowEngine {
         /// <returns>The current application reference</returns>
         static ShadowApplication &Get();
 
-        /// <summary>
-        /// Returns the active window used for rendering
-        /// </summary>
-        /// <returns> The window instance </returns>
-        //ShadowWindow& const GetWindow() const { return window_; };
-        //void SetWindow(ShadowWindow w) { window_ = w; }
-
         ModuleManager &GetModuleManager() { return moduleManager; };
+
+        SH::Events::EventBus<0> GetEventBus() { return eventBus; };
 
         void Init();
 
         void Start();
-
-        void PollEvents();
     };
 }

@@ -74,19 +74,12 @@ namespace ShadowEngine {
         renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
 
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
-
-        eventBus.subscribe<SH::Events::SDLEvent>(
-            [](SH::Events::SDLEvent &e) {
-                spdlog::info(e.event.type);
-            });
     }
 
     void ShadowApplication::Start() {
         SDL_Event event;
         while (running) {
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                moduleManager.Event(&event);
-
                 SH::Events::SDLEvent e(event);
                 SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
                 //eventBus.fire(e);

@@ -46,8 +46,6 @@ class VulkanModule : public ShadowEngine::RendererModule {
 
     void Destroy() override;
 
-    void Event(SDL_Event *e) override;
-
     void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) override;
 
     void EnableEditor() override;
@@ -68,6 +66,7 @@ class VulkanModule : public ShadowEngine::RendererModule {
     void startDraw();
 
     void endDraw();
+
     VkDescriptorSet getEditorRenderPlanes();
 
     // Cleanup after the application has closed.
