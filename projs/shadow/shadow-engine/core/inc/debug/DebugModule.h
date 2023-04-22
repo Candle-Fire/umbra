@@ -13,7 +13,15 @@ namespace ShadowEngine::Debug {
         bool active;
 
       public:
-        DebugModule() : Module() {}
+        bool w_time = true;
+        bool w_modules = true;
+        bool w_imguiDemo = true;
+
+        void DrawModuleWindow();
+
+        void DrawTimeWindow();
+
+        void DrawImguiDemo();
 
         void Render(VkCommandBuffer &commands, int frame) override {};
 

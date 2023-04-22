@@ -78,4 +78,6 @@ add_subdirectory(projs/shadow/shadow-engine)
 # Runtime executable
 add_subdirectory(projs/shadow/shadow-runtime)
 
+add_subdirectory(projs/shadow/shadow-editor)
+
 add_subdirectory(projs/test-game)

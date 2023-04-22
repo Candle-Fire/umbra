@@ -10,64 +10,65 @@
 
 namespace ShadowEngine {
 
-	/// <summary>
-	/// Represents the application
-	/// </summary>
-    class API ShadowApplication
-	{
-		/// <summary>
-		/// This is the singleton instance
-		/// </summary>
-		static ShadowApplication* instance;
+    /// <summary>
+    /// Represents the application
+    /// </summary>
+    class API ShadowApplication {
+        /// <summary>
+        /// This is the singleton instance
+        /// </summary>
+        static ShadowApplication *instance;
 
-		/// <summary>
-		/// The active window that we are drawing to
-		/// </summary>
-		ShadowWindow* window_;
+        /// <summary>
+        /// The active window that we are drawing to
+        /// </summary>
+        ShadowWindow *window_;
 
-		/// <summary>
-		/// The module manager instance
-		/// </summary>
-		ModuleManager moduleManager;
+        /// <summary>
+        /// The module manager instance
+        /// </summary>
+        ModuleManager moduleManager;
 
-		/// <summary>
-		/// Represents the running state.
-		/// </summary>
-		/// If set to false the main loop will stop and continue with the shutdown.
-		bool running = true;
+        /// <summary>
+        /// Represents the running state.
+        /// </summary>
+        /// If set to false the main loop will stop and continue with the shutdown.
+        bool running = true;
 
-		bool debug = false;
+        bool debug = false;
 
         std::string game = "";
 
         void loadGame();
 
-	public:
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		ShadowApplication(int argc, char* argv[]);
+      public:
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        ShadowApplication(int argc, char *argv[]);
+
         virtual ~ShadowApplication();
 
-		/// <summary>
-		/// Static getter for the singleton instance 
-		/// </summary>
-		/// Use this for accessing the Application
-		/// <returns>The current application reference</returns>
-		static ShadowApplication& Get();
+        /// <summary>
+        /// Static getter for the singleton instance
+        /// </summary>
+        /// Use this for accessing the Application
+        /// <returns>The current application reference</returns>
+        static ShadowApplication &Get();
 
-		/// <summary>
-		/// Returns the active window used for rendering
-		/// </summary>
-		/// <returns> The window instance </returns>
-		//ShadowWindow& const GetWindow() const { return window_; };
-		//void SetWindow(ShadowWindow w) { window_ = w; }
+        /// <summary>
+        /// Returns the active window used for rendering
+        /// </summary>
+        /// <returns> The window instance </returns>
+        //ShadowWindow& const GetWindow() const { return window_; };
+        //void SetWindow(ShadowWindow w) { window_ = w; }
 
-        ModuleManager& GetModuleManager() { return moduleManager; };
+        ModuleManager &GetModuleManager() { return moduleManager; };
 
         void Init();
+
         void Start();
 
         void PollEvents();
-	};
+    };
 }

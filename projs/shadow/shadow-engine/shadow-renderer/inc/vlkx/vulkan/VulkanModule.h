@@ -68,6 +68,7 @@ class VulkanModule : public ShadowEngine::RendererModule {
     void startDraw();
 
     void endDraw();
+    VkDescriptorSet getEditorRenderPlanes();
 
     // Cleanup after the application has closed.
     void cleanup();

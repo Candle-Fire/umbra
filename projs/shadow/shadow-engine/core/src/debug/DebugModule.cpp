@@ -10,19 +10,33 @@ MODULE_ENTRY(ShadowEngine::Debug::DebugModule, DebugModule)
 
 void ShadowEngine::Debug::DebugModule::OverlayRender() {
 
-    if (ImGui::Begin("Time", &active, ImGuiWindowFlags_MenuBar)) {
+    //DrawModuleWindow();
+}
+
+void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
+
+    if(!w_time)
+        return;
+
+    if (ImGui::Begin("Time", &w_time, ImGuiWindowFlags_MenuBar)) {
         ImGui::Text("delta time in ms: %lf", Time::deltaTime_ms);
         ImGui::Text("delta time in s: %lf", Time::deltaTime);
         ImGui::Text("LAST time in: %d", Time::LAST);
     }
 
     ImGui::End();
+}
 
-    if (ImGui::Begin("Active Modules", &active, ImGuiWindowFlags_MenuBar)) {
+void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
+
+    if(!w_modules)
+        return;
+
+    if (ImGui::Begin("Active Modules", &w_modules, ImGuiWindowFlags_MenuBar)) {
 
         ShadowEngine::ModuleManager &m = ShadowEngine::ShadowApplication::Get().GetModuleManager();
 
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:");
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:",0);
         for (auto &module: m.GetModules()) {
             if(module.enabled)
                 ImGui::Text("%s", module.descriptor.name.c_str());
@@ -33,5 +47,11 @@ void ShadowEngine::Debug::DebugModule::OverlayRender() {
     }
 
     ImGui::End();
+}
+
+void ShadowEngine::Debug::DebugModule::DrawImguiDemo() {
+
+    if(w_imguiDemo)
+        ImGui::ShowDemoWindow(&w_imguiDemo);
 
 }
