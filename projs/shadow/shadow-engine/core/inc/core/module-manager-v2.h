@@ -26,12 +26,20 @@ using ID = std::string;
 
 namespace ShadowEngine {
 
+    enum AssemblyType{
+        LIB,
+        EXE,
+    };
+
     /// @brief Represents known DLL files that could be loaded during runtime
     struct Assembly {
         /// @brief The logical ID of the DLL file (eg: "assembly:/core")
         ID id;
         /// @brief The system path to the DLL file being referenced
         std::string path;
+
+        AssemblyType type = AssemblyType::LIB;
+
         /// @brief The dylib pointer to the loaded
         dylib *lib = nullptr;
     };

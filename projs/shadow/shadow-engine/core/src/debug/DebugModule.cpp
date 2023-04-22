@@ -37,11 +37,11 @@ void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
         ShadowEngine::ModuleManager &m = ShadowEngine::ShadowApplication::Get().GetModuleManager();
 
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:",0);
-        for (auto &module: m.getModules()) {
-            if(moule.enabled)
+        for (auto &module: m.GetModules()) {
+            if(module.enabled)
                 ImGui::Text("%s", module.descriptor.name.c_str());
             else
-                ImGui::TextDisabled("%s", module.descriptor.name.c_str())
+                ImGui::TextDisabled("%s", module.descriptor.name.c_str());
         }
 
     }

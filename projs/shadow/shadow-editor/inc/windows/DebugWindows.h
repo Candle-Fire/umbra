@@ -6,12 +6,12 @@
 
 namespace ShadowEngine::Editor {
 
-    class DebugWindows: public EditorWindow{
-    SHObject_Base(DebugWindows)
+    class DebugWindows : public EditorWindow {
+      SHObject_Base(DebugWindows)
 
-        ShadowEngine::Debug::DebugModule* debugModule;
+        std::weak_ptr<ShadowEngine::Debug::DebugModule> debugModule;
 
-    public:
+      public:
         DebugWindows();
 
         void Draw() override;

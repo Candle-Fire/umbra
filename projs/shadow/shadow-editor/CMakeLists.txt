@@ -5,13 +5,15 @@ FILE(GLOB_RECURSE SOURCES src/*.cpp inc/*.h)
 
 add_executable(shadow-editor ${SOURCES})
 
-target_include_directories(shadow-editor PRIVATE ${SDL2_INCLUDE_DIRS})
+target_include_directories(shadow-editor
+        PUBLIC inc/
+        PRIVATE ${SDL2_INCLUDE_DIRS})
 target_link_libraries(shadow-editor PRIVATE SDL2::SDL2main PUBLIC shadow-engine)
 
 add_custom_command(TARGET shadow-editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:shadow-runtime> $<TARGET_FILE_DIR:shadow-editor>
         COMMAND_EXPAND_LISTS
-)
+        )
 
 add_custom_command(TARGET shadow-editor
         POST_BUILD

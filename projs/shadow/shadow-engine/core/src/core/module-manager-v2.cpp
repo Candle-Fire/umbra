@@ -109,7 +109,10 @@ namespace ShadowEngine {
         dylib *dllptr;
 
         try {
-            dllptr = new dylib("./", assembly->path);
+            dllptr = new dylib(
+                "./",
+                assembly->path,
+                assembly->type == AssemblyType::LIB ? dylib::add_filename_decorations : dylib::no_filename_decorations);
         }
         catch (std::exception &e) {
             spdlog::error(e.what());
