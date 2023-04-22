@@ -87,14 +87,12 @@ namespace ShadowEngine {
                     running = false;
             }
 
-            moduleManager.PreRender();
+            eventBus.fire(SH::Events::PreRender());
 
             if (!renderer.expired()) {
                 auto r = renderer.lock();
                 r->BeginRenderPass(renderCommands);
             }
-
-            moduleManager.AfterFrameEnd();
 
             renderCommands->nextFrame();
             Time::UpdateTime();

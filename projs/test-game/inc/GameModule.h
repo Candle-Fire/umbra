@@ -14,20 +14,4 @@ class GameModule : public ShadowEngine::Module {
     void PreInit() override;
 
     void Init() override;
-
-    void Update(int frame) override {};
-
-    void PreRender() override {};
-
-    void Recreate() override {};
-
-    void OverlayRender() override {};
-
-    void Render(VkCommandBuffer &commands, int frame) override {};
-
-    void LateRender(VkCommandBuffer &commands, int frame) override {};
-
-    void AfterFrameEnd() override {};
-
-    void Destroy() override {};
 };

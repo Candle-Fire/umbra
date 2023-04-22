@@ -24,20 +24,6 @@ namespace ShadowEngine {
 
         void PreInit() override;
 
-        void Update(int frame) override {};
-
-        void Recreate() override {};
-
-        void Render(VkCommandBuffer &commands, int frame) override {};
-
-        void OverlayRender() override {};
-
-        void LateRender(VkCommandBuffer &commands, int frame) override {};
-
-        void AfterFrameEnd() override {};
-
-        void PreRender() override {};
-
         void Destroy() override;
     };
 

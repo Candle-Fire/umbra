@@ -66,8 +66,21 @@ namespace SH::Events {
             return Dispatcher<T>::subscribe(func);
         }
 
+        template<EventType T, typename Self>
+        using MemberCallback = void (Self::*)(T &);
+
+        template<EventType T, typename Self>
+        Dispatcher<T>::SubRef subscribe(Self *self, const MemberCallback<T, Self> &fn_ptr) {
+            return Dispatcher<T>::subscribe(std::bind(fn_ptr, self, std::placeholders::_1));
+        }
+
         template<EventType T>
         void fire(T &e) {
+            Dispatcher<T>::call(e);
+        }
+
+        template<EventType T>
+        void fire(T e) {
             Dispatcher<T>::call(e);
         }
     };

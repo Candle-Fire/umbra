@@ -7,6 +7,9 @@ namespace SH::Events {
 
     SHObject_Base_Impl(SDLEvent)
 
-    SHObject_Base_Impl(TestEvent)
+    SHObject_Base_Impl(OverlayRender)
 
+    SHObject_Base_Impl(PreRender)
+
+    SHObject_Base_Impl(Recreate)
 }

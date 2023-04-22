@@ -19,30 +19,6 @@ class CoreModule : public ShadowEngine::Module {
 
     }
 
-    void Recreate() override {
-
-    }
-
-    void PreRender() override {
-
-    }
-
-    void Render(VkCommandBuffer &commands, int frame) override {
-
-    }
-
-    void LateRender(VkCommandBuffer &commands, int frame) override {
-
-    }
-
-    void OverlayRender() override {
-
-    }
-
-    void AfterFrameEnd() override {
-
-    }
-
     void Destroy() override {
 
     }

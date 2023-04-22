@@ -27,7 +27,7 @@ void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
     ImGui::End();
 }
 
-void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
+void ShadowEngine::Debug::DebugModule::DrawModuleWindow(SH::Events::OverlayRender&) {
 
     if(!w_modules)
         return;
@@ -54,4 +54,11 @@ void ShadowEngine::Debug::DebugModule::DrawImguiDemo() {
     if(w_imguiDemo)
         ImGui::ShowDemoWindow(&w_imguiDemo);
 
+}
+
+void ShadowEngine::Debug::DebugModule::Init() {
+    ShadowEngine::ShadowApplication::Get().GetEventBus().subscribe(
+        this,
+        &DebugModule::DrawModuleWindow
+    );
 }

@@ -23,27 +23,15 @@ namespace ShadowEngine {
         }
 
         /// @brief Pre Init is called when the module is added to the engine
-        virtual void PreInit() = 0;
+        virtual void PreInit() {};
 
         /// @brief Init is called after all the modules are added
-        virtual void Init() = 0;
+        virtual void Init() {};
 
         /// @brief update is called each frame
-        virtual void Update(int frame) = 0;
+        virtual void Update(int frame) {};
 
-        virtual void Recreate() = 0;
-
-        virtual void PreRender() = 0;
-
-        virtual void Render(VkCommandBuffer &commands, int frame) = 0;
-
-        virtual void LateRender(VkCommandBuffer &commands, int frame) = 0;
-
-        virtual void OverlayRender() = 0;
-
-        virtual void AfterFrameEnd() = 0;
-
-        virtual void Destroy() = 0;
+        virtual void Destroy() {};
 
         /// <summary>
         /// Returns the name of the module

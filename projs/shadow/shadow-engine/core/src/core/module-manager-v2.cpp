@@ -186,58 +186,10 @@ namespace ShadowEngine {
         }
     }
 
-    void ModuleManager::PreRender() {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->PreRender();
-            }
-        }
-    }
-
-    void ModuleManager::AfterFrameEnd() {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->AfterFrameEnd();
-            }
-        }
-    }
-
     void ModuleManager::Update(int frame) {
         for (auto &holder: this->modules) {
             if (holder.enabled) {
                 holder.module->Update(frame);
-            }
-        }
-    }
-
-    void ModuleManager::LateRender(VkCommandBuffer &commands, int frame) {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->LateRender(commands, frame);
-            }
-        }
-    }
-
-    void ModuleManager::OverlayRender() {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->OverlayRender();
-            }
-        }
-    }
-
-    void ModuleManager::Recreate() {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->Recreate();
-            }
-        }
-    }
-
-    void ModuleManager::Render(VkCommandBuffer &commands, int frame) {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->Render(commands, frame);
             }
         }
     }
