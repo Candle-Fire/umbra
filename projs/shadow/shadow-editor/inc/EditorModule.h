@@ -2,6 +2,7 @@
 
 #include "core/Module.h"
 #include "EditorWindow.h"
+#include "core/ShadowApplication.h"
 
 #include <map>
 
@@ -24,7 +25,7 @@ namespace ShadowEngine::Editor {
 
         void RegisterMenu(std::string path, Menu m);
 
-        void OverlayRender();
+        void OverlayRender(SH::Events::OverlayRender &);
 
         void DrawMenu();
 

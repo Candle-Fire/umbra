@@ -13,7 +13,7 @@ namespace ShadowEngine::Entities {
 
     MODULE_ENTRY(ShadowEngine::Entities::EntitySystem, EntitySystem)
 
-    void EntitySystem::OverlayRender() {
+    void EntitySystem::OverlayRender(SH::Events::OverlayRender &) {
         ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
         ShadowEngine::Entities::Editor::HierarchyWindow::Draw();
     }
@@ -40,7 +40,8 @@ namespace ShadowEngine::Entities {
     }
 
     void EntitySystem::Init() {
-
+        ShadowEngine::ShadowApplication::Get().GetEventBus()
+            .subscribe(this, &EntitySystem::OverlayRender);
     }
 
     void EntitySystem::Update(int frame) {

@@ -8,11 +8,6 @@ SHObject_Base_Impl(ShadowEngine::Debug::DebugModule)
 
 MODULE_ENTRY(ShadowEngine::Debug::DebugModule, DebugModule)
 
-void ShadowEngine::Debug::DebugModule::OverlayRender() {
-
-    //DrawModuleWindow();
-}
-
 void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
 
     if(!w_time)
@@ -27,7 +22,7 @@ void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
     ImGui::End();
 }
 
-void ShadowEngine::Debug::DebugModule::DrawModuleWindow(SH::Events::OverlayRender&) {
+void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
 
     if(!w_modules)
         return;
@@ -59,6 +54,12 @@ void ShadowEngine::Debug::DebugModule::DrawImguiDemo() {
 void ShadowEngine::Debug::DebugModule::Init() {
     ShadowEngine::ShadowApplication::Get().GetEventBus().subscribe(
         this,
-        &DebugModule::DrawModuleWindow
+        &DebugModule::DrawDirect
     );
+}
+
+void ShadowEngine::Debug::DebugModule::DrawDirect(SH::Events::OverlayRender &) {
+    //this->DrawModuleWindow();
+    //this->DrawImguiDemo();
+    //this->DrawTimeWindow();
 }

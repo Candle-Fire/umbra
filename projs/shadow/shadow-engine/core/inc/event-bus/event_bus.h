@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <ranges>
 
 #include "SHObject.h"
 #include "events.h"
@@ -27,42 +28,52 @@ namespace SH::Events {
 
     constexpr BusID MainBus = 0;
 
-    template<EventType T, BusID Bus = SH::Events::MainBus>
+    template<EventType T>
+    using SubRef = std::shared_ptr<Subscription<T>>;
+    template<EventType T>
+    using SubscriptionList = std::vector<SubRef<T>>;
+
+    template<EventType T>
+    class EventDispatcherHolder {
+        using BusMap = std::vector<SubscriptionList<T>>;
+      public:
+        static BusMap subscriptions;
+    };
+
+    #define Event_Impl(type) template<> API EventDispatcherHolder<type>::BusMap EventDispatcherHolder<type>::subscriptions(10);
+
+    template<EventType T,
+        BusID Bus = SH::Events::MainBus,
+        class Holder = EventDispatcherHolder<T>>
     class EventDispatcher {
       public:
-        using SubRef = std::shared_ptr<Subscription<T>>;
-        using SubscriptionList = std::vector<SubRef>;
 
-        static SubscriptionList subscriptionList;
-
-        static SubRef subscribe(std::function<const void(T &)> func) {
+        static SubRef<T> subscribe(std::function<const void(T &)> func) {
             auto sub = std::make_shared<Subscription<T>>(func);
-            subscriptionList.push_back(sub);
+            Holder::subscriptions[Bus].push_back(sub);
             return sub;
         }
 
-        void unsubscribe(const SubRef ref) {
-            subscriptionList.erase(std::remove(subscriptionList.begin(), subscriptionList.end(), ref),
-                                   subscriptionList.end());
+        void unsubscribe(const SubRef<T> ref) {
+            auto &subList = Holder::subscriptions[Bus];
+            subList.erase(std::remove(subList.begin(), subList.end(), ref), subList.end());
         }
 
         static void call(T &event) {
-            for (int i = 0; i < subscriptionList.size(); ++i) {
-                subscriptionList[i]->callback(event);
+            auto &subList = Holder::subscriptions[Bus];
+            for (int i = 0; i < subList.size(); ++i) {
+                subList[i]->callback(event);
             }
         }
     };
 
-    template<EventType T, BusID Bus>
-    EventDispatcher<T, Bus>::SubscriptionList EventDispatcher<T, Bus>::subscriptionList;
-
-    template<BusID id>
+    template<BusID id = SH::Events::MainBus>
     class EventBus {
         template<EventType T>
         using Dispatcher = EventDispatcher<T, id>;
       public:
         template<EventType T>
-        Dispatcher<T>::SubRef subscribe(std::function<const void(T &)> func) {
+        SubRef<T> subscribe(std::function<const void(T &)> func) {
             return Dispatcher<T>::subscribe(func);
         }
 
@@ -70,7 +81,7 @@ namespace SH::Events {
         using MemberCallback = void (Self::*)(T &);
 
         template<EventType T, typename Self>
-        Dispatcher<T>::SubRef subscribe(Self *self, const MemberCallback<T, Self> &fn_ptr) {
+        SubRef<T> subscribe(Self *self, const MemberCallback<T, Self> &fn_ptr) {
             return Dispatcher<T>::subscribe(std::bind(fn_ptr, self, std::placeholders::_1));
         }
 

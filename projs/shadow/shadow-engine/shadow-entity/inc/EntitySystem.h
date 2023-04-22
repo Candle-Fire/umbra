@@ -4,6 +4,7 @@
 
 #include "graph/graph.h"
 #include "NodeManager.h"
+#include "event-bus/events.h"
 
 //Holds the reference to the active scene
 
@@ -30,7 +31,7 @@ namespace ShadowEngine::Entities {
 
         void Update(int frame) override;
 
-        void OverlayRender();
+        void OverlayRender(SH::Events::OverlayRender &);
     };
 
 }

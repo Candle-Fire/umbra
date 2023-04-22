@@ -18,15 +18,15 @@ namespace ShadowEngine::Debug {
         bool w_modules = true;
         bool w_imguiDemo = true;
 
-        void DrawModuleWindow(SH::Events::OverlayRender &);
+        void DrawDirect(SH::Events::OverlayRender &);
+
+        void DrawModuleWindow();
 
         void DrawTimeWindow();
 
         void DrawImguiDemo();
 
         void Init() override;
-
-        void OverlayRender();
     };
 
 }
