@@ -9,6 +9,7 @@
 #include <SDL_vulkan.h>
 #include <core/Module.h>
 #include "SwapChain.h"
+#include "event-bus/events.h"
 
 namespace vlkx { class ScreenRenderPassManager; }
 
@@ -26,27 +27,15 @@ class VulkanModule : public ShadowEngine::RendererModule {
     static const bool validationRequired = false;
 #endif
 
-    void PreInit() override;
-
     void Init() override;
 
-    void Recreate() override;
+    void PreInit() override;
 
-    void Update(int frame) override;
+    void Recreate();
 
-    void PreRender() override;
-
-    void Render(VkCommandBuffer &commands, int frame) override;
-
-    void OverlayRender() override;
-
-    void LateRender(VkCommandBuffer &commands, int frame) override;
-
-    void AfterFrameEnd() override;
+    void PreRender(SH::Events::PreRender);
 
     void Destroy() override;
-
-    void Event(SDL_Event *e) override;
 
     void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) override;
 
@@ -68,6 +57,7 @@ class VulkanModule : public ShadowEngine::RendererModule {
     void startDraw();
 
     void endDraw();
+
     VkDescriptorSet getEditorRenderPlanes();
 
     // Cleanup after the application has closed.

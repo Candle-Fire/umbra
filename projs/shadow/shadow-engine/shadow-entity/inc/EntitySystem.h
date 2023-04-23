@@ -4,6 +4,7 @@
 
 #include "graph/graph.h"
 #include "NodeManager.h"
+#include "event-bus/events.h"
 
 //Holds the reference to the active scene
 
@@ -22,34 +23,15 @@ namespace ShadowEngine::Entities {
 
         ~EntitySystem() override;
 
-        std::string GetName() override { return "EntitySystem"; };
-
         World &GetWorld() { return world; }
 
-
         // event functions
-
-        void PreInit() override {};
 
         void Init() override;
 
         void Update(int frame) override;
 
-        void Render(VkCommandBuffer &commands, int frame) override {};
-
-        void LateRender(VkCommandBuffer &commands, int frame) override {};
-
-        void Recreate() override {}
-
-        void PreRender() override {}
-
-        void OverlayRender() override;
-
-        void AfterFrameEnd() override {}
-
-        void Destroy() override {}
-
-        void Event(SDL_Event *e) override {}
+        void OverlayRender(SH::Events::OverlayRender &);
     };
 
 }

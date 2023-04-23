@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 FILE(GLOB_RECURSE SOURCES
-        core/src/*.cpp
+        core/src/**/*.cpp
         shadow-assets/src/*.cpp
         shadow-entity/src/*.cpp
         shadow-renderer/src/*.cpp
@@ -40,32 +40,26 @@ target_include_directories(shadow-engine
 target_link_libraries(shadow-engine
         PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui
         PRIVATE -static-libgcc -static-libstdc++
-)
+        )
 
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
 target_link_options(shadow-engine PUBLIC -Wl,--export-all-symbols)
 
 
-add_executable(shadow-engine-test
-        tests/test.main.cpp
-        shadow-entity/src/tests/NodeContainer.test.cpp
-        shadow-entity/src/tests/EntitySystem.test.cpp)
-
-target_include_directories(shadow-engine-test PUBLIC ${IncludeDirs} PRIVATE ${SDL2_INCLUDE_DIRS})
-
-target_link_libraries(shadow-engine-test
-        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui Catch2::Catch2 shadow-engine
-        #-static -static-libgcc -static-libstdc++
+add_executable(tests ${TEST_SOURCES} ${SOURCES} $<TARGET_OBJECTS:imgui>)
+target_link_libraries(tests PRIVATE Catch2::Catch2 PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui)
+target_include_directories(tests
+        PUBLIC ${IncludeDirs}
+        PRIVATE ${SDL2_INCLUDE_DIRS} ${glm_SOURCE_DIR}
+        INTERFACE
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends
         )
+target_compile_definitions(tests PRIVATE "EXPORTING_SH_ENGINE")
 
-add_custom_command(TARGET shadow-engine-test POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:shadow-engine-test> $<TARGET_FILE_DIR:shadow-engine-test>
-        COMMAND_EXPAND_LISTS
-        )
 
-#SET_TARGET_PROPERTIES(shadow-engine-test PROPERTIES LINK_FLAGS "/PROFILE")
-
+# Enable testing on the executable
 include(CTest)
 include(Catch)
-catch_discover_tests(shadow-engine-test)
+catch_discover_tests(tests)

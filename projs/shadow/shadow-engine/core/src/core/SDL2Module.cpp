@@ -4,12 +4,11 @@
 #include "spdlog/spdlog.h"
 #include "imgui_impl_sdl.h"
 
+#include "core/ShadowApplication.h"
+
 SHObject_Base_Impl(ShadowEngine::SDL2Module)
 
 MODULE_ENTRY(ShadowEngine::SDL2Module, SDL2Module)
-
-void ShadowEngine::SDL2Module::Init() {
-}
 
 void ShadowEngine::SDL2Module::PreInit() {
     // Initialize SDL. SDL_Init will return -1 if it fails.
@@ -25,32 +24,17 @@ void ShadowEngine::SDL2Module::PreInit() {
     //SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
-void ShadowEngine::SDL2Module::Update(int frame) {}
-
-void ShadowEngine::SDL2Module::Recreate() {}
-
-void ShadowEngine::SDL2Module::Render(VkCommandBuffer &commands, int frame) {}
-
-void ShadowEngine::SDL2Module::OverlayRender() {}
-
-void ShadowEngine::SDL2Module::LateRender(VkCommandBuffer &commands, int frame) {}
-
-std::string ShadowEngine::SDL2Module::GetName() {
-    return this->GetType();
+void ShadowEngine::SDL2Module::Init() {
+    ShadowEngine::ShadowApplication::Get().GetEventBus().subscribe<SH::Events::SDLEvent>([this](auto &&PH1) {
+        SDLEvent(std::forward<decltype(PH1)>(PH1));
+    });
 }
 
-void ShadowEngine::SDL2Module::AfterFrameEnd() {
-
-}
-
-void ShadowEngine::SDL2Module::Event(SDL_Event *e) {
-    ImGui_ImplSDL2_ProcessEvent(e);
+void ShadowEngine::SDL2Module::SDLEvent(SH::Events::SDLEvent &sdl_event) {
+    ImGui_ImplSDL2_ProcessEvent(&sdl_event.event);
 }
 
 void ShadowEngine::SDL2Module::Destroy() {
     SDL_DestroyWindow(window->sdlWindowPtr);
     SDL_Quit();
-}
-
-void ShadowEngine::SDL2Module::PreRender() {
 }

@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_vulkan.h"
+#include "event-bus/event_bus.h"
 
 #include <string>
 
@@ -13,21 +14,19 @@ namespace ShadowEngine {
     /// <summary>
     /// Represents the application
     /// </summary>
-    class API ShadowApplication {
+    class ShadowApplication : ShadowEngine::SHObject {
+      SHObject_Base(ShadowApplication)
         /// <summary>
         /// This is the singleton instance
         /// </summary>
         static ShadowApplication *instance;
 
         /// <summary>
-        /// The active window that we are drawing to
-        /// </summary>
-        ShadowWindow *window_;
-
-        /// <summary>
         /// The module manager instance
         /// </summary>
         ModuleManager moduleManager;
+
+        SH::Events::EventBus<0> eventBus;
 
         /// <summary>
         /// Represents the running state.
@@ -39,9 +38,10 @@ namespace ShadowEngine {
 
         std::string game = "";
 
-        void loadGame();
-
       public:
+
+        //EventBus::EventBus eventBus;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -56,19 +56,12 @@ namespace ShadowEngine {
         /// <returns>The current application reference</returns>
         static ShadowApplication &Get();
 
-        /// <summary>
-        /// Returns the active window used for rendering
-        /// </summary>
-        /// <returns> The window instance </returns>
-        //ShadowWindow& const GetWindow() const { return window_; };
-        //void SetWindow(ShadowWindow w) { window_ = w; }
-
         ModuleManager &GetModuleManager() { return moduleManager; };
+
+        SH::Events::EventBus<0> GetEventBus() { return eventBus; };
 
         void Init();
 
         void Start();
-
-        void PollEvents();
     };
 }

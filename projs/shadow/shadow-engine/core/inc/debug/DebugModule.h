@@ -2,6 +2,7 @@
 
 #include "SDL_events.h"
 #include "core/Module.h"
+#include "event-bus/events.h"
 #include "imgui.h"
 
 namespace ShadowEngine::Debug {
@@ -17,33 +18,15 @@ namespace ShadowEngine::Debug {
         bool w_modules = true;
         bool w_imguiDemo = true;
 
+        void DrawDirect(SH::Events::OverlayRender &);
+
         void DrawModuleWindow();
 
         void DrawTimeWindow();
 
         void DrawImguiDemo();
 
-        void Render(VkCommandBuffer &commands, int frame) override {};
-
-        void PreInit() override {};
-
-        void Init() override {};
-
-        void Recreate() override {};
-
-        void OverlayRender() override;
-
-        void Update(int frame) override {};
-
-        void LateRender(VkCommandBuffer &commands, int frame) override {};
-
-        void AfterFrameEnd() override {};
-
-        void PreRender() override {};
-
-        void Destroy() override {};
-
-        void Event(SDL_Event *e) override {};
+        void Init() override;
     };
 
 }

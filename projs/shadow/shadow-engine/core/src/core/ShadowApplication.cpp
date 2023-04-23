@@ -1,13 +1,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <spdlog/spdlog.h>
+
 #include "core/ShadowApplication.h"
 #include "core/Time.h"
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "vlkx/vulkan/VulkanModule.h"
-#include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <spdlog/spdlog.h>
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -15,6 +16,8 @@
 namespace ShadowEngine {
 
     dylib *gameLib;
+
+    SHObject_Base_Impl(ShadowApplication)
 
     ShadowApplication *ShadowApplication::instance = nullptr;
 
@@ -77,19 +80,19 @@ namespace ShadowEngine {
         SDL_Event event;
         while (running) {
             while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                moduleManager.Event(&event);
+                SH::Events::SDLEvent e(event);
+                SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
+                //eventBus.fire(e);
                 if (event.type == SDL_QUIT)
                     running = false;
             }
 
-            moduleManager.PreRender();
+            eventBus.fire(SH::Events::PreRender());
 
             if (!renderer.expired()) {
                 auto r = renderer.lock();
                 r->BeginRenderPass(renderCommands);
             }
-
-            moduleManager.AfterFrameEnd();
 
             renderCommands->nextFrame();
             Time::UpdateTime();

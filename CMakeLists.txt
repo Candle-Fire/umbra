@@ -18,6 +18,7 @@ FetchContent_Declare(
         GIT_TAG        v2.13.9 # or a later release
 )
 FetchContent_MakeAvailable(Catch2)
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 
 list(APPEND CMAKE_MODULE_PATH "${Catch2_SOURCE_DIR}/contrib")
 

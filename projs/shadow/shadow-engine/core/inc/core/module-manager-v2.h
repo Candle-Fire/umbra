@@ -199,20 +199,6 @@ namespace ShadowEngine {
         // Event functions
 
         void Update(int frame);
-
-        void LateRender(VkCommandBuffer &commands, int frame);
-
-        void OverlayRender();
-
-        void Recreate();
-
-        void Render(VkCommandBuffer &commands, int frame);
-
-        void PreRender();
-
-        void AfterFrameEnd();
-
-        void Event(SDL_Event *evt);
     };
 
 }

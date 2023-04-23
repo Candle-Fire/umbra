@@ -12,6 +12,8 @@
 #include <vlkx/vulkan/SwapChain.h>
 #include "core/module-manager-v2.h"
 
+#include <functional>
+
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
 
@@ -186,69 +188,67 @@ void VulkanModule::PreInit() {
     renderingGeometry = false;
 }
 
-void VulkanModule::Init() {
-}
-
 void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) {
     const auto update = !editorEnabled
                         ? [](const int frame) { ShadowEngine::ShadowApplication::Get().GetModuleManager().Update(frame); }
                         : [](const int frame) {};
 
-    const auto res = commands->execute(commands->getFrame(), swapchain->swapChain, update,
-                                       [this](const VkCommandBuffer &buffer, int frame) {
-                                           (editorEnabled ? editorPass : renderPass)->getPass()->execute(buffer,
-                                                                                                         frame,
-                                                                                                         {
-                                                                                                             // Render our model
-                                                                                                             [&](const VkCommandBuffer &commands) {
-                                                                                                                 if (!editorEnabled) {
-                                                                                                                     renderingGeometry =
-                                                                                                                         true;
-                                                                                                                     ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
-                                                                                                                         const_cast<VkCommandBuffer &>(commands),
-                                                                                                                         frame);
-                                                                                                                     ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
-                                                                                                                         const_cast<VkCommandBuffer &>(commands),
-                                                                                                                         frame);
-                                                                                                                     renderingGeometry =
-                                                                                                                         false;
-                                                                                                                 }
-                                                                                                             },
-                                                                                                             // Render ImGUI
-                                                                                                             [&](const VkCommandBuffer &commands) {
-                                                                                                                 ImGui_ImplVulkan_NewFrame();
-                                                                                                                 ImGui_ImplSDL2_NewFrame();
-                                                                                                                 ImGui::NewFrame();
+    const auto res =
+        commands->execute(commands->getFrame(), swapchain->swapChain, update,
+                          [this](const VkCommandBuffer &buffer, int frame) {
+                              (editorEnabled ? editorPass : renderPass)->getPass()
+                                  ->execute(buffer,
+                                            frame,
+                                            {
+                                                // Render our model
+                                                [this](const VkCommandBuffer &commands) {
+                                                    if (!editorEnabled) {
+                                                        renderingGeometry =
+                                                            true;
+                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
+                                                        //    const_cast<VkCommandBuffer &>(commands),
+                                                        //    frame);
+                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
+                                                        //    const_cast<VkCommandBuffer &>(commands),
+                                                        //    frame);
+                                                        renderingGeometry =
+                                                            false;
+                                                    }
+                                                },
+                                                // Render ImGUI
+                                                [&](const VkCommandBuffer &commands) {
+                                                    ImGui_ImplVulkan_NewFrame();
+                                                    ImGui_ImplSDL2_NewFrame();
+                                                    ImGui::NewFrame();
 
-                                                                                                                 ShadowEngine::ShadowApplication::Get().GetModuleManager().OverlayRender();
+                                                    ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::OverlayRender());
 
-                                                                                                                 ImGui::Render();
-                                                                                                                 ImGuiIO
-                                                                                                                     &
-                                                                                                                     io =
-                                                                                                                     ImGui::GetIO();
-                                                                                                                 (void) io;
+                                                    ImGui::Render();
+                                                    ImGuiIO &io = ImGui::GetIO();
+                                                    (void) io;
 
-                                                                                                                 ImGui_ImplVulkan_RenderDrawData(
-                                                                                                                     ImGui::GetDrawData(),
-                                                                                                                     commands);
+                                                    ImGui_ImplVulkan_RenderDrawData(
+                                                        ImGui::GetDrawData(),
+                                                        commands);
 
-                                                                                                                 // Update and Render additional Platform Windows
-                                                                                                                 if (io.ConfigFlags
-                                                                                                                     & ImGuiConfigFlags_ViewportsEnable) {
-                                                                                                                     ImGui::UpdatePlatformWindows();
-                                                                                                                     ImGui::RenderPlatformWindowsDefault();
-                                                                                                                 }
-                                                                                                             }
-                                                                                                         });
-                                       }
-    );
+                                                    // Update and Render additional Platform Windows
+                                                    if (io.ConfigFlags
+                                                        & ImGuiConfigFlags_ViewportsEnable) {
+                                                        ImGui::UpdatePlatformWindows();
+                                                        ImGui::RenderPlatformWindowsDefault();
+                                                    }
+                                                }
+                                            });
+                          }
+        );
 
-    if (res.has_value())
-        ShadowEngine::ShadowApplication::Get().GetModuleManager().Recreate();
+    if (res.has_value()) {
+        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Recreate();
+        ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Recreate());
+    }
 }
 
-void VulkanModule::PreRender() {
+void VulkanModule::PreRender(SH::Events::PreRender) {
     if (editorEnabled) {
         editorRenderCommands->executeSimple(editorRenderCommands->getFrame(),
                                             [](const int frame) {
@@ -258,12 +258,12 @@ void VulkanModule::PreRender() {
                                                 renderPass->getPass()->execute(buffer, frame, {
                                                     [&](const VkCommandBuffer &commands) {
                                                         renderingGeometry = true;
-                                                        ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
-                                                            const_cast<VkCommandBuffer &>(commands),
-                                                            frame);
-                                                        ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
-                                                            const_cast<VkCommandBuffer &>(commands),
-                                                            frame);
+                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
+                                                        //    const_cast<VkCommandBuffer &>(commands),
+                                                        //    frame);
+                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
+                                                        //    const_cast<VkCommandBuffer &>(commands),
+                                                        //    frame);
                                                         renderingGeometry = false;
                                                     }
                                                 });
@@ -271,19 +271,6 @@ void VulkanModule::PreRender() {
         );
 
     }
-}
-
-void VulkanModule::OverlayRender() {}
-
-void VulkanModule::AfterFrameEnd() {}
-
-void VulkanModule::Render(VkCommandBuffer &commands, int frame) {}
-
-void VulkanModule::Update(int frame) {}
-
-void VulkanModule::Event(SDL_Event *e) { (void) e; }
-
-void VulkanModule::LateRender(VkCommandBuffer &commands, int frame) {
 }
 
 void VulkanModule::Destroy() {
@@ -388,4 +375,9 @@ void VulkanModule::cleanup() {
 
 VkDescriptorSet VulkanModule::getEditorRenderPlanes() {
     return editorRenderPlanes[0];
+}
+
+void VulkanModule::Init() {
+    ShadowEngine::ShadowApplication::Get().GetEventBus()
+        .subscribe<SH::Events::PreRender>(std::bind(&VulkanModule::PreRender, this, std::placeholders::_1));
 }
