@@ -2,8 +2,10 @@
 
 #include "graph/graph.h"
 
-class Player : public ShadowEngine::Entities::Actor {
+class [[SH::Reflect]] Player : public ShadowEngine::Entities::Actor {
   SHObject_Base(Player);
+  public:
+    [[SH::Reflect]] int hp;
 
   public:
     Player(std::string name) : Actor() {

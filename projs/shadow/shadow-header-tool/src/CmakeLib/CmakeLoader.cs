@@ -1,23 +1,31 @@
 ﻿using System.Text.Json;
 using shadow_header_tool.CmakeLib.model;
+using shadow_header_tool.FileCaching;
 
 namespace shadow_header_tool.CmakeLib;
 
-public class CmakeLoader
+public class CmakeLoader : ICodeLoader
 {
-    public static string cmakeRoot = "./cmake-build-debug/";
-    public static string cmakeFileAPI = $"{cmakeRoot}.cmake/api/v1/reply/";
+    private readonly FileCache _cache;
+    public static string cmakeRoot = "./bin/debug/cmake-build/MinGW";
+    public static string cmakeFileAPI = $"{cmakeRoot}/.cmake/api/v1/reply";
 
-    public List<string> getFiles(string project)
+
+    public CmakeLoader(FileCache cache)
+    {
+        _cache = cache;
+    }
+    
+    public List<string> GatherSourceFiles(string project, List<string> exclude)
     {
         var a = LoadCoreModel();
         var targetJson = a.configurations[0].targets.Find(i => i.name == project).jsonFile;
 
         var target = LoadTargetModel(targetJson);
 
-        return target.sources.Select(s=>s.path).ToList();
+        return target.sources.Select(s=>s.path).Where(i=>!exclude.Contains(i)).ToList();
     }
-    
+
     public List<string> getIncludeDirs(string project)
     {
         var a = LoadCoreModel();
@@ -28,19 +36,20 @@ public class CmakeLoader
         return target.compileGroups[0].includes.Select(s=>s.path).ToList();
     }
 
-    private static CoreModel? LoadCoreModel()
+    private static CodeModel? LoadCoreModel()
     {
-        FileStream fs = new FileStream($"{cmakeFileAPI}codemodel-v2-36a0e6a8ef34aaa8865a.json", FileMode.Open);
-        var a = JsonDocument.Parse(fs).Deserialize<CoreModel>();
+        DirectoryInfo api = new DirectoryInfo(cmakeFileAPI);
+        var codemodelFile = api.EnumerateFiles().ToList().Find(f => f.Name.StartsWith("codemodel-v2"));
+        FileStream fs = new FileStream(codemodelFile.FullName, FileMode.Open);
+        var a = JsonDocument.Parse(fs).Deserialize<CodeModel>();
         fs.Close();
         return a;
     }
     
-    private static TargetModel? LoadTargetModel(string path)
+    private TargetModel? LoadTargetModel(string path)
     {
-        FileStream fs = new FileStream($"{cmakeFileAPI}{path}", FileMode.Open);
-        var a = JsonDocument.Parse(fs).Deserialize<TargetModel>();
-        fs.Close();
+        var file = _cache.ReadFile($"{cmakeFileAPI}/{path}");
+        var a = JsonDocument.Parse(file.content).Deserialize<TargetModel>();
         return a;
     }
 }

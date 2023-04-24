@@ -1,6 +1,6 @@
 ﻿namespace shadow_header_tool.CmakeLib.model;
 
-public class CoreModel
+public class CodeModel
 {
     public List<Configuration> configurations { get; set; }
     

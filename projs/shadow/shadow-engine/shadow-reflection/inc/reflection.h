@@ -87,6 +87,18 @@ Type const *GetType<std::uint64_t>() {
 }
 
 template<>
+Type const *GetType<int>() {
+    static Type type{"int", sizeof(int)};
+    return &type;
+}
+
+template<>
+Type const *GetType<float>() {
+    static Type type{"float", sizeof(float)};
+    return &type;
+}
+
+template<>
 Type const *GetType<std::string>() {
     static Type type{"std::string", sizeof(std::string)};
     return &type;
@@ -124,7 +136,7 @@ Class const *GetClass(ClassTag<User>) {
         self->fields[2].name = "pets";
         self->fields[2].offset = offsetof(User, pets);
     });
-    static Class clazz(reflected.fields, reflected.numFields);
+    static Class const clazz(reflected.fields, reflected.numFields);
 
     return &clazz;
 }

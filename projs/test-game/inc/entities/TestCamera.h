@@ -3,9 +3,9 @@
 #include "graph/graph.h"
 
 //Example of a 2d camera component with size
-class TestCamera : public ShadowEngine::Entities::Component {
+class [[SH::Reflect]] TestCamera : public ShadowEngine::Entities::Component {
   SHObject_Base(TestCamera);
   public:
-    float width;
-    float height;
+    [[SH::Reflect]] float width;
+    [[SH::Reflect]] float height;
 };
