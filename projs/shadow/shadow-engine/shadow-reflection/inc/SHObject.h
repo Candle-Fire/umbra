@@ -3,6 +3,7 @@
 #include <typeinfo>
 
 #include "exports.h"
+#include "reflection.h"
 
 namespace ShadowEngine {
 
@@ -40,6 +41,8 @@ namespace ShadowEngine {
          * \return UID of the class
          */
         virtual TypeID GetTypeId() const = 0;
+
+        virtual const SH::Reflection::Class *GetClass() const { return nullptr; };
 
         virtual ~SHObject() = default;
     };

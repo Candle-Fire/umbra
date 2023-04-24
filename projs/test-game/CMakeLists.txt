@@ -7,20 +7,12 @@ FILE(GLOB_RECURSE HEADERS src/*.h)
 
 set(GENERATE_COMMAND P:/_Projects/umbra/umbra/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe)
 
-execute_process(
-        COMMAND "P:/_Projects/umbra/umbra/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe" "dependencies -nb -p ${TARGET_NAME}"
-        OUTPUT_VARIABLE DEPENDENCIES
-        RESULT_VARIABLE RETURN_VALUE
-)
-if (NOT RETURN_VALUE EQUAL 0)
-    message(FATAL_ERROR "Failed to get the dependencies")
-endif ()
-
-set(SH_GENERATED ${PROJECT_SOURCE_DIR}/generated.cpp)
+set(SH_GENERATED ${CMAKE_CURRENT_SOURCE_DIR}/gen/generated.cpp)
 
 add_custom_command(
-        COMMAND "P:/_Projects/umbra/umbra/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe" "generate --project ${TARGET_NAME} -o ${SH_GENERATED}"
-        DEPENDS ${DEPENDENCIES}
+        COMMAND "P:/_Projects/umbra/umbra/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe" generate -p test-game -o "${SH_GENERATED}"
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        DEPENDS ${SOURCES} ${HEADERS}
         OUTPUT ${SH_GENERATED}
         COMMENT "Reflection information generator"
 )

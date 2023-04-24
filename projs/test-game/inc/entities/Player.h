@@ -3,9 +3,10 @@
 #include "graph/graph.h"
 
 class [[SH::Reflect]] Player : public ShadowEngine::Entities::Actor {
+  SHReflect(Player);
   SHObject_Base(Player);
   public:
-    [[SH::Reflect]] int hp;
+    [[SH::Reflect]] int hp = 10;
 
   public:
     Player(std::string name) : Actor() {

@@ -78,7 +78,13 @@ public class SimpleParser : IParser
         
         var inc = includes.Select(i => new DirectoryInfo(i));
 
-        var file = _fileCache.ReadFile(path);
+        var fileInfo = new FileInfo(path);
+        if(!fileInfo.Exists)
+        {
+            return;
+        }
+        
+        var file = _fileCache.ReadFile(fileInfo);
         
         foreach (Match m in Regex.Matches(file.content, includePattern, RegexOptions.Multiline))
         {

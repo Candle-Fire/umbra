@@ -44,33 +44,45 @@ public class CppReflectionDataWriter : ICppReflectionDataWriter
     {
         FileStream fileStream = new(path, FileMode.Create);
         StreamWriter writer = new(fileStream);
+
+        var w = new FormattedPrinter(writer);
         
-        writer.WriteLine("#include <reflection.h>");
-        writer.WriteLine();
+        w.WriteLine("#include <reflection.h>");
+        w.WriteLine("using namespace SH::Reflection;");
+        w.WriteLine("");
 
         foreach (var clazz in classes)
         {
-            writer.WriteLine($"#include <{clazz.Include}>");
-            writer.WriteLine($"template<> Class const *GetClass(ClassTag<{clazz.Name}>){{");
-            
-            writer.WriteLine($"static detail::ClassStorage<User, {clazz.Fields.Count}, 0, 0> reflected([](auto self) {{");
+            w.WriteLine($"#include <{clazz.Include}>");
+            w.WriteLine($"template<> Class const *SH::Reflection::GetClass(ClassTag<{clazz.Name}>){{");
 
-            for (int i = 0; i < clazz.Fields.Count; i++)
+            using (w.AddLevel())
             {
-                var field = clazz.Fields[i];
-                writer.WriteLine($"self->fields[{i}].type = GetType<{field.Type}>();");
-                writer.WriteLine($"self->fields[{i}].name = \"{field.Name}\";");
-                writer.WriteLine($"self->fields[{i}].offset = offsetof({clazz.Name}, {field.Name});");
-            }
-            
-            writer.WriteLine("});");
-            
-            writer.WriteLine("static Class const clazz(reflected.fields, reflected.numFields);");
-            writer.WriteLine("return &clazz;");
+                w.WriteLine($"static detail::ClassStorage<User, {clazz.Fields.Count}, 0, 0> reflected([](auto self) {{");
 
-            writer.WriteLine("}");
+                using (w.AddLevel())
+                {
+                    for (int i = 0; i < clazz.Fields.Count; i++)
+                    {
+                        var field = clazz.Fields[i];
+                        w.WriteLine($"self->fields[{i}].type = GetType<{field.Type}>();");
+                        w.WriteLine($"self->fields[{i}].name = \"{field.Name}\";");
+                        w.WriteLine($"self->fields[{i}].offset = offsetof({clazz.Name}, {field.Name});");
+                    }
+                }
+                
+                w.WriteLine("});");
+            
+                w.WriteLine($"static Class const clazz(\"{clazz.Name}\", sizeof(User),reflected.fields, reflected.numFields);");
+                w.WriteLine("return &clazz;");
+            }
+
+            w.WriteLine("}");
+            
+            w.WriteLine($"const Class *{clazz.Name}::GetClass() const {{ return SH::Reflection::GetClass(ClassTag<{clazz.Name}>{{}}); }}");
+            w.WriteLine("");
         }
         
-        writer.Close();
+        w.Close();
     }
 }

@@ -24,13 +24,14 @@ class Program
   | |
   |_|-------------------------
     \_   Shadow Header Tool  |
-      \_       v0.1.0        |
+      \_       v0.1.1        |
         \____________________|
     ";
     
     
     static async Task<int> Main(string[] args)
     {
+
         FileCache fileCache = new FileCache();
         
         var _rootCommand = new RootCommand("Sample app for System.CommandLine");
@@ -44,11 +45,18 @@ class Program
         var builder = new CommandLineBuilder(_rootCommand);
 
         var app = builder
+            .UseHelp()
+            .UseVersionOption()
             .AddMiddleware(context =>
             {
                 var nb = context.ParseResult.GetValueForOption(noBanner);
-                if(!nb)
-                    Console.WriteLine(banner);
+                if (nb)
+                {
+                    return;
+                }
+                Console.WriteLine(banner);
+                Console.WriteLine(string.Join(",", args));
+                
             })
             .UseHost(_ => Host.CreateDefaultBuilder(args), builder => builder
                 .ConfigureServices((context, services) =>

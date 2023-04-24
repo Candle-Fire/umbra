@@ -25,4 +25,6 @@ void TestScene::Build() {
     light->Add<ShadowEngine::Entities::Builtin::Position>({0, 0, 0});
     light->Add<ShadowEngine::Entities::Builtin::Light>({});
 
+    auto player = this->Add<Player>({"Test player"});
+
 }

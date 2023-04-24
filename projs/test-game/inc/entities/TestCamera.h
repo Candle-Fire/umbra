@@ -4,6 +4,7 @@
 
 //Example of a 2d camera component with size
 class [[SH::Reflect]] TestCamera : public ShadowEngine::Entities::Component {
+  SHReflect(TestCamera);
   SHObject_Base(TestCamera);
   public:
     [[SH::Reflect]] float width;
