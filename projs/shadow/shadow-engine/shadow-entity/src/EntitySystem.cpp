@@ -30,6 +30,8 @@ namespace ShadowEngine::Entities {
         }
 
         world.system<Builtin::Position>()->forEach([](auto &pos) {
+            if (pos.y > 100.0f)
+                pos.y = 0;
             pos.y += 1.0f;
         });
 

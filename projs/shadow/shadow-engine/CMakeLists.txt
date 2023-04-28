@@ -29,6 +29,10 @@ SET(IncludeDirs
 
 add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
 
+shadow_header_tool_gen(shadow-engine
+        "${HEADERS}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/gen/generated.cpp")
+
 target_include_directories(shadow-engine
         PRIVATE ${SDL2_INCLUDE_DIRS}
         PUBLIC ${IncludeDirs}

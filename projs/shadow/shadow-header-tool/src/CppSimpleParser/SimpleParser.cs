@@ -38,11 +38,13 @@ public interface IParser
 
 public class SimpleParser : IParser
 {
-    string classPattern = @"class (\[\[(?<attr>[\w:\(\)]+)?\]\] )?(?<name>\w+) (:\s(?<parent>(public|private)? [\w:]+ )+)?\{(?<body>(?>\{(?<c>)|[^{}]+|\}(?<-c>))*(?(c)(?!)))\}";
+    string classPattern = @"class (\[\[((?<attr>[\w:\(\)]+)(,\s)?)+\]\] )?(?<name>\w+) (:\s(?<parent>(public|private)? [\w:]+ )+)?\{(?<body>(?>\{(?<c>)|[^{}]+|\}(?<-c>))*(?(c)(?!)))\}";
     
     string includePattern = @"#include [<\""](?<path>[\w\/\\\.]+)[>\""]";
     
     string fieldPattern = @"(\[\[(?<attr>[\w:\(\)]+)?\]\] )?(?<type>\w+) (?<name>\w+)(\s?=[\s\w]+)?;";
+
+    private string namespacePattern = @"namespace (?<ns>[\w\:]+) \{";
 
     private FileCache _fileCache;
     
@@ -116,13 +118,15 @@ public class SimpleParser : IParser
         {
             var fileData = _fileCache.ReadFile(file.File);
             
+            var ns = Regex.Match(fileData.content, namespacePattern, RegexOptions.Multiline).Groups["ns"].Value;
+            
             foreach (Match m in Regex.Matches(fileData.content, classPattern, RegexOptions.Multiline))
             {
-                if (m.Groups["attr"].Value == "SH::Reflect")
+                if (m.Groups["attr"].Captures.Select(i=>i.Value).Contains("SH::Reflect"))
                 {
                     var clazz = new Clazz();
                     clazz.Include = file.Include;
-                    clazz.Name = m.Groups["name"].Value;
+                    clazz.Name = ns +"::"+ m.Groups["name"].Value;
                     
                     var body = m.Groups["body"].Value;
                     foreach (Match f in Regex.Matches(body, fieldPattern, RegexOptions.Multiline))

@@ -81,7 +81,11 @@ namespace ShadowEngine::Entities::Editor {
         for (auto prop : clazz->fields) {
             ImGui::Text(prop.name);
 
-            ImGui::InputInt(prop.name, prop.GetPointer<int>(selected_ent.Get()));
+            if (*prop.type == *SH::Reflection::GetType<int>())
+                ImGui::InputInt(prop.name, prop.GetPointer<int>(selected_ent.Get()));
+
+            if (*prop.type == *SH::Reflection::GetType<float>())
+                ImGui::InputFloat(prop.name, prop.GetPointer<float>(selected_ent.Get()));
         }
     }
 

@@ -11,6 +11,10 @@
 #include <typeinfo>
 #include <span>
 
+#include "shadow/util/hash.h"
+
+#pragma GCC diagnostic ignored_attributes "SH::Reflect"
+
 class SHObject;
 
 namespace SH::Reflection {
@@ -18,13 +22,28 @@ namespace SH::Reflection {
     struct Type {
         char const *name;
         std::size_t size;
+        SH::Util::StableHash hash;
 
         //Type() noexcept
         //    : size(0), name() {}
 
         Type(char const *name, int size
         ) noexcept
-            : size(size), name(name) {}
+            : size(size), name(name), hash(name) {}
+
+        /* --------------------------------------------------------------------- */
+        /* Operator                                                              */
+        /* --------------------------------------------------------------------- */
+        bool
+        operator==(Type const &other) const noexcept {
+            return hash == other.hash;
+        }
+
+        bool
+        operator!=(Type const &other) const noexcept {
+            return !(*this == other);
+        }
+
     };
 
     struct Field {

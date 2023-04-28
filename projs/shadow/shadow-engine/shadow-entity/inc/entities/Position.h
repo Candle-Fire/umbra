@@ -5,12 +5,13 @@
 //Position component in the builtin namespace
 namespace ShadowEngine::Entities::Builtin {
 
-    class API Position : public ShadowEngine::Entities::Component {
+    class [[SH::Reflect, API_NEW]] Position : public ShadowEngine::Entities::Component {
+      SHReflect(Position);
       SHObject_Base(Position)
       public:
-        float x = 0;
-        float y = 0;
-        float z = 0;
+        [[SH::Reflect]]float x = 0;
+        [[SH::Reflect]]float y = 0;
+        [[SH::Reflect]]float z = 0;
 
         Position() = default;
 

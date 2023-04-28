@@ -10,6 +10,8 @@ public class DepsCommand : Command
 {
     private static Option<string> _project = new (aliases: new []{"--project", "-p" }, description: "Name of the project to generate shadow headers for");
     
+    private static Option<string> _cmake = new (aliases: new []{"--cmake-folder"}, description:"The cmake build directory");
+    
     public DepsCommand() : base("dependencies", "Prints out all the dependencies of a project")
     {
         Add(_project);
@@ -29,15 +31,28 @@ public class DepsCommand : Command
         public int Invoke(InvocationContext parseResult)
         {
             var project = parseResult.ParseResult.GetValueForOption(_project);
-
+            if(project == null)
+            {
+                Console.WriteLine("No project specified");
+                return 1;
+            }
+            var cmake = parseResult.ParseResult.GetValueForOption(_cmake);
+            if(cmake == null)
+            {
+                Console.WriteLine("No cmake folder specified");
+                return 1;
+            }
+            
             var exclude = new List<string>();
-            var files = _loader.GatherSourceFiles(project,exclude);
+            var files = _loader.GatherSourceFiles(cmake,project,exclude);
             
             _codeParser.AddSourceFiles(files, _loader.getIncludeDirs(project));
 
+            Console.WriteLine(string.Join(";",_codeParser.GetFiles()));
+            
             foreach (var file in _codeParser.GetFiles())
             {
-                Console.WriteLine(file);
+                
             }
             
             return 0;
