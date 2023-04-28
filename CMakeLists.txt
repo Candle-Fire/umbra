@@ -68,8 +68,6 @@ FetchContent_MakeAvailable(dylib)
 # Import some find files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
-
 project(umbra)
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
