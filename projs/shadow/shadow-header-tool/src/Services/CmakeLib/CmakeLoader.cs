@@ -9,11 +9,11 @@ namespace shadow_header_tool.CmakeLib;
 
 public class CmakeLoader : ICodeLoader
 {
-    private readonly ILogger _logger;
+    private readonly Serilog.ILogger _logger;
     private readonly FileCache _cache;
     public string cmakeRoot = "";
     
-    public CmakeLoader(ILogger logger,FileCache cache)
+    public CmakeLoader(Serilog.ILogger logger,FileCache cache)
     {
         _logger = logger;
         _cache = cache;

@@ -26,12 +26,12 @@ public class GenerateCommand : Command
     
     public new class Handler : ICommandHandler
     {
-        private readonly ILogger _logger;
+        private readonly Serilog.ILogger _logger;
         private readonly ICodeLoader _loader;
         private readonly IParser _codeParser;
         private readonly ICppReflectionDataWriter _dataWriter;
 
-        public Handler(ILogger logger, ICodeLoader loader, IParser codeParser, ICppReflectionDataWriter dataWriter)
+        public Handler(Serilog.ILogger logger, ICodeLoader loader, IParser codeParser, ICppReflectionDataWriter dataWriter)
         {
             _logger = logger;
             _loader = loader;
@@ -44,30 +44,29 @@ public class GenerateCommand : Command
             var project = parseResult.ParseResult.GetValueForOption(_project);
             if(project == null)
             {
-                _logger.LogError("No project specified");
+                _logger.Error("No project specified");
                 return 1;
             }
             
             var output = parseResult.ParseResult.GetValueForOption(_output);
             if(output == null)
             {
-                _logger.LogError("No output specified");
+                _logger.Error("No output specified");
                 return 1;
             }
             
             var cmake = parseResult.ParseResult.GetValueForOption(_cmake);
             if(cmake == null)
             {
-                _logger.LogError("No cmake folder specified");
+                _logger.Error("No cmake folder specified");
                 return 1;
             }
             
-            _logger.LogInformation("Processing for project: {0}",project);
+            _logger.Information("Processing for project: {0}",project);
 
             var exclude = new List<string>(new []{output});
             try
             {
-
                 var files = _loader.GatherSourceFiles(cmake,project,exclude);
             
                 _codeParser.AddSourceFiles(files, _loader.GetIncludeDirs(project));
@@ -77,7 +76,7 @@ public class GenerateCommand : Command
             }
             catch (Exception e)
             {
-                _logger.LogTrace(e, "Exception while processing files");
+                _logger.Fatal(e, "Exception while processing files");
                 return 1;
             }
             return 0;

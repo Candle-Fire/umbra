@@ -61,22 +61,29 @@ class Program
                 Console.WriteLine(string.Join(",", args));
                 
             })
-            .UseHost(_ => Host.CreateDefaultBuilder(args), builder => builder
+            .UseHost(_ => Host.CreateDefaultBuilder(args), configure => configure
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton(fileCache);
                     services.AddTransient<ICodeLoader, CmakeLoader>();
                     services.AddTransient<IParser, SimpleParser>();
                     services.AddTransient<ICppReflectionDataWriter, CppReflectionDataWriter>();
+                    services.AddSerilog();
                 })
                 .UseSerilog((context, provider, config) =>
                 {
                     config.MinimumLevel.Debug();
                     config.WriteTo.Console();
                 })
+                .ConfigureLogging((context, loggingBuilder) =>
+                {
+                    //loggingBuilder.ClearProviders();
+                    loggingBuilder.AddSerilog(dispose: true);
+                })
                 .UseCommandHandler<GenerateCommand, GenerateCommand.Handler>()
                 .UseCommandHandler<DepsCommand, DepsCommand.Handler>()
-            ).Build();
+            )
+            .Build();
         
         return await app.InvokeAsync(args);
     }

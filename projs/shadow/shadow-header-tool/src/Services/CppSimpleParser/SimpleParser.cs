@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.ReflectionModel;
@@ -40,12 +41,14 @@ public class SimpleParser : IParser
 
     private string namespacePattern = @"namespace (?<ns>[\w\:]+) \{";
 
+    private readonly Serilog.ILogger _logger;
     private FileCache _fileCache;
     
     private HashSet<FileInclude> _files = new(new FileInfoEqualityComparer());
 
-    public SimpleParser(FileCache cache)
+    public SimpleParser(Serilog.ILogger logger,FileCache cache)
     {
+        _logger = logger;
         _fileCache = cache;
     }
     
@@ -119,6 +122,8 @@ public class SimpleParser : IParser
                 if (m.Groups["attr"].Captures.Select(i=>i.Value).Contains("SH::Reflect"))
                 {
                     var name = ns +"::"+ m.Groups["name"].Value;
+                    _logger.Information("Found class: {name}", name);
+                    
                     var clazz = new Clazz(name, file.Include);
 
                     var body = m.Groups["body"].Value;
