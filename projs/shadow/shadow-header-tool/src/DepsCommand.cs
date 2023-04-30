@@ -46,7 +46,7 @@ public class DepsCommand : Command
             var exclude = new List<string>();
             var files = _loader.GatherSourceFiles(cmake,project,exclude);
             
-            _codeParser.AddSourceFiles(files, _loader.getIncludeDirs(project));
+            _codeParser.AddSourceFiles(files, _loader.GetIncludeDirs(project));
 
             Console.WriteLine(string.Join(";",_codeParser.GetFiles()));
             

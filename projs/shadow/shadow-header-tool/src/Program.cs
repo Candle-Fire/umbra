@@ -9,23 +9,26 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using shadow_header_tool;
 using shadow_header_tool.CmakeLib;
 using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.OutputWriter;
+using shadow_header_tool.Services.CppSimpleParser;
 
 class Program
 {
+    static string version = "0.1.2";
     static string banner = @"
   (\
   .'.
   | |
   | |
-  |_|-------------------------
-    \_   Shadow Header Tool  |
-      \_       v0.1.1        |
-        \____________________|
+  |_|--------------------------|
+    \_   Shadow Header Tool    |
+      \_       v{0, -8}       |
+        \______________________|
     ";
     
     
@@ -54,7 +57,7 @@ class Program
                 {
                     return;
                 }
-                Console.WriteLine(banner);
+                Console.WriteLine(string.Format(banner,version));
                 Console.WriteLine(string.Join(",", args));
                 
             })
@@ -66,54 +69,15 @@ class Program
                     services.AddTransient<IParser, SimpleParser>();
                     services.AddTransient<ICppReflectionDataWriter, CppReflectionDataWriter>();
                 })
-                .ConfigureLogging(loggingBuilder =>
+                .UseSerilog((context, provider, config) =>
                 {
-                    loggingBuilder.ClearProviders();
+                    config.MinimumLevel.Debug();
+                    config.WriteTo.Console();
                 })
                 .UseCommandHandler<GenerateCommand, GenerateCommand.Handler>()
                 .UseCommandHandler<DepsCommand, DepsCommand.Handler>()
             ).Build();
-
-
-        /*
-        CliConfiguration cliConfiguration = new CliConfiguration(rootCommand)
-            .UseHost(
-            _ => Host.CreateDefaultBuilder(args),
-            builder =>
-            {
-                builder.ConfigureHostConfiguration(config =>
-                {
-                    config.AddCommandLine(args);
-                });
-                
-                builder.ConfigureServices((context, services) =>
-                {
-                    services.AddSingleton(fileCache);
-                    services.AddSingleton<ICodeLoader, CmakeLoader>();
-                    //services.AddSingleton<ICppParser, CppParser>();
-                    //services.AddSingleton<ICppReflectionDataWriter, CppReflectionDataWriter>();
-                });
-
-                builder.ConfigureLogging((host, logger) =>
-                {
-                    
-                });
-            });
-        */
+        
         return await app.InvokeAsync(args);
     }
-
-    /*
-                var loader = new CmakeLoader(fileCache);
-                var exclude = new List<string>();
-                exclude.Add(output);
-                var files = loader.GatherSourceFiles(project,exclude);
-
-                var parser = new shadow_header_tool.CppSimpleParser.SimpleParser(fileCache);
-                parser.AddSourceFiles(files, loader.getIncludeDirs(project));
-                var data = parser.Process();
-
-                var writer = new CppReflectionDataWriter();
-                writer.Write(output, data);
-                */
 }

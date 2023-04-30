@@ -1,14 +1,15 @@
 ﻿using System.Text.RegularExpressions;
+using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.ReflectionModel;
 
-namespace shadow_header_tool.CppSimpleParser;
+namespace shadow_header_tool.Services.CppSimpleParser;
 
 public class FileInfoEqualityComparer : IEqualityComparer<FileInclude>
 {
-    public bool Equals(FileInclude x, FileInclude y)
+    public bool Equals(FileInclude? x, FileInclude? y)
     {
-        return x.File.FullName == y.File.FullName;
+        return x?.File.FullName == y?.File.FullName;
     }
 
     public int GetHashCode(FileInclude obj)
@@ -27,13 +28,6 @@ public class FileInclude
         File = file;
         Include = path;
     }
-}
-
-public interface IParser
-{
-    void AddSourceFiles(List<string> paths, List<string> includes);
-    List<Clazz> Process();
-    List<FileInfo> GetFiles();
 }
 
 public class SimpleParser : IParser
@@ -124,16 +118,13 @@ public class SimpleParser : IParser
             {
                 if (m.Groups["attr"].Captures.Select(i=>i.Value).Contains("SH::Reflect"))
                 {
-                    var clazz = new Clazz();
-                    clazz.Include = file.Include;
-                    clazz.Name = ns +"::"+ m.Groups["name"].Value;
-                    
+                    var name = ns +"::"+ m.Groups["name"].Value;
+                    var clazz = new Clazz(name, file.Include);
+
                     var body = m.Groups["body"].Value;
                     foreach (Match f in Regex.Matches(body, fieldPattern, RegexOptions.Multiline))
                     {
-                        var field = new Field();
-                        field.Name = f.Groups["name"].Value;
-                        field.Type = f.Groups["type"].Value;
+                        var field = new Field(f.Groups["name"].Value, f.Groups["type"].Value);
                         clazz.Fields.Add(field);
                     }
                     
