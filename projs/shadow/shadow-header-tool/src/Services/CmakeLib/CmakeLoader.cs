@@ -57,13 +57,13 @@ public class CmakeLoader : ICodeLoader
         Asserts.Assert(api.Exists, $"Cmake api directory not found at:{api.FullName}");
 
         var codemodelFile = api.EnumerateFiles().ToList().Find(f => f.Name.StartsWith("codemodel-v2"));
-        Asserts.Assert(codemodelFile == null || !codemodelFile.Exists, $"Cmake codemodel file not found at:{codemodelFile.FullName}");
+        Asserts.Assert(codemodelFile is { Exists: true }, $"Cmake codemodel file not found at: '{codemodelFile.FullName}'");
 
         FileStream fs = new FileStream(codemodelFile.FullName, FileMode.Open);
         var a = JsonDocument.Parse(fs).Deserialize<CodeModel>();
         fs.Close();
 
-        Asserts.Assert(a == null, $"Failed to deserialize codemodel file:{codemodelFile.FullName}");
+        Asserts.Assert(a != null, $"Failed to deserialize codemodel file:{codemodelFile.FullName}");
 
         return a!;
     }
