@@ -119,23 +119,31 @@ public class SimpleParser : IParser
             
             foreach (Match m in Regex.Matches(fileData.content, classPattern, RegexOptions.Multiline))
             {
-                if (m.Groups["attr"].Captures.Select(i=>i.Value).Contains("SH::Reflect"))
+                var name = m.Groups["name"].Value;
+                if(!string.IsNullOrEmpty(ns)) name = ns +"::"+ name;
+                
+                _logger.Information("Found class: {name}", name);
+                
+                var clazz = new Clazz(name, file.Include);
+                foreach (Capture attr in m.Groups["attr"].Captures)
                 {
-                    var name = ns +"::"+ m.Groups["name"].Value;
-                    _logger.Information("Found class: {name}", name);
-                    
-                    var clazz = new Clazz(name, file.Include);
+                    clazz.AddAttribute(new ClazzRef(){name=attr.Value});
+                }
+                clazz.AddAttribute(new ClazzRef());
 
-                    var body = m.Groups["body"].Value;
-                    foreach (Match f in Regex.Matches(body, fieldPattern, RegexOptions.Multiline))
+                var body = m.Groups["body"].Value;
+                foreach (Match f in Regex.Matches(body, fieldPattern, RegexOptions.Multiline))
+                {
+                    var field = new Field(f.Groups["name"].Value, f.Groups["type"].Value);
+                    foreach (Capture attr in f.Groups["attr"].Captures)
                     {
-                        var field = new Field(f.Groups["name"].Value, f.Groups["type"].Value);
-                        clazz.Fields.Add(field);
+                        field.AddAttribute(new ClazzRef(){name=attr.Value});
                     }
                     
-                    classes.Add(clazz);
+                    clazz.Fields.Add(field);
                 }
                 
+                classes.Add(clazz);
             }
         }
 

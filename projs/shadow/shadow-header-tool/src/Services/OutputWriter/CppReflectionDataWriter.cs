@@ -43,36 +43,46 @@ public class CppReflectionDataWriter : ICppReflectionDataWriter
 
         foreach (var clazz in classes)
         {
-            w.WriteLine($"#include <{clazz.Include}>");
-            w.WriteLine($"template<> Class const *SH::Reflection::GetClass(ClassTag<{clazz.Name}>){{");
-
-            using (w.AddLevel())
-            {
-                w.WriteLine($"static detail::ClassStorage<User, {clazz.Fields.Count}, 0, 0> reflected([](auto self) {{");
-
-                using (w.AddLevel())
-                {
-                    for (int i = 0; i < clazz.Fields.Count; i++)
-                    {
-                        var field = clazz.Fields[i];
-                        w.WriteLine($"self->fields[{i}].type = GetType<{field.Type}>();");
-                        w.WriteLine($"self->fields[{i}].name = \"{field.Name}\";");
-                        w.WriteLine($"self->fields[{i}].offset = offsetof({clazz.Name}, {field.Name});");
-                    }
-                }
-                
-                w.WriteLine("});");
-            
-                w.WriteLine($"static Class const clazz(\"{clazz.Name}\", sizeof(User),reflected.fields, reflected.numFields);");
-                w.WriteLine("return &clazz;");
-            }
-
-            w.WriteLine("}");
-            
-            w.WriteLine($"const Class *{clazz.Name}::GetClass() const {{ return SH::Reflection::GetClass(ClassTag<{clazz.Name}>{{}}); }}");
-            w.WriteLine("");
+            var reflectAttr = clazz.Attributes.Find(i => i.name == "SH::Reflect");
+            if (reflectAttr is not null)
+                PrintClassReflection(w, clazz);
         }
         
         w.Close();
+    }
+
+    private static void PrintClassReflection(FormattedPrinter w, Clazz clazz)
+    {
+        var fields = clazz.Fields.Where(i=>i.Attributes.Any(i=>i.name == "SH::Reflect")).ToList();
+        
+        w.WriteLine($"#include <{clazz.Include}>");
+        w.WriteLine($"template<> Class const *SH::Reflection::GetClass(ClassTag<{clazz.Name}>){{");
+
+        using (w.AddLevel())
+        {
+            w.WriteLine($"static detail::ClassStorage<{clazz.Name}, {fields.Count}, 0, 0> reflected([](auto self) {{");
+
+            using (w.AddLevel())
+            {
+                int id = 0;
+                foreach (var field in fields)
+                {
+                    w.WriteLine($"self->fields[{id}].type = GetType<{field.Type}>();");
+                    w.WriteLine($"self->fields[{id}].name = \"{field.Name}\";");
+                    w.WriteLine($"self->fields[{id}].offset = offsetof({clazz.Name}, {field.Name});");
+                    id++;
+                }
+            }
+
+            w.WriteLine("});");
+
+            w.WriteLine($"static Class const clazz(\"{clazz.Name}\", sizeof(User),reflected.fields, reflected.numFields);");
+            w.WriteLine("return &clazz;");
+        }
+
+        w.WriteLine("}");
+
+        w.WriteLine($"const Class *{clazz.Name}::GetClass() const {{ return SH::Reflection::GetClass(ClassTag<{clazz.Name}>{{}}); }}");
+        w.WriteLine("");
     }
 }

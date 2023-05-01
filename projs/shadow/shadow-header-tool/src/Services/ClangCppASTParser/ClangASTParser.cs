@@ -2,7 +2,7 @@
 
 namespace shadow_header_tool.CppProcessor;
 
-public class Parser
+public class ClangASTParser
 {
     public void parse(string path, List<string> includes)
     {
