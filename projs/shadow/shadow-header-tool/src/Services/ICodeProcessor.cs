@@ -2,7 +2,7 @@
 
 namespace shadow_header_tool.CppSimpleParser;
 
-public interface IParser
+public interface ICodeProcessor
 {
     void AddSourceFiles(List<string> paths, List<string> includes);
     List<Clazz> Process();

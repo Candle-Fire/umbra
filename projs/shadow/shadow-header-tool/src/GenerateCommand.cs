@@ -28,14 +28,14 @@ public class GenerateCommand : Command
     {
         private readonly Serilog.ILogger _logger;
         private readonly ICodeLoader _loader;
-        private readonly IParser _codeParser;
+        private readonly ICodeProcessor _codeCodeProcessor;
         private readonly ICppReflectionDataWriter _dataWriter;
 
-        public Handler(Serilog.ILogger logger, ICodeLoader loader, IParser codeParser, ICppReflectionDataWriter dataWriter)
+        public Handler(Serilog.ILogger logger, ICodeLoader loader, ICodeProcessor codeCodeProcessor, ICppReflectionDataWriter dataWriter)
         {
             _logger = logger;
             _loader = loader;
-            _codeParser = codeParser;
+            _codeCodeProcessor = codeCodeProcessor;
             _dataWriter = dataWriter;
         }
 
@@ -69,8 +69,8 @@ public class GenerateCommand : Command
             {
                 var files = _loader.GatherSourceFiles(cmake,project,exclude);
             
-                _codeParser.AddSourceFiles(files, _loader.GetIncludeDirs(project));
-                var data = _codeParser.Process();
+                _codeCodeProcessor.AddSourceFiles(files, _loader.GetIncludeDirs(project));
+                var data = _codeCodeProcessor.Process();
             
                 _dataWriter.Write(output, data);
             }

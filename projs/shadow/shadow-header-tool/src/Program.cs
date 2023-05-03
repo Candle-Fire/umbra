@@ -15,6 +15,7 @@ using shadow_header_tool.CmakeLib;
 using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.OutputWriter;
+using shadow_header_tool.Services.CppAdvancedParser;
 using shadow_header_tool.Services.CppSimpleParser;
 
 class Program
@@ -66,7 +67,7 @@ class Program
                 {
                     services.AddSingleton(fileCache);
                     services.AddTransient<ICodeLoader, CmakeLoader>();
-                    services.AddTransient<IParser, SimpleParser>();
+                    services.AddTransient<ICodeProcessor, AdvancedCodeProcessor>();
                     services.AddTransient<ICppReflectionDataWriter, CppReflectionDataWriter>();
                     services.AddSerilog();
                 })

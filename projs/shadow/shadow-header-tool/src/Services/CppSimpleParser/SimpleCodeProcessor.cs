@@ -31,7 +31,7 @@ public class FileInclude
     }
 }
 
-public class SimpleParser : IParser
+public class SimpleCodeProcessor : ICodeProcessor
 {
     string classPattern = @"class (\[\[((?<attr>[\w:\(\)]+)(,\s)?)+\]\] )?(?<name>\w+) (:\s(?<parent>(public|private)? [\w:]+ )+)?\{(?<body>(?>\{(?<c>)|[^{}]+|\}(?<-c>))*(?(c)(?!)))\}";
     
@@ -46,7 +46,7 @@ public class SimpleParser : IParser
     
     private HashSet<FileInclude> _files = new(new FileInfoEqualityComparer());
 
-    public SimpleParser(Serilog.ILogger logger,FileCache cache)
+    public SimpleCodeProcessor(Serilog.ILogger logger,FileCache cache)
     {
         _logger = logger;
         _fileCache = cache;
