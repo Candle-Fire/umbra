@@ -40,29 +40,29 @@ public class Lexer
         switch (peek())
         {
             case ' ':
-            case '\t': return new Token(pos, TokenKind.types["SPACE"]);
+            case '\t': return new Token(pos, TokenKind.SPACE);
             case '\n':
-                var tok = new Token(pos, TokenKind.types["EOL"]);
+                var tok = new Token(pos, TokenKind.EOL);
                 pos.line += 1;
                 pos.column = 1;
                 return tok;
             case '[':
                 if (check(1, '[')) {
                     advance();
-                    return new Token(pos, TokenKind.types["ATTRIBUTE_START"]);
+                    return new Token(pos, TokenKind.ATTRIBUTE_START);
                 }
-                return new Token(pos, TokenKind.types["OPEN_BRACKET"]);
+                return new Token(pos, TokenKind.OPEN_BRACKET);
             case ']': 
                 if (check(1, ']')) {
                     advance();
-                    return new Token(pos, TokenKind.types["ATTRIBUTE_END"]);
+                    return new Token(pos, TokenKind.ATTRIBUTE_END);
                 }
-                return new Token(pos, TokenKind.types["CLOSE_BRACKET"]);
-            case '{': return new Token(pos, TokenKind.types["OPEN_BRACE"]);
-            case '}': return new Token(pos, TokenKind.types["CLOSE_BRACE"]);
-            case '(': return new Token(pos, TokenKind.types["OPEN_PAREN"]);
-            case ')': return new Token(pos, TokenKind.types["CLOSE_PAREN"]);
-            case ':': return new Token(pos, TokenKind.types["COLON"]);
+                return new Token(pos, TokenKind.CLOSE_BRACKET);
+            case '{': return new Token(pos, TokenKind.OPEN_BRACE);
+            case '}': return new Token(pos, TokenKind.CLOSE_BRACE);
+            case '(': return new Token(pos, TokenKind.OPEN_PAREN);
+            case ')': return new Token(pos, TokenKind.CLOSE_PAREN);
+            case ':': return new Token(pos, TokenKind.COLON);
             case '\"': return concat_string();
             default:
                 if (char.IsNumber(peek()))
@@ -117,7 +117,7 @@ public class Lexer
         string str = "";
         if (!check('\"'))
         {
-            throw new Exception($"Error: Token '\"' expected at {pos.column} got {peek()}");
+            throw new Exception($"Error: Token '\"' expected at {pos} got {peek()}");
         }
 
         advance(); // Eat "
@@ -127,7 +127,7 @@ public class Lexer
             advance();
         }
 
-        advance(); // Eat "
-        return new Token(pos, TokenKind.types["STRING_LITERAL"], str);
+        //advance(); // Eat "
+        return new Token(pos, TokenKind.STRING_LITERAL, str);
     }
 }

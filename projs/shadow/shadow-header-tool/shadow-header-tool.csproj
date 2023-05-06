@@ -19,6 +19,10 @@
       <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
       <PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.22272.1" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ClCompile Include="src\Services\CppAdvancedParser\test_files\test.cpp" />
+    </ItemGroup>
     
     <PropertyGroup>
         <!-- Workaround for issue https://github.com/microsoft/ClangSharp/issues/129 -->

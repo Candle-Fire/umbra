@@ -5,6 +5,8 @@ public class TokenKind
 {
     public string text;
 
+    public string name;
+
     public string Name
     {
         get
@@ -13,43 +15,60 @@ public class TokenKind
         }
     }
     
-    public static Dictionary<string, TokenKind> types = new()
+    public static Dictionary<string, TokenKind> types = new();
+    
+    public static TokenKind COLON = make("COLON", ":");
+    
+    public static TokenKind SPACE = make("SPACE", "SPACE");
+    public static TokenKind EOL = make("EOL", "EOL");
+    public static TokenKind OP = make("OP", "OP");
+    
+    public static TokenKind OPEN_BRACKET = make("OPEN_BRACKET", "[");
+    public static TokenKind CLOSE_BRACKET = make("CLOSE_BRACKET", "]");
+    
+    public static TokenKind OPEN_BRACE = make("OPEN_BRACE", "{");
+    public static TokenKind CLOSE_BRACE = make("CLOSE_BRACE", "}");
+    
+    public static TokenKind OPEN_PAREN = make("OPEN_PAREN", "(");
+    public static TokenKind CLOSE_PAREN = make("CLOSE_PAREN", ")");
+    
+    public static TokenKind COMMA = make("COMMA", ",");
+    public static TokenKind SEMICOLON = make("SEMICOLON", ";");
+    
+    public static TokenKind ATTRIBUTE_START = make("ATTRIBUTE_START");
+    public static TokenKind ATTRIBUTE_END = make("ATTRIBUTE_END");
+    
+    public static TokenKind CLAZZ = make("CLAZZ", "class");
+    public static TokenKind STRUCT = make("STRUCT", "struct");
+    public static TokenKind NAMESPACE = make("NAMESPACE", "namespace");
+    public static TokenKind AUTO = make("AUTO");
+    public static TokenKind PUBLIC = make("PUBLIC");
+    public static TokenKind PRIVATE = make("PRIVATE");
+    public static TokenKind PROTECTED = make("PROTECTED");
+    public static TokenKind TEMPLATE = make("TEMPLATE");
+
+    public static TokenKind USING = make("USING", "using");
+    
+    public static TokenKind MACRO = make("MACRO", "#");
+    public static TokenKind INCLUDE = make("INCLUDE", "include");
+    public static TokenKind PRAGMA = make("PRAGMA", "pragma");
+    
+    public static TokenKind IDENTIFIER = make("IDENTIFIER");
+    public static TokenKind NUMBER_LITERAL = make("NUMBER_LITERAL");
+    public static TokenKind STRING_LITERAL = make("STRING_LITERAL");
+    
+    
+    private static TokenKind make(string name, string s)
     {
-        {"COLON", new() { text = ":" }},
-        
-        {"SPACE", new() { text = "SPACE" }},
-        {"EOL", new() { text = "EOL" }},
-        {"OP", new() { text = "OP" }},
-
-        {"OPEN_BRACKET", new() { text = "[" }},
-        {"CLOSE_BRACKET", new() { text = "]" }},
-        
-        {"OPEN_BRACE", new() { text = "{" }},
-        {"CLOSE_BRACE", new() { text = "}" }},
-        
-        {"OPEN_PAREN", new() { text = "(" }},
-        {"CLOSE_PAREN", new() { text = ")" }},
-        
-        {"ATTRIBUTE_START", new() { text = "ATTRIBUTE_START" }},
-        {"ATTRIBUTE_END", new() { text = "ATTRIBUTE_END" }},
-        
-        {"CLAZZ", new() { text = "class" }},
-        {"STRUCT", new() { text = "struct" }},
-        {"NAMESPACE", new() { text = "namespace" }},
-        {"AUTO", new() { text = "auto" }},
-        {"PUBLIC", new() { text = "public" }},
-        {"PRIVATE", new() { text = "private" }},
-        {"PROTECTED", new() { text = "protected" }},
-        
-        {"MACRO", new() { text = "#" }},
-        {"INCLUDE", new() { text = "include" }},
-        {"PRAGMA", new() { text = "pragma" }},
-
-        {"IDENTIFIER", new() { text = "" }},
-        {"NUMBER_LITERAL", new() { text = "NUMBER_LITERAL" }},
-        {"IDENTIFER_LITERAL", new() { text = "IDENTIFER_LITERAL" }},
-        {"STRING_LITERAL", new() { text = "STRING_LITERAL" }},
-    };
+        var a = new TokenKind() { name = name, text = s };
+        types.Add(name, a);
+        return a;
+    }
+    
+    private static TokenKind make(string name)
+    {
+        return make(name, name);
+    }
 }
 
 public struct Pos
@@ -60,6 +79,11 @@ public struct Pos
     public Pos()
     {
         
+    }
+
+    public override string ToString()
+    {
+        return "L" + line + ":C" + column;
     }
 }
 
@@ -73,7 +97,8 @@ public class Token
     public Token(Pos p, string value)
     {
         pos = p;
-        kind = TokenKind.types.FirstOrDefault(i => i.Value.text == value).Value ?? TokenKind.types["IDENTIFIER"];
+        kind = TokenKind.types.FirstOrDefault(i => i.Value.text == value).Value ??
+               TokenKind.types["IDENTIFIER"];
         this.value = value;
     }
 
@@ -94,5 +119,10 @@ public class Token
     public string ShortString()
     {
         return $"{kind.Name} @ L{pos.line} : C{pos.column}";
+    }
+
+    public override string ToString()
+    {
+        return $"{kind.Name}({value}) @ {pos}";
     }
 }
