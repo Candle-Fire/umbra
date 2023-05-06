@@ -5,7 +5,12 @@
 //Position component in the builtin namespace
 namespace ShadowEngine::Entities::Builtin {
 
-    class [[SH::Reflect("asd"), API_NEW]] Position : public ShadowEngine::Entities::Component {
+    class
+        [[using SH: reflect("asd"), NoFunc()]]
+        [[SH::reflect("asd"), SH::NoFunc()]]
+        [[SH::Reflect("asd"), API_NEW]]
+        [[1:asd]]
+        [[test]] Position : public ShadowEngine::Entities::Component {
       SHReflect(Position);
       SHObject_Base(Position);
       public:

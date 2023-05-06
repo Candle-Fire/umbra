@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.ReflectionModel;
+using Attribute = shadow_header_tool.ReflectionModel.Attribute;
 
 namespace shadow_header_tool.Services.CppSimpleParser;
 
@@ -127,9 +128,9 @@ public class SimpleCodeProcessor : ICodeProcessor
                 var clazz = new Clazz(name, file.Include);
                 foreach (Capture attr in m.Groups["attr"].Captures)
                 {
-                    clazz.AddAttribute(new ClazzRef(){name=attr.Value});
+                    clazz.AddAttribute(new Attribute(){Name=attr.Value});
                 }
-                clazz.AddAttribute(new ClazzRef());
+                //clazz.AddAttribute(new Attribute());
 
                 var body = m.Groups["body"].Value;
                 foreach (Match f in Regex.Matches(body, fieldPattern, RegexOptions.Multiline))

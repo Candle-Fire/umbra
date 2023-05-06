@@ -43,7 +43,7 @@ public class CppReflectionDataWriter : ICppReflectionDataWriter
 
         foreach (var clazz in classes)
         {
-            var reflectAttr = clazz.Attributes.Find(i => i.name == "SH::Reflect");
+            var reflectAttr = clazz.Attributes.Find(i => i.Name == "Reflect" && i.Namespace == "SH");
             if (reflectAttr is not null)
                 PrintClassReflection(w, clazz);
         }

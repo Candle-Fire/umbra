@@ -12,21 +12,52 @@ public class Parser
         tokens = l.tokens.Where(i=>i.kind != TokenKind.SPACE && i.kind != TokenKind.EOL).ToList();
     }
 
-    public List<Node> Parse()
+    public CompilationUnitNode ParseCompilationUnit()
     {
-        List<Node> nodes = new();
+        var nodes = ParseDeclarations();
+        return new CompilationUnitNode(nodes);
+    }
+    
+    private List<Node> ParseDeclarations()
+    {
+        var members = new List<Node>();
+
         while (idx < tokens.Count)
         {
-            var node = scan();
-            if (node is not null)
-                nodes.Add(node);
+            var member = ParseDeclaration();
+            if(member == null)
+                Advance();
+            else
+                members.Add(member);
+            
             
         }
 
-        return nodes;
+        return members;
+    }
+    
+    private Node? ParseDeclaration()
+    {
+        if (Check(TokenKind.CLAZZ))
+            return ParseClass();
+
+        return null;
     }
 
-    Node ConsumeLiteral()
+    private Node ParseClass()
+    {
+        var classToken = Consume(TokenKind.CLAZZ)!;
+        List<AttributeSequenceNode> attributes = new();
+        while (Check(TokenKind.ATTRIBUTE_START))
+        {
+            attributes.Add(ConsumeAttributeSeq()!);
+        }
+        var nameNode = ConsumeLiteral();
+                
+        return new ClassNode(classToken, nameNode, attributes );
+    }
+    
+    LiteralNode ConsumeLiteral()
     {
         if (Check(TokenKind.NUMBER_LITERAL))
         {
@@ -47,20 +78,22 @@ public class Parser
         throw new Exception($"Illegal token at {Peek().ShortString()}");
     }
 
-    Node? ConsumeAttributeSeq()
+    AttributeSequenceNode? ConsumeAttributeSeq()
     {
         if (!Check(TokenKind.ATTRIBUTE_START))
             return null;
         
         var open = Consume(TokenKind.ATTRIBUTE_START)!;
 
-        List<Node> attributes = new();
+        List<AttributeNode> attributes = new();
         
-        Token namespaceToken;
+        UsingNode? namespaceUsingNode = null;
         if (Check(TokenKind.USING))
         {
-            Consume(TokenKind.USING);
-            namespaceToken = Consume(TokenKind.IDENTIFIER)!;
+            namespaceUsingNode = new UsingNode(
+                Consume(TokenKind.USING)!, 
+                Consume(TokenKind.IDENTIFIER)!
+                );
             Consume(TokenKind.COLON);
         }
         
@@ -75,6 +108,8 @@ public class Parser
             if (Check(1,TokenKind.COLON) && Check(2, TokenKind.COLON))
             {
                 namespaceNode = ConsumeLiteral();
+                Consume(TokenKind.COLON);
+                Consume(TokenKind.COLON);
                 name = ConsumeLiteral();
             }
             else
@@ -103,12 +138,13 @@ public class Parser
 
         return new AttributeSequenceNode(
             open,
+            namespaceUsingNode,
             attributes,
             end
         );
     }
 
-    private Node ConsumeParamsSeq()
+    private ParamSeqNode ConsumeParamsSeq()
     {
         if (Check(TokenKind.OPEN_PAREN))
         {
@@ -132,25 +168,6 @@ public class Parser
         }
         
         return null;
-    }
-
-    Node? scan()
-    {
-        switch (Peek().kind.Name)
-        {
-            case "CLAZZ":
-            case "STRUCT":
-            {
-                var classToken = Consume(TokenKind.CLAZZ)!;
-                var attr = ConsumeAttributeSeq();
-                var nameNode = ConsumeLiteral();
-                
-                return new ClassNode(classToken, nameNode, new List<Node>{attr} );
-            }
-            default:
-                Advance();
-                return null;
-        }
     }
 
     Token Peek(int n) => tokens[idx + n];

@@ -6,7 +6,10 @@
 namespace ShadowEngine::Entities::Builtin {
 
     class
-    [[using SH: reflect("asd"), NoFunc()]]
+    [[using SH: Reflect("asd"), NoFunc()]]
+    [[SH::Reflect("asd"), NoFunc()]]
+    [[SH::reflect("asd", 1201, "Test_ANEM_FOR"), NoFunc()]]
+    [[SH::test]]
     Position : public ShadowEngine::Entities::Component {
             SHReflect(Position);
             SHObject_Base(Position);
