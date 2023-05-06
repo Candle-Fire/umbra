@@ -30,8 +30,11 @@ public class AdvancedCodeProcessor : ICodeProcessor
 
         var nodeList = ast.children;
 
-        var classes = nodeList.Where(a => a.kind == NodeKind.CLASS_NODE)
-            .Select(a => ClazzFromNode(a, new FileInfo(path))).ToList();
+        var classes =
+            ast.children
+                .SelectMany(i=>i.Walk())
+                .Where(a => a.kind == NodeKind.CLASS_NODE)
+                .Select(a => ClazzFromNode(a, new FileInfo(path))).ToList();
 
         return classes;
     }

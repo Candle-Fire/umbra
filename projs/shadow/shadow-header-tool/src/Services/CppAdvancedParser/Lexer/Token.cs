@@ -41,8 +41,8 @@ public class TokenKind
     public static TokenKind CLAZZ = make("CLAZZ", "class");
     public static TokenKind STRUCT = make("STRUCT", "struct");
     public static TokenKind NAMESPACE = make("NAMESPACE", "namespace");
-    public static TokenKind AUTO = make("AUTO");
-    public static TokenKind PUBLIC = make("PUBLIC");
+    public static TokenKind AUTO = make("AUTO", "auto");
+    public static TokenKind PUBLIC = make("PUBLIC", "public");
     public static TokenKind PRIVATE = make("PRIVATE");
     public static TokenKind PROTECTED = make("PROTECTED");
     public static TokenKind TEMPLATE = make("TEMPLATE");
@@ -50,8 +50,8 @@ public class TokenKind
     public static TokenKind USING = make("USING", "using");
     
     public static TokenKind MACRO = make("MACRO", "#");
-    public static TokenKind INCLUDE = make("INCLUDE", "include");
-    public static TokenKind PRAGMA = make("PRAGMA", "pragma");
+    //public static TokenKind INCLUDE = make("INCLUDE", "include");
+    //public static TokenKind PRAGMA = make("PRAGMA", "pragma");
     
     public static TokenKind IDENTIFIER = make("IDENTIFIER");
     public static TokenKind NUMBER_LITERAL = make("NUMBER_LITERAL");

@@ -39,6 +39,7 @@ public class NodeKind
     public static NodeKind STRING_LITERAL_NODE = make("STRING_LITERAL_NODE");
     public static NodeKind IDENTIFIER_LITERAL_NODE = make("IDENTIFIER_LITERAL_NODE");
     public static NodeKind NUMBER_LITERAL_NODE = make("NUMBER_LITERAL_NODE");
+    public static NodeKind QUALIFIED_NAME_NODE = make("QUALIFIED_NAME_NODE");
 
     public static NodeKind ATTRIBUTE_SEQ_NODE = make("ATTRIBUTE_SEQ_NODE");
     public static NodeKind ATTRIBUTE_NODE = make("ATTRIBUTE_NODE");
@@ -46,6 +47,8 @@ public class NodeKind
     public static NodeKind COMPILATION_UNIT_NODE = make("COMPILATION_UNIT_NODE");
     
     public static NodeKind USING_NODE = make("USING_NODE");
+    
+    public static NodeKind MACRO_NODE = make("MACRO_NODE");
 
 }
 
@@ -65,7 +68,9 @@ public class Node
 
         throw new Exception("Can't convert");
     }
-    
+
+    public virtual List<Node> Walk() => new List<Node>();
+
     public override string ToString() => kind.ToString();
 }
 
@@ -80,6 +85,20 @@ public class LiteralNode : Node
     public override string ToString() => base.ToString() + " " + ValueToken.value;
     
     public string Value => ValueToken.value;
+}
+
+public class QualifiedNameNode : Node
+{
+    public List<LiteralNode> parts = new();
+
+    public QualifiedNameNode(List<LiteralNode> parts) : base(NodeKind.QUALIFIED_NAME_NODE)
+    {
+        this.parts = parts;
+    }
+    
+    public override string ToString() => base.ToString() + " " + string.Join(".", parts.Select(i => i.Value));
+    
+    public string Value => string.Join(".", parts.Select(i => i.Value));
 }
 
 public class AttributeSequenceNode : Node
@@ -186,16 +205,18 @@ public class ClassNode : Node
 public class NamespaceNode : Node
 {
     public Token namespaceToken;
-    public LiteralNode name;
+    public QualifiedNameNode name;
     public List<Node> children = new();
 
-    public NamespaceNode(Token namespaceToken, LiteralNode name, List<Node> children) 
+    public NamespaceNode(Token namespaceToken, QualifiedNameNode name, List<Node> children) 
         : base(NodeKind.CLASS_NODE)
     {
         this.namespaceToken = namespaceToken;
         this.name = name;
         this.children = children;
     }
+
+    public override List<Node> Walk() => children;
 }
 
 public class CompilationUnitNode : Node
@@ -205,5 +226,19 @@ public class CompilationUnitNode : Node
     public CompilationUnitNode(List<Node> children) : base(NodeKind.COMPILATION_UNIT_NODE)
     {
         this.children = children;
+    }
+    
+    public override List<Node> Walk() => children;
+}
+
+public class MacroNode : Node
+{
+    public Token hashToken;
+    public List<Node> tokens = new();
+
+    public MacroNode(Token hashToken, List<Node> rest) : base(NodeKind.MACRO_NODE)
+    {
+        this.hashToken = hashToken;
+        this.tokens = rest;
     }
 }
