@@ -11,13 +11,12 @@ namespace ShadowEngine::Entities::Builtin {
         [[SH::reflect("asd", 1201, "Test_ANEM_FOR"), NoFunc()]]
         [[SH::test]]
     Position : public ShadowEngine::Entities::Component {
-      SHReflect(Position);
-      SHObject_Base(Position);
+      
       public:
         [[SH::Reflect]]float x = 0;
         [[SH::Reflect]]float y = 0;
         [[SH::Reflect]]float z = 0;
-
+        
         Position() = default;
 
         Position(float x_, float y_, float z_)

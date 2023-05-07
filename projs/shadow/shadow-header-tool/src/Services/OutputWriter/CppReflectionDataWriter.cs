@@ -53,7 +53,7 @@ public class CppReflectionDataWriter : ICppReflectionDataWriter
 
     private static void PrintClassReflection(FormattedPrinter w, Clazz clazz)
     {
-        var fields = clazz.Fields.Where(i=>i.Attributes.Any(i=>i.name == "SH::Reflect")).ToList();
+        var fields = clazz.Fields.Where(i=>i.Attributes.Any(i=>i is { Name: "Reflect", Namespace: "SH" })).ToList();
         
         w.WriteLine($"#include <{clazz.Include}>");
         w.WriteLine($"template<> Class const *SH::Reflection::GetClass(ClassTag<{clazz.Name}>){{");

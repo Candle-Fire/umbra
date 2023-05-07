@@ -55,7 +55,7 @@ public class Parser
         List<Node> rest = new();
         while (Check(TokenKind.IDENTIFIER) || Check(TokenKind.STRING_LITERAL))
         {
-            rest.Add(ConsumeLiteral()!);
+            rest.Add(ParseLiteral()!);
         }
         return new MacroNode(macroToken, rest);
     }
@@ -66,17 +66,77 @@ public class Parser
         List<AttributeSequenceNode> attributes = new();
         while (Check(TokenKind.ATTRIBUTE_START))
         {
-            attributes.Add(ConsumeAttributeSeq()!);
+            attributes.Add(ParseAttributeSeq()!);
         }
-        var nameNode = ConsumeLiteral();
+        var nameNode = ParseQualifiedName();
         
         ParseClassBaseClause();
         
-        ConsumeBalancedBraces();
+        var members = ParseMemberSpecifications();
         
-        return new ClassNode(classToken, nameNode, attributes );
+        return new ClassNode(classToken, nameNode, attributes, members );
     }
 
+    private List<Node> ParseMemberSpecifications()
+    {
+        List<Node> members = new();
+
+        var depth = 0;
+        while (true)
+        {
+            switch(Peek().kind)
+            {
+                case { name: "PUBLIC" }:
+                case { name: "PRIVATE" }:
+                case { name: "PROTECTED" }:
+                {
+                    Advance();
+                    if(Check(TokenKind.COLON))
+                        Advance();
+                }
+                    break;
+                case { name: "OPEN_BRACE" }:
+                    depth++;
+                    Advance();
+                    break;
+                case { name: "CLOSE_BRACE" }:
+                    depth--;
+                    Advance();
+                    break;
+                case { name: "ATTRIBUTE_START" }:
+                    members.Add(ParseMemberDeclaration());
+                    break;
+                default:
+                    Advance();
+                    break;
+            };
+
+            if (depth == 0)
+                break;
+            
+        }
+
+        return members;
+    }
+
+    public Node ParseMemberDeclaration()
+    {
+        List<AttributeSequenceNode> attributes = new();
+        if (Check(TokenKind.ATTRIBUTE_START))
+            attributes.Add(ParseAttributeSeq());
+
+        var type = ParseQualifiedName();
+        var name = ParseLiteral();
+        
+        if (Check(TokenKind.OPEN_PAREN))
+        {
+            ConsumeBalancedParens();
+            return new MethodNode(name, type, attributes, null);
+        }
+
+        return new FieldNode(name, type, attributes);
+    }
+    
     private void ParseClassBaseClause()
     {
         Consume(TokenKind.COLON);
@@ -93,12 +153,27 @@ public class Parser
     
     private void ConsumeBalancedBraces()
     {
+        ConsumeBalancedTags(TokenKind.OPEN_BRACE, TokenKind.CLOSE_BRACE);
+    }
+    
+    private void ConsumeBalancedBrackets()
+    {
+        ConsumeBalancedTags(TokenKind.OPEN_BRACKET, TokenKind.CLOSE_BRACKET);
+    }
+    
+    private void ConsumeBalancedParens()
+    {
+        ConsumeBalancedTags(TokenKind.OPEN_PAREN, TokenKind.CLOSE_PAREN);
+    }
+    
+    private void ConsumeBalancedTags(TokenKind open, TokenKind close)
+    {
         var depth = 0;
         while (true)
         {
-            if (Check(TokenKind.OPEN_BRACE))
+            if (Check(open))
                 depth++;
-            if (Check(TokenKind.CLOSE_BRACE))
+            if (Check(close))
                 depth--;
             if (depth == 0)
                 break;
@@ -117,7 +192,7 @@ public class Parser
         return new NamespaceNode(namespaceToken, nameNode, members);
     }
     
-    LiteralNode ConsumeLiteral()
+    LiteralNode ParseLiteral()
     {
         if (Check(TokenKind.NUMBER_LITERAL))
         {
@@ -143,7 +218,7 @@ public class Parser
         var parts = new List<LiteralNode>();
         while (Check(TokenKind.IDENTIFIER))
         {
-            parts.Add(ConsumeLiteral());
+            parts.Add(ParseLiteral());
             if (Check(TokenKind.COLON))
             {
                 Consume(TokenKind.COLON);
@@ -158,7 +233,7 @@ public class Parser
         return new QualifiedNameNode(parts);
     }
     
-    AttributeSequenceNode? ConsumeAttributeSeq()
+    AttributeSequenceNode? ParseAttributeSeq()
     {
         if (!Check(TokenKind.ATTRIBUTE_START))
             return null;
@@ -187,17 +262,17 @@ public class Parser
             Node? namespaceNode = null;
             if (Check(1,TokenKind.COLON) && Check(2, TokenKind.COLON))
             {
-                namespaceNode = ConsumeLiteral();
+                namespaceNode = ParseLiteral();
                 Consume(TokenKind.COLON);
                 Consume(TokenKind.COLON);
-                name = ConsumeLiteral();
+                name = ParseLiteral();
             }
             else
             {
-                name = ConsumeLiteral();
+                name = ParseLiteral();
             }
 
-            var paramsSeq = ConsumeParamsSeq();
+            var paramsSeq = ParseParamsSeq();
 
             if (namespaceNode is null)
             {
@@ -224,7 +299,7 @@ public class Parser
         );
     }
 
-    private ParamSeqNode ConsumeParamsSeq()
+    private ParamSeqNode ParseParamsSeq()
     {
         if (Check(TokenKind.OPEN_PAREN))
         {
@@ -234,11 +309,11 @@ public class Parser
             {
                 if (Check(1,TokenKind.COMMA))
                 {
-                    args.Add(new ParamNode(ConsumeLiteral(), Consume(TokenKind.COMMA)));
+                    args.Add(new ParamNode(ParseLiteral(), Consume(TokenKind.COMMA)));
                 }
                 else
                 {
-                    args.Add(new ParamNode(ConsumeLiteral()));
+                    args.Add(new ParamNode(ParseLiteral()));
                 }
             }
 

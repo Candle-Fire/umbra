@@ -39,13 +39,23 @@ public class Clazz
     {
         Attributes.Add(attr);
     }
+
+    public void AddAttributes(List<Attribute> classAttributes)
+    {
+        this.Attributes.AddRange(classAttributes);
+    }
+
+    public void AddField(Field field)
+    {
+        Fields.Add(field);
+    }
 }
 
 public class Field
 {
     public string Name;
     public string Type;
-    public List<ClazzRef> Attributes = new();
+    public List<Attribute> Attributes = new();
     
     public Field(string name, string type)
     {
@@ -53,7 +63,7 @@ public class Field
         Type = type;
     }
     
-    public void AddAttribute(ClazzRef attr)
+    public void AddAttribute(Attribute attr)
     {
         Attributes.Add(attr);
     }

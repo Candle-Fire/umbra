@@ -26,10 +26,12 @@ public class NodeKind
         return make(name, name);
     }
 
-    
+    public static NodeKind NAMESPACE_NODE = make("NAMESPACE_NODE");
     public static NodeKind CLASS_NODE = make("CLASS_NODE");
     public static NodeKind STRUCT_NODE = make("STRUCT_NODE");
+    
     public static NodeKind FIELD_NODE = make("FIELD_NODE");
+    public static NodeKind METHOD_NODE = make("METHOD_NODE");
 
     public static NodeKind PARAM_SEQ_NODE = make("PARAM_SEQ_NODE");
     public static NodeKind PARAM_NODE = make("PARAM_NODE");
@@ -49,6 +51,8 @@ public class NodeKind
     public static NodeKind USING_NODE = make("USING_NODE");
     
     public static NodeKind MACRO_NODE = make("MACRO_NODE");
+    
+    
 
 }
 
@@ -96,9 +100,9 @@ public class QualifiedNameNode : Node
         this.parts = parts;
     }
     
-    public override string ToString() => base.ToString() + " " + string.Join(".", parts.Select(i => i.Value));
+    public override string ToString() => base.ToString() + " " + string.Join("::", parts.Select(i => i.Value));
     
-    public string Value => string.Join(".", parts.Select(i => i.Value));
+    public string Value => string.Join("::", parts.Select(i => i.Value));
 }
 
 public class AttributeSequenceNode : Node
@@ -187,18 +191,58 @@ public class NamespacedAttributeNode : AttributeNode
     public string Namespace => namespaceToken.to<LiteralNode>(NodeKind.IDENTIFIER_LITERAL_NODE).Value;
 }
 
+public class FieldNode : Node
+{
+    public LiteralNode nameToken;
+    public QualifiedNameNode typeToken;
+    public List<AttributeSequenceNode> attributes;
+
+    public FieldNode(LiteralNode nameToken, QualifiedNameNode typeToken, List<AttributeSequenceNode> attribs) 
+        : base(NodeKind.FIELD_NODE)
+    {
+        this.nameToken = nameToken;
+        this.typeToken = typeToken;
+        this.attributes = attribs;
+    }
+}
+
+public class MethodNode : Node
+{
+    public LiteralNode nameToken;
+    public QualifiedNameNode returnTypeToken;
+    public List<AttributeSequenceNode> attributes;
+    public ParamSeqNode paramSeq;
+
+    public MethodNode(LiteralNode nameToken,
+        QualifiedNameNode returnTypeToken,
+        List<AttributeSequenceNode> attribs,
+        ParamSeqNode paramSeq) 
+        : base(NodeKind.METHOD_NODE)
+    {
+        this.nameToken = nameToken;
+        this.returnTypeToken = returnTypeToken;
+        this.attributes = attribs;
+        this.paramSeq = paramSeq;
+    }
+}
+
 public class ClassNode : Node
 {
     public Token classToken;
-    public LiteralNode name;
+    public QualifiedNameNode name;
     public List<AttributeSequenceNode> attributeSeqs = new();
+    public List<Node> children = new();
 
-    public ClassNode(Token classToken, LiteralNode name, List<AttributeSequenceNode> attributes) 
+    public ClassNode(Token classToken,
+        QualifiedNameNode name,
+        List<AttributeSequenceNode> attributes,
+        List<Node> children) 
         : base(NodeKind.CLASS_NODE)
     {
         this.classToken = classToken;
         this.name = name;
         this.attributeSeqs = attributes;
+        this.children = children;
     }
 }
 
@@ -209,7 +253,7 @@ public class NamespaceNode : Node
     public List<Node> children = new();
 
     public NamespaceNode(Token namespaceToken, QualifiedNameNode name, List<Node> children) 
-        : base(NodeKind.CLASS_NODE)
+        : base(NodeKind.NAMESPACE_NODE)
     {
         this.namespaceToken = namespaceToken;
         this.name = name;

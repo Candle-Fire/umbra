@@ -16,6 +16,8 @@ public class TokenKind
     }
     
     public static Dictionary<string, TokenKind> types = new();
+
+    public static readonly TokenKind UNUSED = make("UNUSED");
     
     public static TokenKind COLON = make("COLON", ":");
     

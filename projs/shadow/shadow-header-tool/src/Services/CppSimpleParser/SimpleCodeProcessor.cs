@@ -138,7 +138,7 @@ public class SimpleCodeProcessor : ICodeProcessor
                     var field = new Field(f.Groups["name"].Value, f.Groups["type"].Value);
                     foreach (Capture attr in f.Groups["attr"].Captures)
                     {
-                        field.AddAttribute(new ClazzRef(){name=attr.Value});
+                        field.AddAttribute(new Attribute(){Name=attr.Value});
                     }
                     
                     clazz.Fields.Add(field);
