@@ -1,3 +1,3 @@
 #include "../../inc/entities/Health.h"
 
-SHObject_Base_Impl(Health)
+SHObject_Base_Impl(test_game::Health)

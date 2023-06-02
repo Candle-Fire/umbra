@@ -2,15 +2,10 @@
 
 #include "graph/graph.h"
 
-//Position component in the builtin namespace
 namespace ShadowEngine::Entities::Builtin {
 
     class
-        [[using SH: reflect("asd"), NoFunc()]]
-        [[SH::reflect("asd"), SH::NoFunc()]]
-        [[SH::Reflect("asd"), API_NEW]]
-        [[1:asd]]
-        [[test]] Position : public ShadowEngine::Entities::Component {
+        [[SH::Reflect]] Position : public ShadowEngine::Entities::Component {
       SHReflect(Position);
       SHObject_Base(Position);
       public:

@@ -1,6 +1,9 @@
-﻿using shadow_header_tool.CppSimpleParser;
+﻿using System.Text.RegularExpressions;
+using shadow_header_tool.CppSimpleParser;
+using shadow_header_tool.FileCaching;
 using shadow_header_tool.ReflectionModel;
 using shadow_header_tool.Services.CppAdvancedParser.Interpreter;
+using shadow_header_tool.Services.CppSimpleParser;
 using shadow_header_tool.Services.CppSimpleParser.Lexer;
 using Attribute = shadow_header_tool.ReflectionModel.Attribute;
 
@@ -11,38 +14,111 @@ public class AdvancedCodeProcessor : ICodeProcessor
     List<string> _paths = new();
     List<string> _includes = new();
 
+    //The list of files that are included in the source files
+    HashSet<string> _files = new(); 
+    
+    private FileCache _fileCache;
+
+    string includePattern = @"#include [<\""](?<path>[\w\/\\\.]+)[>\""]";
+
+    public AdvancedCodeProcessor(FileCache cache)
+    {
+        _fileCache = cache;
+    }
+    
+    public List<FileInfo> GetFiles()
+    {
+        return _files.Select(f => new FileInfo(f)).ToList();
+    }
+    
     public void AddSourceFiles(List<string> paths, List<string> includes)
     {
         _paths = paths;
         _includes = includes;
+        
+        var inc = includes.Select(i => new DirectoryInfo(i));
+        
+        foreach (var path in paths)
+        {
+            if (!path.EndsWith(".cpp") && !path.EndsWith(".h"))
+            {
+                continue;
+            }
+            
+            var fileInfo = new FileInfo(path);
+            if(!fileInfo.Exists)
+            {
+                continue;
+            }
+            
+            var file = _fileCache.ReadFile(path);
+
+            foreach (Match m in Regex.Matches(file.content, includePattern, RegexOptions.Multiline))
+            {
+            
+                var incFile = inc
+                    .Select(i => new FileInclude(
+                        file: new FileInfo(i.FullName + "/" + m.Groups["path"].Value),
+                        path: m.Groups["path"].Value
+                    ))
+                    .ToList()
+                    .Find(f => f.File.Exists);
+                if (incFile != null)
+                {
+                    //Console.WriteLine($"{m.Value, -60} is at: {incFile.File.FullName, 10}");
+                    _files.Add(incFile.File.FullName);
+                }
+                else
+                {
+                    //Console.WriteLine($"{m.Value, -60} is not found");
+                }
+            }
+        }
     }
 
     public List<Clazz> Process()
     {
-        var path = "P:\\_Projects\\umbra\\umbra\\projs\\shadow\\shadow-header-tool\\src\\Services\\CppAdvancedParser\\test_files\\test.cpp";
+        List<Clazz> classes = new();
+        
+        foreach (var file in _files)
+        {
 
-        Console.WriteLine(path);
-        var lexer = new Lexer();
-        lexer.LoadFile(new FileInfo(path));
 
-        var parser = new Parser(lexer);
-        var ast = parser.ParseCompilationUnit();
+            //var file = "P:\\_Projects\\umbra\\umbra\\projs\\shadow\\shadow-header-tool\\src\\Services\\CppAdvancedParser\\test_files\\test.cpp";
 
-        var nodeList = ast.children;
+            Console.WriteLine(file);
+            var lexer = new Lexer();
+            lexer.LoadFile(new FileInfo(file));
 
-        var classes =
-            ast.children
-                .Select(i=>(parents: new List<Node>(){ast}, node: i))
-                .SelectMany(i=>i.node.Walk().Select(a =>
-                    {
-                        var parents = new List<Node>();
-                        parents.AddRange(i.parents);
-                        parents.Add(i.node);
-                        return (parents: parents, node: a);
-                    }
-                ))
-                .Where(a => a.node.kind == NodeKind.CLASS_NODE)
-                .Select(a => ClazzFromNode(a, new FileInfo(path))).ToList();
+            var parser = new Parser(lexer);
+            var ast = parser.ParseCompilationUnit();
+
+            var nodeList = ast.children;
+
+            var new_classes = new []{(parents: new List<Node>() { }, node: ast)}
+                    //ast.children
+                    //.Select(i => (parents: new List<Node>() { ast }, node: i))
+                    .SelectMany(i => i.node.Walk().Select(a =>
+                        {
+                            var parents = new List<Node>();
+                            parents.AddRange(i.parents);
+                            parents.Add(i.node);
+                            return (parents: parents, node: a);
+                        }
+                    ))
+                    .SelectMany(i => i.node.Walk().Select(a =>
+                        {
+                            var parents = new List<Node>();
+                            parents.AddRange(i.parents);
+                            parents.Add(i.node);
+                            return (parents: parents, node: a);
+                        }
+                    ))
+                    .Where(a => a.node.kind == NodeKind.CLASS_NODE)
+                    .Select(a => ClazzFromNode(a, new FileInfo(file))).ToList();
+            
+            classes.AddRange(new_classes);
+        }
 
         return classes;
     }
@@ -112,10 +188,5 @@ public class AdvancedCodeProcessor : ICodeProcessor
         
         var namespaceName = string.Join("::", namespaceNode);
         return namespaceName;
-    }
-    
-    public List<FileInfo> GetFiles()
-    {
-        throw new NotImplementedException();
     }
 }

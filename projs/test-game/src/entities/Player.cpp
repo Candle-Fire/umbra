@@ -4,9 +4,9 @@
 #include "entities/Position.h"
 #include "entities/Health.h"
 
-SHObject_Base_Impl(Player)
+SHObject_Base_Impl(test_game::Player)
 
-void Player::Build() {
+void test_game::Player::Build() {
     //Add position, health, and camera components
     Add<TestCamera>({});
     Add<Health>({});

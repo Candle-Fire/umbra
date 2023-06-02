@@ -17,7 +17,7 @@ public class Lexer
             var token = scan_token();
             tokens.Add(token);
             
-            Console.WriteLine($"Token: {token.kind.Name} at: L{token.pos.line}C{token.pos.column} {token.value}");
+            //Console.WriteLine($"Token: {token.kind.Name} at: L{token.pos.line}C{token.pos.column} {token.value}");
             advance();
         }
     }
