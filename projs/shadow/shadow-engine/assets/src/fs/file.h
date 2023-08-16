@@ -75,7 +75,7 @@ namespace ShadowEngine {
         // Create a Virtual Filesystem based on the given path.
         static std::unique_ptr<FileSystem> createVFS(std::string& basePath);
 
-        virtual ~FileSystem() {}
+        virtual ~FileSystem() = default;
 
         // Open a file for reading.
         virtual bool open(std::string& path, FileInput& input) = 0;
@@ -103,7 +103,7 @@ namespace ShadowEngine {
         virtual bool hasWork() = 0;
 
         // Write new content to a file synchronously. The thread will be blocked when doing this.
-        virtual bool saveSync(const Path& file, const uint8_t* content, const size_t size) = 0;
+        virtual bool saveSync(const Path& file, const uint8_t* content, size_t size) = 0;
         // Read content from a file synchronously. The thread will be blocked when doing this.
         virtual bool readSync(const Path& file, struct OutputMemoryStream& content) = 0;
 

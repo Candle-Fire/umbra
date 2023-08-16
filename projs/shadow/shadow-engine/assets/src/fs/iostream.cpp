@@ -1,4 +1,5 @@
 #include <fs/iostream.h>
+#include <cstring>
 
 namespace ShadowEngine {
 
@@ -13,15 +14,16 @@ namespace ShadowEngine {
         str.free();
     }
 
-    void OutputMemoryStream::operator=(ShadowEngine::OutputMemoryStream &&str) noexcept {
+    OutputMemoryStream& OutputMemoryStream::operator=(ShadowEngine::OutputMemoryStream &&str) noexcept {
         capacity = str.capacity;
         buffer = str.buffer;
         usage = str.usage;
 
         str.free();
+        return *this;
     }
 
-    void OutputMemoryStream::operator=(const ShadowEngine::OutputMemoryStream &rhs) noexcept {
+    OutputMemoryStream& OutputMemoryStream::operator=(const ShadowEngine::OutputMemoryStream &rhs) noexcept {
         usage = rhs.usage;
 
         if (rhs.capacity > 0) {
@@ -32,6 +34,8 @@ namespace ShadowEngine {
             buffer = nullptr;
             capacity = 0;
         }
+
+        return *this;
     }
 
     OutputMemoryStream::OutputMemoryStream(const ShadowEngine::OutputMemoryStream &rhs) noexcept {

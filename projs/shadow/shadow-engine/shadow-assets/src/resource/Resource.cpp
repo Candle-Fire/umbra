@@ -174,4 +174,21 @@ namespace ShadowEngine {
 
         checkState();
     }
+
+    static std::string type("prefab");
+    const ResourceType PrefabResource::TYPE(type);
+
+    PrefabResource::PrefabResource(const ShadowEngine::Path &path,
+                                   ShadowEngine::ResourceTypeManager &resource_manager) : Resource(path, resource_manager) {}
+
+    ResourceType PrefabResource::getType() const { return TYPE; }
+
+    void PrefabResource::unload() { data.clear(); }
+
+    bool PrefabResource::load(size_t size, const uint8_t *mem) {
+        data.resize(size);
+        memcpy(data.dataMut(), mem, size);
+        hash = StableHash(mem, size);
+        return true;
+    }
 }

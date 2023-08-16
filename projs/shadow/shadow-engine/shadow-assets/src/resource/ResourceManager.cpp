@@ -191,5 +191,4 @@ namespace ShadowEngine {
         for (auto manager : managers)
             manager.second->reload(path);
     }
-
 }

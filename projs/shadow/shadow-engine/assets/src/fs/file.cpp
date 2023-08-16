@@ -1,12 +1,33 @@
 #include <fs/file.h>
 #include <vector>
 #include "management/synchronization.h"
-#include "../../../../../../cmake-build-debug/_deps/spdlog-src/include/spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 #include <filesystem>
 #include <fs/path.h>
 #include <map>
 
 namespace ShadowEngine {
+
+    // Because fuck Linux? Need platform-specific source files!
+#ifdef _WIN32
+
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+    FileInput::FileInput() {
+        handle = (void*) INVALID_HANDLE_VALUE;
+    }
+
+    FileOutput::FileOutput() {
+        error = false;
+        handle = (void*) INVALID_HANDLE_VALUE;
+    }
+
+    bool FileOutput::open(std::string& path) {
+
+    }
+
+#endif
 
     /**
      * An async operation to be performed.

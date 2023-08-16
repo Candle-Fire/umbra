@@ -23,7 +23,8 @@ namespace ShadowEngine {
     };
 
     // A Resource Type that is guaranteed to be invalid.
-    const ResourceType INVALID_RESOURCE((std::string &) "");
+    static std::string empty;
+    const ResourceType INVALID_RESOURCE(empty);
 
     // A specialization of HashFunc for ResourceTypes, since they already have a HeapHash within.
     template<> struct HashFunc<ResourceType> {
@@ -124,5 +125,16 @@ namespace ShadowEngine {
         FileSystem::AsyncHandle handle;
         State state;
         bool hooked = false;
+    };
+
+    struct PrefabResource : Resource {
+        PrefabResource(const Path& path, ResourceTypeManager& resource_manager);
+        ResourceType getType() const override;
+        void unload() override;
+        bool load(size_t size, const uint8_t* data) override;
+
+        OutputMemoryStream data;
+        StableHash hash;
+        static const ResourceType TYPE;
     };
 }
