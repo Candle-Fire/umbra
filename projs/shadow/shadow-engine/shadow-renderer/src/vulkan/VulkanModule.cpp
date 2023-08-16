@@ -3,7 +3,7 @@
 #include <vulkan/vk_mem_alloc.h>
 #include <vlkx/vulkan/Tools.h>
 
-#include "vlkx/vulkan/VulkanModule.h"
+#include <vlkx\vulkan\VulkanModule.h>
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "core/ShadowApplication.h"
@@ -11,6 +11,7 @@
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
 #include <vlkx/vulkan/SwapChain.h>
 #include "core/module-manager-v2.h"
+#include "event-bus/render_events.h"
 
 #include <functional>
 
@@ -200,17 +201,14 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
                                   ->execute(buffer,
                                             frame,
                                             {
-                                                // Render our model
-                                                [this](const VkCommandBuffer &commands) {
+                                                // Render our models
+                                                [this, frame](const VkCommandBuffer &commands) {
                                                     if (!editorEnabled) {
                                                         renderingGeometry =
                                                             true;
-                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
-                                                        //    const_cast<VkCommandBuffer &>(commands),
-                                                        //    frame);
-                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
-                                                        //    const_cast<VkCommandBuffer &>(commands),
-                                                        //    frame);
+                                                        ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Render(const_cast<VkCommandBuffer&>(commands), frame));
+
+                                                        ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::PostRender(const_cast<VkCommandBuffer&>(commands), frame));
                                                         renderingGeometry =
                                                             false;
                                                     }
@@ -257,6 +255,9 @@ void VulkanModule::PreRender(SH::Events::PreRender) {
                                                 renderPass->getPass()->execute(buffer, frame, {
                                                     [&](const VkCommandBuffer &commands) {
                                                         renderingGeometry = true;
+                                                        ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Render(const_cast<VkCommandBuffer&>(commands), frame));
+
+                                                        ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::PostRender(const_cast<VkCommandBuffer&>(commands), frame));
                                                         //ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Render(const_cast<VkCommandBuffer&>(commands), frame));
 
                                                         //ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::PostRender(const_cast<VkCommandBuffer&>(commands), frame));
