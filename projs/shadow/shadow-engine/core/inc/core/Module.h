@@ -4,6 +4,7 @@
 #include "SDL_events.h"
 #include <memory>
 #include "vlkx/vulkan/abstraction/Commands.h"
+#include "event-bus/events.h"
 
 namespace ShadowEngine {
 

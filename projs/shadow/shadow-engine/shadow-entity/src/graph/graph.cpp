@@ -75,6 +75,10 @@ namespace ShadowEngine::Entities {
 
         // destroy the node
         manager.DestroyNode(node);
+    }
+
+    void World::Step() {
+        systemManager.run();
 
     }
 

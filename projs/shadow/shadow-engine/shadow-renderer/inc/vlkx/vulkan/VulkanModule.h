@@ -10,6 +10,7 @@
 #include <core/Module.h>
 #include "SwapChain.h"
 #include "event-bus/events.h"
+#include "event-bus/render_events.h"
 
 namespace vlkx { class ScreenRenderPassManager; }
 

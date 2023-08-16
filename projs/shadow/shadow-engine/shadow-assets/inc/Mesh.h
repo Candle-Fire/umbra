@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include "vlkx/render/Geometry.h"
 
 namespace ShadowEngine::Assets {
     //Mesh with verts for a cube
@@ -10,7 +11,7 @@ namespace ShadowEngine::Assets {
         Mesh();
 
         //The vertices of the mesh
-        std::vector<glm::vec3> vertices;
+        std::vector<Geo::VertexAll> vertices;
         //The indices of the mesh
         std::vector<uint32_t> indices;
     };

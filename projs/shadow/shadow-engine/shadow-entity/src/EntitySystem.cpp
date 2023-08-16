@@ -6,6 +6,8 @@
 #include "entities/Position.h"
 
 #include "core/module-manager-v2.h"
+#include "event-bus/render_events.h"
+#include "entities/MeshComponent.h"
 
 namespace ShadowEngine::Entities {
 
@@ -42,6 +44,27 @@ namespace ShadowEngine::Entities {
     void EntitySystem::Init() {
         ShadowEngine::ShadowApplication::Get().GetEventBus()
             .subscribe(this, &EntitySystem::OverlayRender);
+        ShadowEngine::ShadowApplication::Get().GetEventBus()
+            .subscribe(this, &EntitySystem::Render);
+    }
+
+    void EntitySystem::Render(SH::Events::Render &render) {
+        // Collect renderables
+        auto& container = *world.GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
+        rtm_ptr<NodeBase> positionNode;
+
+        for (auto & it : container) {
+            // Try find the sister position first
+            auto parent = *it.GetParent().Get();
+            for (auto& comp : parent.GetHierarchy()) {
+                if (comp.Get()->GetTypeId() == ShadowEngine::Entities::Builtin::Position::TypeId()) {
+                    positionNode = comp;
+                }
+            }
+        }
+
+        // Translate, rotate the model
+        // Submit to the render buffer
     }
 
     void EntitySystem::Update(int frame) {

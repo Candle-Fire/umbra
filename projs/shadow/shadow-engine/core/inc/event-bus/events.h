@@ -22,10 +22,6 @@ namespace SH::Events {
       SHObject_Base(OverlayRender)
     };
 
-    class PreRender : public Event {
-      SHObject_Base(PreRender)
-    };
-
     class Recreate : public Event {
       SHObject_Base(Recreate)
     };
