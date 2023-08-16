@@ -25,11 +25,9 @@ namespace ShadowEngine {
         template <R (*Function)(Args...)> void unbind() {
             Delegate<R(Args...)> cb;
             cb.template bind<Function>();
-            for (int i = 0; i < m_delegates.size(); ++i)
-            {
-                if (m_delegates[i] == cb)
-                {
-                    m_delegates.swapAndPop(i);
+            for (int i = 0; i < m_delegates.size(); ++i) {
+                if (m_delegates[i] == cb) {
+                    m_delegates.erase(m_delegates.begin() + i);
                     break;
                 }
             }
@@ -38,11 +36,9 @@ namespace ShadowEngine {
         template <auto Function, typename C> void unbind(C* instance) {
             Delegate<R(Args...)> cb;
             cb.template bind<Function>(instance);
-            for (int i = 0; i < m_delegates.size(); ++i)
-            {
-                if (m_delegates[i] == cb)
-                {
-                    m_delegates.swapAndPop(i);
+            for (int i = 0; i < m_delegates.size(); ++i) {
+                if (m_delegates[i] == cb) {
+                    m_delegates.erase(m_delegates.begin() + i);
                     break;
                 }
             }
