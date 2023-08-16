@@ -18,7 +18,7 @@ namespace ShadowEngine {
         void exit();
     private:
 #ifdef _WIN32
-        uint8_t data[8];
+        uint8_t data[8] {};
 #else
         pthread_mutex_t mutex;
 #endif
