@@ -193,7 +193,7 @@ namespace ShadowEngine::Entities {
             NodeContainer<Type> *container;
             int chunk_index;
 
-            MemoryChunk::Iterator element;
+            typename MemoryChunk::Iterator element;
           public:
             Iterator(NodeContainer<Type> *cont, int c_index) :
                 container(cont),
@@ -265,7 +265,7 @@ namespace ShadowEngine::Entities {
 
             int GetChunkIndex() const { return chunk_index; }
 
-            MemoryChunk::Iterator GetElement() const { return element; }
+            typename MemoryChunk::Iterator GetElement() const { return element; }
 
         };
 
