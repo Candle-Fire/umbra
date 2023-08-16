@@ -73,7 +73,7 @@ public class Node
         throw new Exception("Can't convert");
     }
 
-    public virtual List<Node> Walk() => new List<Node>();
+    public virtual List<Node> GetChildren() => new List<Node>();
 
     public override string ToString() => kind.ToString();
 }
@@ -260,7 +260,7 @@ public class NamespaceNode : Node
         this.children = children;
     }
 
-    public override List<Node> Walk() => children;
+    public override List<Node> GetChildren() => children;
 }
 
 public class CompilationUnitNode : Node
@@ -272,7 +272,7 @@ public class CompilationUnitNode : Node
         this.children = children;
     }
     
-    public override List<Node> Walk() => children;
+    public override List<Node> GetChildren() => children;
 }
 
 public class MacroNode : Node

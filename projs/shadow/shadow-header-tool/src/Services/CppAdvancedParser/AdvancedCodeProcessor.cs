@@ -93,12 +93,20 @@ public class AdvancedCodeProcessor : ICodeProcessor
             var parser = new Parser(lexer);
             var ast = parser.ParseCompilationUnit();
 
-            var nodeList = ast.children;
-
+            Walk(NodeKind.CLASS_NODE,(list, node) =>
+            {
+                Console.WriteLine(node.kind.Name);
+                
+                var clazz = ClazzFromNode((list, node), new FileInfo(file));
+                
+                classes.Add(clazz);
+            }, ast);
+            
+            
             var new_classes = new []{(parents: new List<Node>() { }, node: ast)}
                     //ast.children
                     //.Select(i => (parents: new List<Node>() { ast }, node: i))
-                    .SelectMany(i => i.node.Walk().Select(a =>
+                    .SelectMany(i => i.node.GetChildren().Select(a =>
                         {
                             var parents = new List<Node>();
                             parents.AddRange(i.parents);
@@ -106,7 +114,7 @@ public class AdvancedCodeProcessor : ICodeProcessor
                             return (parents: parents, node: a);
                         }
                     ))
-                    .SelectMany(i => i.node.Walk().Select(a =>
+                    .SelectMany(i => i.node.GetChildren().Select(a =>
                         {
                             var parents = new List<Node>();
                             parents.AddRange(i.parents);
@@ -117,12 +125,32 @@ public class AdvancedCodeProcessor : ICodeProcessor
                     .Where(a => a.node.kind == NodeKind.CLASS_NODE)
                     .Select(a => ClazzFromNode(a, new FileInfo(file))).ToList();
             
-            classes.AddRange(new_classes);
+            //classes.AddRange(new_classes);
         }
 
         return classes;
     }
+    
+    public void Walk(NodeKind kind, Action<List<Node>, Node> walker, Node node)
+    {
+        Walk(kind, walker, node, new List<Node>());
+    }
 
+    public void Walk(NodeKind kind, Action<List<Node>, Node> walker, Node node, List<Node> paretns)
+    {
+        if(kind == node.kind)
+            walker(paretns, node);
+        
+        List<Node> newParents = new();
+        newParents.AddRange(paretns);
+        newParents.Add(node);
+        
+        foreach (var child in node.GetChildren())
+        {
+            Walk(kind, walker, child, newParents);
+        }
+    }
+    
     Clazz ClazzFromNode((List<Node>,Node) node, FileInfo fileInfo)
     {
         if (node.Item2.kind != NodeKind.CLASS_NODE)
