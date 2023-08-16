@@ -2,6 +2,7 @@
 
 #include "core/module-manager-v2.h"
 #include <ranges>
+#include <algorithm>
 
 namespace ShadowEngine {
 
