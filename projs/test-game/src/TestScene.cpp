@@ -4,25 +4,32 @@
 #include "entities/Position.h"
 #include "entities/MeshComponent.h"
 #include "entities/Light.h"
+#include "vlkx/render/Geometry.h"
 
 SHObject_Base_Impl(TestScene)
 
 void TestScene::Build() {
+    using ShadowEngine::Assets::Mesh;
     //Add 2 nodes to the scene that have a position and mesh components on them
-    auto cube1 = this->Add<ShadowEngine::Entities::Builtin::NullActor>({});
-    cube1->SetName("Cube 1");
-    cube1->Add<ShadowEngine::Entities::Builtin::Position>({-5, 0, 0});
-    cube1->Add<ShadowEngine::Entities::Builtin::MeshComponent>({});
+    Mesh cubeMesh;
+    Geo::Mesh::setCubeData(cubeMesh.vertices, cubeMesh.indices);
+    auto meshData = std::make_shared<Mesh>(cubeMesh);
 
-    auto cube2 = this->Add<ShadowEngine::Entities::Builtin::NullActor>({});
+    using namespace ShadowEngine::Entities::Builtin;
+    auto cube1 = this->Add<NullActor>({});
+    cube1->SetName("Cube 1");
+    cube1->Add<Position>({-5, 0, 0});
+    cube1->Add<MeshComponent>(MeshComponent { meshData });
+
+    auto cube2 = this->Add<NullActor>({});
     cube2->SetName("Cube 2");
-    cube2->Add<ShadowEngine::Entities::Builtin::Position>({5, 0, 0});
-    cube2->Add<ShadowEngine::Entities::Builtin::MeshComponent>({});
+    cube2->Add<Position>({5, 0, 0});
+    cube2->Add<MeshComponent>(MeshComponent { meshData });
 
     //Add a light to the center of the scene
-    auto light = this->Add<ShadowEngine::Entities::Builtin::NullActor>({});
+    auto light = this->Add<NullActor>({});
     light->SetName("Light");
-    light->Add<ShadowEngine::Entities::Builtin::Position>({0, 0, 0});
-    light->Add<ShadowEngine::Entities::Builtin::Light>({});
+    light->Add<Position>({0, 0, 0});
+    light->Add<Light>({});
 
 }

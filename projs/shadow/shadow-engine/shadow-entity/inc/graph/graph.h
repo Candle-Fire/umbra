@@ -468,9 +468,7 @@ namespace ShadowEngine::Entities {
             return systemManager.system<T>();
         }
 
-        void Step() {
-            systemManager.run();
-        }
+        void Step();
 
         NodeManager &GetManager() { return manager; }
 
