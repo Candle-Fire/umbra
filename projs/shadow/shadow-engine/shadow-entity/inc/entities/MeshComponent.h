@@ -15,7 +15,7 @@ namespace ShadowEngine::Entities::Builtin {
         explicit MeshComponent(std::shared_ptr<ShadowEngine::Assets::Mesh>& mesh) : Component(), mesh(mesh) {}
 
         // Temporary!
-        explicit MeshComponent(std::shared_ptr<vlkxtemp::Model>& model) : Component(), model(model) {}
+        explicit MeshComponent(std::shared_ptr<vlkxtemp::Model>& model, std::shared_ptr<vlkx::PushConstant>& push) : Component(), model(model), transform_constant(push) {}
         bool isMesh; // if false, is model
         struct Transformation {
             alignas(sizeof(glm::mat4)) glm::mat4 proj_view_model;

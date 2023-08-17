@@ -8,7 +8,7 @@ namespace ShadowEngine::Assets {
     //Mesh with verts for a cube
     class Mesh {
       public:
-        Mesh();
+        Mesh() {};
 
         //The vertices of the mesh
         std::vector<Geo::VertexAll> vertices;

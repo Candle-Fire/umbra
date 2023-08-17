@@ -61,15 +61,17 @@ namespace ShadowEngine::Entities {
                 if (comp.Get()->GetTypeId() == ShadowEngine::Entities::Builtin::Position::TypeId()) {
                     positionNode = comp;
                     mesh = &it;
+
+                    if (mesh->isMesh) return;
+
+                    // Translate by position, submit mesh for render
+                    auto pos = dynamic_cast<ShadowEngine::Entities::Builtin::Position*>(positionNode.Get());
+                    *mesh->transform_constant->getData<Builtin::MeshComponent::Transformation>(render.frame) = { glm::translate(glm::identity<glm::mat4>(), { pos->x, pos->y, pos->z } ) };
+                    mesh->model->draw(render.buffer, render.frame, 1);
                 }
             }
         }
 
-        if (mesh->isMesh) return;
-
-        auto pos = dynamic_cast<ShadowEngine::Entities::Builtin::Position*>(positionNode.Get());
-        *mesh->transform_constant->getData<Builtin::MeshComponent::Transformation>(render.frame) = { glm::translate(glm::identity<glm::mat4>(), { pos->x, pos->y, pos->z } ) };
-        mesh->model->draw(render.buffer, render.frame, 1);
     }
 
     void EntitySystem::Update(int frame) {
