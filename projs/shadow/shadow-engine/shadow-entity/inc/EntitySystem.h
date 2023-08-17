@@ -5,6 +5,7 @@
 #include "graph/graph.h"
 #include "NodeManager.h"
 #include "event-bus/events.h"
+#include "event-bus/render_events.h"
 
 //Holds the reference to the active scene
 

@@ -52,6 +52,7 @@ namespace ShadowEngine::Entities {
         // Collect renderables
         auto& container = *world.GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
         rtm_ptr<NodeBase> positionNode;
+        Builtin::MeshComponent* mesh;
 
         for (auto & it : container) {
             // Try find the sister position first
@@ -59,12 +60,16 @@ namespace ShadowEngine::Entities {
             for (auto& comp : parent.GetHierarchy()) {
                 if (comp.Get()->GetTypeId() == ShadowEngine::Entities::Builtin::Position::TypeId()) {
                     positionNode = comp;
+                    mesh = &it;
                 }
             }
         }
 
-        // Translate, rotate the model
-        // Submit to the render buffer
+        if (mesh->isMesh) return;
+
+        auto pos = dynamic_cast<ShadowEngine::Entities::Builtin::Position*>(positionNode.Get());
+        *mesh->transform_constant->getData<Builtin::MeshComponent::Transformation>(render.frame) = { glm::translate(glm::identity<glm::mat4>(), { pos->x, pos->y, pos->z } ) };
+        mesh->model->draw(render.buffer, render.frame, 1);
     }
 
     void EntitySystem::Update(int frame) {

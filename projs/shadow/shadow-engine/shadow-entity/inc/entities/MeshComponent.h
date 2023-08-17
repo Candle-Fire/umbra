@@ -3,18 +3,29 @@
 #include "graph/graph.h"
 
 #include "Mesh.h"
+#include "temp/model/Builder.h"
 
 namespace ShadowEngine::Entities::Builtin {
-
     //A component that holds a mesh reference
     // TODO: Replace with vlkx::model
     class API MeshComponent : public ShadowEngine::Entities::Component {
       SHObject_Base(MeshComponent)
-      public:
+
+    public:
         explicit MeshComponent(std::shared_ptr<ShadowEngine::Assets::Mesh>& mesh) : Component(), mesh(mesh) {}
+
+        // Temporary!
+        explicit MeshComponent(std::shared_ptr<vlkxtemp::Model>& model) : Component(), model(model) {}
+        bool isMesh; // if false, is model
+        struct Transformation {
+            alignas(sizeof(glm::mat4)) glm::mat4 proj_view_model;
+        };
+        std::unique_ptr<vlkx::PushConstant> transform_constant;
+        std::shared_ptr<vlkxtemp::Model> model;
 
       private:
         std::shared_ptr<ShadowEngine::Assets::Mesh> mesh;
+
     };
 
 }
