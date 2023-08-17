@@ -20,7 +20,7 @@ namespace ShadowEngine::Entities::Builtin {
         struct Transformation {
             alignas(sizeof(glm::mat4)) glm::mat4 proj_view_model;
         };
-        std::unique_ptr<vlkx::PushConstant> transform_constant;
+        std::shared_ptr<vlkx::PushConstant> transform_constant;
         std::shared_ptr<vlkxtemp::Model> model;
 
       private:
