@@ -43,6 +43,7 @@ VulkanModule *VulkanModule::getInstance() {
 
 void VulkanModule::EnableEditor() {
     editorEnabled = true;
+    editorRenderCommands = std::make_unique<vlkx::RenderCommand>(1);
 }
 
 VkExtent2D VulkanModule::GetRenderExtent() {

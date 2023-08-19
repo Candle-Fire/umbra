@@ -8,7 +8,7 @@ namespace ShadowEngine::Editor {
     class SceneView : public EditorWindow{
     SHObject_Base(SceneView)
 
-    VulkanModule* renderer;
+    std::shared_ptr<VulkanModule> renderer;
 
     public:
         SceneView();

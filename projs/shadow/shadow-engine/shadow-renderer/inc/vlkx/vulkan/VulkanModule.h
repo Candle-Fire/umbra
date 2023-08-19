@@ -18,7 +18,7 @@ class VulkanModule : public ShadowEngine::RendererModule {
   SHObject_Base(VulkanModule);
   public:
 
-    VulkanModule() : RendererModule() { instance = this; }
+    VulkanModule() : RendererModule() { instance = this; editorEnabled = true; }
 
     ~VulkanModule() override;
 
