@@ -49,6 +49,7 @@ namespace ShadowEngine::Entities {
     }
 
     void EntitySystem::Render(SH::Events::Render &render) {
+        spdlog::info("ES render");
         // Collect renderables
         auto container = world.GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
         if (container == nullptr) return;
@@ -56,18 +57,22 @@ namespace ShadowEngine::Entities {
         Builtin::MeshComponent* mesh;
 
         for (auto& it : *container) {
+            spdlog::info("found mesh");
             // Try find the sister position first
             auto parent = *it.GetParent().Get();
             for (auto& comp : parent.GetHierarchy()) {
                 if (comp.Get()->GetTypeId() == ShadowEngine::Entities::Builtin::Position::TypeId()) {
+                    spdlog::info("found position");
                     positionNode = comp;
                     mesh = &it;
 
                     if (mesh->isMesh) return;
+                    spdlog::info("is model");
 
                     // Translate by position, submit mesh for render
                     auto pos = dynamic_cast<ShadowEngine::Entities::Builtin::Position*>(positionNode.Get());
                     *mesh->transform_constant->getData<Builtin::MeshComponent::Transformation>(render.frame) = { glm::translate(glm::identity<glm::mat4>(), { pos->x, pos->y, pos->z } ) };
+                    spdlog::info("rendering {}", mesh->GetType());
                     mesh->model->draw(render.buffer, render.frame, 1);
                 }
             }

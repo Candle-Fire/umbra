@@ -12,10 +12,10 @@ namespace ShadowEngine::Entities::Builtin {
       SHObject_Base(MeshComponent)
 
     public:
-        explicit MeshComponent(std::shared_ptr<ShadowEngine::Assets::Mesh>& mesh) : Component(), mesh(mesh) {}
+        explicit MeshComponent(std::shared_ptr<ShadowEngine::Assets::Mesh>& mesh) : Component(), mesh(mesh) { isMesh = true; }
 
         // Temporary!
-        explicit MeshComponent(std::shared_ptr<vlkxtemp::Model>& model, std::shared_ptr<vlkx::PushConstant>& push) : Component(), model(model), transform_constant(push) {}
+        explicit MeshComponent(std::shared_ptr<vlkxtemp::Model>& model, std::shared_ptr<vlkx::PushConstant>& push) : Component(), model(model), transform_constant(push) { isMesh = false; }
         bool isMesh; // if false, is model
         struct Transformation {
             alignas(sizeof(glm::mat4)) glm::mat4 proj_view_model;
