@@ -73,23 +73,23 @@ namespace ShadowEngine {
     }
 
     std::string Path::getPrelude(std::string &path) {
-        return path.substr(0, path.find_first_of(":"));
+        return path.substr(0, path.find_first_of(':'));
     }
 
     std::string Path::getDomain(std::string &path) {
-        return path.substr(path.find_first_of(":"), path.find_first_of("/"));
+        return path.substr(path.find_first_of(':'), path.find_first_of('/'));
     }
 
     std::string Path::getDirectory(std::string &path) {
-        return path.substr(path.find_first_of(":"), path.find_last_of("/"));
+        return path.substr(path.find_first_of(':'), path.find_last_of('/'));
     }
 
     std::string Path::getFilename(std::string &path) {
-        return path.substr(path.find_last_of("/"), path.find_last_of("."));
+        return path.substr(path.find_last_of('/'), path.find_last_of('.'));
     }
 
     std::string Path::getExtension(std::string &path) {
-        return path.substr(path.find_last_of("."), path.length());
+        return path.substr(path.find_last_of('.'), path.length());
     }
 
     std::string Path::replaceExtension(std::string &path, std::string &newExt) {

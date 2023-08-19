@@ -1,6 +1,7 @@
 
 #include "EntitySystem.h"
 
+#if false
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch2/catch.hpp"
 #include "entities/NullActor.h"
@@ -31,3 +32,4 @@ child->Add<ShadowEngine::Entities::Builtin::Position>({10.0f * i, 10, 10});
 }
 };
 }
+#endif

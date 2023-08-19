@@ -235,13 +235,13 @@ namespace vlkx {
         // Reference Counting works on both individual files and cubemaps, so we put them together.
         using ImageLocation = std::variant<std::string, CubemapLocation>;
 
-        RefCountedTexture(const ImageLocation& location, std::vector<ImageUsage> usages, const ImageSampler::Config& config)
-            : texture(get(location, std::move(usages), config)) {}
+        RefCountedTexture(const ImageLocation& location, const std::vector<ImageUsage>& usages, const ImageSampler::Config& config)
+            : texture(get(location, usages, config)) {}
 
         RefCountedTexture(RefCountedTexture&&) noexcept = default;
         RefCountedTexture& operator=(RefCountedTexture&&) noexcept = default;
 
-        VkDescriptorImageInfo getInfo(VkImageLayout layout) const override {
+        [[nodiscard]] VkDescriptorImageInfo getInfo(VkImageLayout layout) const override {
             return texture->getInfo(layout);
         }
 

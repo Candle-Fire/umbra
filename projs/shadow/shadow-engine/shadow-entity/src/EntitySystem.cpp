@@ -50,11 +50,12 @@ namespace ShadowEngine::Entities {
 
     void EntitySystem::Render(SH::Events::Render &render) {
         // Collect renderables
-        auto& container = *world.GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
+        auto container = world.GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
+        if (container == nullptr) return;
         rtm_ptr<NodeBase> positionNode;
         Builtin::MeshComponent* mesh;
 
-        for (auto & it : container) {
+        for (auto& it : *container) {
             // Try find the sister position first
             auto parent = *it.GetParent().Get();
             for (auto& comp : parent.GetHierarchy()) {

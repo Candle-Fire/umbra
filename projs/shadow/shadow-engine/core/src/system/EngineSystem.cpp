@@ -80,11 +80,12 @@ namespace ShadowEngine {
 #endif
 
             if (!ShadowEngine::Path::hasExtension(p, ext)) p = p.append(ext);
+            ShadowEngine::Path sePath(p);
 
             spdlog::info("Loading EngineSystem from ", p);
 
             using PluginConstructor = EngineSystem*(*)();
-            auto* lib = ShadowEngine::Library::load(p.c_str());
+            auto* lib = ShadowEngine::Library::load(sePath);
             if (lib) {
                 auto constructor = (PluginConstructor) ((dylib*)lib)->get_function<PluginConstructor>("createPlugin");
                 if (constructor) {

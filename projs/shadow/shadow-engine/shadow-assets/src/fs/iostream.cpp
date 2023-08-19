@@ -170,6 +170,17 @@ namespace ShadowEngine {
         return temp;
     }
 
+    void OutputMemoryStream::resize(size_t size) {
+        usage = size;
+        if (usage <= capacity) return;
+
+        uint8_t* temp = (uint8_t*) malloc(size);
+        memcpy(temp, buffer, capacity);
+        delete buffer;
+        buffer = temp;
+        capacity = size;
+    }
+
     InputMemoryStream::InputMemoryStream(const void *data, size_t size)
         : data(static_cast<const uint8_t *>(data)), capacity(size), position(0) {}
 

@@ -34,7 +34,7 @@ namespace ShadowEngine {
     // A custom OutputStream that writes to memory.
     struct OutputMemoryStream final : OutputStream {
 
-        OutputMemoryStream();
+        OutputMemoryStream() : buffer(nullptr), capacity(0), usage(0) {};
         OutputMemoryStream(void* data, size_t size);
         OutputMemoryStream(OutputMemoryStream&& str) noexcept;
         OutputMemoryStream(const OutputMemoryStream& rhs) noexcept;

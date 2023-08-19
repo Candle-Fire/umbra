@@ -74,7 +74,7 @@ namespace ShadowEngine {
         virtual bool deserialize(uint32_t version, InputMemoryStream& serializer) = 0;
         virtual void systemAdded(EngineSystem& system) {}
 
-        virtual void createManagers(World&) {}
+        virtual void createSystems(World&) {}
         virtual void startGame() {}
         virtual void stopGame() {}
 

@@ -2,8 +2,8 @@
 
 #include "graph/graph.h"
 
-#include "Mesh.h"
 #include "temp/model/Builder.h"
+#include "../../../shadow-assets/inc/Mesh.h"
 
 namespace ShadowEngine::Entities::Builtin {
     //A component that holds a mesh reference

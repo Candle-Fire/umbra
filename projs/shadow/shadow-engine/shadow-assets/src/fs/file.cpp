@@ -24,7 +24,64 @@ namespace ShadowEngine {
     }
 
     bool FileOutput::open(std::string& path) {
+        handle = (HANDLE) CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        return INVALID_HANDLE_VALUE != handle;
+    }
 
+    bool FileInput::open(std::string& path) {
+        handle = (HANDLE) CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        return INVALID_HANDLE_VALUE != handle;
+    }
+
+    void FileInput::close() {
+        if (INVALID_HANDLE_VALUE != (HANDLE) handle) {
+            CloseHandle((HANDLE) handle);
+            handle = (void*) INVALID_HANDLE_VALUE;
+        }
+    }
+
+    void FileOutput::close() {
+        if (INVALID_HANDLE_VALUE != (HANDLE) handle) {
+            CloseHandle((HANDLE) handle);
+            handle = (void*) INVALID_HANDLE_VALUE;
+        }
+    }
+
+    size_t FileInput::size() const {
+        assert(INVALID_HANDLE_VALUE != handle);
+        return GetFileSize((HANDLE) handle, 0);
+    }
+
+    size_t FileInput::pos() {
+        assert(INVALID_HANDLE_VALUE != handle);
+        return SetFilePointer((HANDLE) handle, 0, nullptr, FILE_CURRENT);
+    }
+
+    bool FileInput::seek(size_t pos) {
+        assert(INVALID_HANDLE_VALUE != handle);
+        LARGE_INTEGER distance;
+        distance.QuadPart = pos;
+        return SetFilePointer((HANDLE) handle, distance.u.LowPart, &distance.u.HighPart, FILE_BEGIN) != INVALID_SET_FILE_POINTER;
+    }
+
+    bool FileInput::read(void* data, size_t size) {
+        assert(INVALID_HANDLE_VALUE != handle);
+        DWORD read = 0;
+        BOOL success = ReadFile((HANDLE) handle, data, (DWORD) size, (LPDWORD) &read, nullptr);
+        return success && size == read;
+    }
+
+    void FileOutput::flush() {
+        assert(handle != nullptr);
+        FlushFileBuffers((HANDLE) handle);
+    }
+
+    bool FileOutput::write(const void* data, size_t size) {
+        assert(handle != INVALID_HANDLE_VALUE);
+        size_t written = 0;
+        WriteFile((HANDLE) handle, data, (DWORD) size, (LPDWORD) &written, nullptr);
+        error = error | size != written;
+        return !error;
     }
 
 #endif

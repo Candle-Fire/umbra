@@ -7,6 +7,6 @@ namespace ShadowEngine {
     namespace Str {
         // Convert the string to lower case, return a new string.
         // This only works in ASCII encoding.
-        std::string toLower(std::string& str);
+        std::string toLower(const std::string& str);
     }
 }

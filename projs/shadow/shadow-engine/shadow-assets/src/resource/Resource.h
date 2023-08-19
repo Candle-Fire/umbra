@@ -33,7 +33,7 @@ namespace ShadowEngine {
 
 #pragma pack(1)
     struct ResourceHeader {
-        static const uint32_t MAGIC = 'VXIP';
+        static const uint32_t MAGIC;
         uint32_t magic = MAGIC; // VXI Package header
         uint32_t version = 0;
         uint32_t flags = 0;
@@ -91,7 +91,7 @@ namespace ShadowEngine {
         }
 
     protected:
-        Resource(const Path& path, ResourceTypeManager& manager);
+        Resource(Path  path, ResourceTypeManager& manager);
 
         virtual void onReadying() {}
         virtual void unload() = 0;

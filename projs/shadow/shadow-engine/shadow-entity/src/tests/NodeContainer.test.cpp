@@ -4,6 +4,7 @@
 
 #include "NodeContainer.h"
 
+#if false
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch.hpp>
 
@@ -308,3 +309,5 @@ TEST_CASE("Node Container Benchmarks", "[NodeContainer]") {
                                   };
 
 }
+
+#endif

@@ -1,10 +1,8 @@
 #include "../inc/TestScene.h"
-#include "entities/Player.h"
 #include "entities/NullActor.h"
 #include "entities/Position.h"
 #include "entities/MeshComponent.h"
 #include "entities/Light.h"
-#include "vlkx/render/Geometry.h"
 #include "core/ShadowApplication.h"
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
 

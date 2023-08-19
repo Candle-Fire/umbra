@@ -2,19 +2,22 @@
 #include <resource/ResourceManager.h>
 #include <spdlog/spdlog.h>
 
+#include <utility>
+
 namespace ShadowEngine {
+    const uint32_t ResourceHeader::MAGIC = 'VXIP';
 
     ResourceType::ResourceType(std::string& name) {
         hash = HeapHash(name);
     }
 
-    Resource::Resource(const ShadowEngine::Path& path, ShadowEngine::ResourceTypeManager &manager)
+    Resource::Resource(ShadowEngine::Path  path, ShadowEngine::ResourceTypeManager &manager)
         : references(0),
           emptyDependencies(0),
           failedDependencies(0),
           state(State::EMPTY),
           desiredState(State::EMPTY),
-          path(path),
+          path(std::move(path)),
           size(),
           callback(),
           manager(manager),
@@ -79,7 +82,7 @@ namespace ShadowEngine {
             return;
         }
 
-        const ResourceHeader* header = (const ResourceHeader*) mem;
+        const auto* header = (const ResourceHeader*) mem;
 
         if (size < sizeof(*header)) {
             spdlog::error("Invalid resource: ", path.get(), ": size mismatch. Expected ", fileSize, ", got " , sizeof(*header));

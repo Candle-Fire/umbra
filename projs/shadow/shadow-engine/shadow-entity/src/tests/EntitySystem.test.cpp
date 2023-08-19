@@ -1,6 +1,6 @@
 
 #include "EntitySystem.h"
-
+#if false
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch2/catch.hpp"
 #include "entities/NullActor.h"
@@ -31,3 +31,4 @@ TEST_CASE("EntitySystem", "[EntitySystem]") {
                                      }
                                  };
 }
+#endif

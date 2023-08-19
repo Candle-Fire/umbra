@@ -379,6 +379,9 @@ namespace ShadowEngine::Entities {
 
             auto it = this->m_NodeContainerRegistry.find(CID);
 
+            if (it == this->m_NodeContainerRegistry.end())
+                return nullptr;
+
             return static_cast<NodeContainer<T> *>(it->second);
         }
     };
