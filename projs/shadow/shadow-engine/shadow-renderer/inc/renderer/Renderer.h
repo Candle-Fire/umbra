@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstddef>
+#include "Canvas.h"
+#include "Interface.h"
+
 namespace rx {
 
     /**
@@ -36,5 +40,7 @@ namespace rx {
         inline void SetLayerMask(uint32_t value) { layerMask = value; }
 
         rx::ColorSpace colorSpace = ColorSpace::SRGB;
+
+        // Render job methods
     };
 }

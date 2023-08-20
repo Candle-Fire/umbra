@@ -25,7 +25,7 @@ namespace vlkx {
 
     /**
      * Convert a RenderPassBuilder attachment to a VkAttachmentDescription.
-     * Format will be UNDEFINED.
+     * Format will be Undefined.
      * Sample count will be 1.
      */
     VkAttachmentDescription buildAttachment(const RenderPassBuilder::Attachment& attachment) {

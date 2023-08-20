@@ -4,6 +4,7 @@
 #include <SDL_video.h>
 #include "GraphicsDefine.h"
 #include <functional>
+#include <cassert>
 
 /**
  * This file contains the "interface" for the Renderer to interact with the GPU.
@@ -42,13 +43,13 @@ namespace rx {
      * The superclasses of this (GraphicsVulkan and GraphicsDX12) will implement all of these functions via their specific methods.
      * Everything that will be needed in the engine is exposed through this interface.
      *
-     * Implement (consume) the GraphicsInterface in an instance of RenderImpl.
+     * Implement (consume) the Interface in an instance of RenderImpl.
      */
-    class GraphicsInterface {
+    class Interface {
     protected:
         static constexpr uint32_t FRAMEBUFFERS = 2; // Double buffering by default!
         size_t frameCount = 0; // Increments by 1 every time a game frame is rendered.
-        Validation validation = Validation::Disabled; // Get debug errors from the GPU and CPU
+        Validation validation = Validation::DISABLED; // Get debug errors from the GPU and CPU
         GraphicsDeviceCapability capabilities = GraphicsDeviceCapability::NONE; // See what the GPU is capable of.
         size_t shaderNameSize = 0;
         size_t topLevelAccelerationInstanceSize = 0;
@@ -59,10 +60,10 @@ namespace rx {
         uint32_t deviceID = 0;
         std::string deviceName;
         std::string driverDescription;
-        RenderDeviceType type = RenderDeviceType::Other;
+        RenderDeviceType type = RenderDeviceType::OTHER;
 
     public:
-        virtual ~GraphicsInterface() = default;
+        virtual ~Interface() = default;
 
         // Supports re-creating a swapchain in-place with a changed meta. The window may be null if sc is not null.
         virtual bool CreateSwapchain(const SwapchainMeta* meta, SDL_Window* window, SwapChain* sc) const = 0;
@@ -128,7 +129,7 @@ namespace rx {
 
         // Check whether the device supports at least one of the given set of capabilities.
         // Ideally, check one at a time.
-        constexpr bool CheckCapability(GraphicsDeviceCapability cap) const { return capabilities & cap; }
+        constexpr bool CheckCapability(GraphicsDeviceCapability cap) const { return has_flag(capabilities, cap); }
 
         // Get the number of framebuffers in use.
         static constexpr uint32_t GetBufferCount() { return FRAMEBUFFERS; }
@@ -136,7 +137,7 @@ namespace rx {
         constexpr uint32_t GetBufferIndex() const { return GetElapsedFrames() % GetBufferCount(); }
 
         // Get whether debug features are enabled on the GPU.
-        constexpr bool isDebugEnabled() const { return validation != Validation::Disabled; }
+        constexpr bool isDebugEnabled() const { return validation != Validation::DISABLED; }
 
         // Get the maximum size of a shader identifier.
         constexpr size_t GetShaderIdentifierSize() const { return shaderNameSize; }
@@ -216,7 +217,7 @@ namespace rx {
         // Bind a constant buffer to a shader slot.
         virtual void BindConstants(const GPUBuffer* buffer, uint32_t slot, ThreadCommands cmd);
         // Bind vertex buffers to a shader slot list.
-        virtual void BindVertexes(const GPUBuffer* const* buffers, uint32_t slot, uint32_t count, const uint32_t* const uint32_t* offsets, ThreadCommands cmd) = 0;
+        virtual void BindVertexes(const GPUBuffer* const* buffers, uint32_t slot, uint32_t count, const uint32_t* offsets, ThreadCommands cmd) = 0;
         // Bind index buffer to a shader slot.
         virtual void BindIndex(const GPUBuffer* buffer, const IndexBufferFormat fmt, size_t offset, ThreadCommands cmd) = 0;
         // Bind a reference to the stencil buffer.
@@ -352,7 +353,7 @@ namespace rx {
             const size_t freeSpace = allocator.buffer.meta.size - allocator.offset;
             if (size > freeSpace) {
                 GPUBufferMeta meta {
-                    .usage = BufferUsage::STAGING,
+                    .usage = BufferUsage::Staging,
                     .binding = BindFlag::CONSTANT_BUFFER | BindFlag::VERTEX_BUFFER | BindFlag::INDEX_BUFFER | BindFlag::SHADER_RESOURCE,
                     .flags = ResourceFlags::BUFFER_RAW,
                 };
@@ -374,7 +375,7 @@ namespace rx {
             return alloc;
         }
 
-        // Update a DEVICE buffer.
+        // Update a Device buffer.
         void UpdateBuffer(const GPUBuffer* buffer, const void* data, ThreadCommands cmd, size_t size = ~0, size_t offset = 0) {
             if (buffer == nullptr || data == nullptr) return;
 
@@ -389,8 +390,8 @@ namespace rx {
     };
 
     // Get the current active render device
-    inline GraphicsInterface*& GetInterface() {
-        static GraphicsInterface* device = nullptr;
+    inline Interface*& GetInterface() {
+        static Interface* device = nullptr;
         return device;
     }
 

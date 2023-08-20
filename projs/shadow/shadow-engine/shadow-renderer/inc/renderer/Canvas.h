@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL_video.h>
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 
