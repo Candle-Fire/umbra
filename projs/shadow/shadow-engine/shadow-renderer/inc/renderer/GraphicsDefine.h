@@ -10,7 +10,7 @@
  * Contains enums and structs that are used by Render classes.
  * They are stored here for brevity.
  *
- * Even with the helper macros, this file is still 1520 lines long! Collapse those namespaces and open just the one you want.
+ * Even with the helper macros, this file is still 2414 lines long! Collapse those namespaces and open just the one you want.
 */
 
 // An enum that contains powers of two only.
@@ -26,6 +26,426 @@
 // A simple wrapper for objects that hold a metadata object and expose it via the const function.
 #define metaHolder(x) x meta; constexpr const x& getMeta() const { return meta; }
 
+// Enums
+namespace rx {
+    namespace defs {
+        enum class BlendModes {
+            OPAQUE,
+            ALPHA,
+            PREMULTIPLIED, // color is normally sqrt
+            ADDITIVE,
+            MULTIPLY,
+            SIZE
+        };
+
+        enum class Filter {
+            NONE = 0,
+            OPAQUE = 1,
+            TRANSPARENT = 2,
+            WATER = 4,
+            NAVMESH = 8,
+            OBJECTS = OPAQUE | TRANSPARENT | WATER | NAVMESH,
+
+            COLLIDER = 16,
+            ALL = ~0
+        };
+
+        enum class RenderPass {
+            MAIN,
+            PRE,
+            ENVMAPPING,
+            SHADOW,
+            VOXEL,
+            SIZe
+        };
+
+        enum class StencilMask {
+            ENGINE = 0xF,
+            USER = 0xF0,
+            ALL = ENGINE | USER
+        };
+
+        enum class StencilReference {
+            EMPTY = 0,
+            DEFAULT = 1,
+            CUSTOMSHADER = 2,
+            OUTLINE = 3,
+            CUSTOMSHADER_OUTLINE = 4,
+            LAST = 15
+        };
+
+        enum class BufferType {
+            FRAME,
+            ENTITY,
+            SIZE
+        };
+
+        enum class TextureType {
+            CLOUD_SHADOW,
+            ATMO_TRANSMITTANCE,
+            ATMO_SCATTER,
+            ATMO_SKY,
+            ATMO_SKYLUM,
+            ATMO3_CAM,
+            SHEEN,
+            WIND3,
+            SIZE
+        };
+
+        enum class ShaderType {
+            V_OBJECT_DEBUG,
+            V_OBJECT_COMMON,
+            V_OBJECT_SIMPLE,
+            V_OBJECT_PRE,
+            V_OBJECT_PRE_ALPHA,
+            V_OBJECT_COMMON_TESS,
+            V_OBJECT_PRE_TESS,
+            V_OBJECT_PRE_ALPHA_TESS,
+            V_OBJECT_SIMPLE_TESS,
+
+            V_SHADOW,
+            V_SHADOW_ALPHA,
+            V_SHADOW_TRANSPARENT,
+
+            V_BILLBOARD,
+            V_VERTEX,
+            V_LIGHT_DIRECT,
+            V_LIGHT_POINT,
+            V_LIGHT_SPOT,
+            V_LIGHT_SPOT_VISUAL,
+            V_LIGHT_POINT_VISUAL,
+            V_SKY,
+            V_ENVMAP,
+            V_ENVMAP_SKY,
+            V_SPHERE,
+            V_OCCLUDED,
+            V_VOXELIZER,
+            V_VOXEL,
+            V_FFVISUAL_POINT,
+            V_FFVISUAL_PLANE,
+            V_LIGHTMAP,
+            V_RAYTRACE,
+            V_POSTPROCESS,
+            V_FLARE,
+            V_DDGI,
+
+            /** Fragment */
+
+            F_OBJECT_PERMUTE_BEGIN,
+            F_OBJECT_PERMUTE_END,
+            F_OBJECT_TRANSPARENT_PERMUTE_BEGIN,
+            F_OBJECT_TRANSPARENT_PERMUTE_END,
+            F_BILLBOARD,
+            F_OBJECT_HOLOGRAM,
+            F_OBJECT_DEBUG,
+            F_OBJECT_SIMPLE,
+            F_OBJECT_PRE,
+            F_OBJECT_PRE_ALPHA,
+            F_BILLBOARD_PRE,
+            F_BILLBOARD_SIMPLE,
+
+            F_VERTEXCOLOR,
+            F_LIGHTVISUAL,
+            F_LIGHT_DIRECT,
+            F_LIGHT_POINT,
+            F_LIGHT_SPOT,
+            F_SKY_STATIC,
+            F_SKY_DYNAMIC,
+            F_SUN,
+            F_ENVMAP,
+            F_ENVMAP_SKY_STATIC,
+            F_ENVMAP_SKY_DYNAMIC,
+            F_CUBEMAP,
+            F_CAPTUREBILLBOARDS,
+            F_VOXELIZER,
+            F_VOXEL,
+            F_FFVISUAL,
+            F_RT_DEBUGBV,
+            F_DOWNSAMPLE,
+            F_POST_UPSAMPLE,
+            F_POST_OUTLINE,
+            F_LENSFLARE,
+            F_DDGI,
+            F_POST_CLOUDS_UPSAMPLE,
+
+            /** Geometry */
+
+            G_SHADOW_EMULATE,
+            G_SHADOW_ALPHA_EMULATE,
+            G_SHADOW_TRANSPARENT_EMULATE,
+            G_ENVMAP_EMULATE,
+            G_ENVMAP_SKY_EMULATE,
+            G_VOXELIZER,
+            G_VOXEL,
+            G_OBJECT_PRIMITIVE_EMULATE,
+            G_OBJECT_PRIMITIVE_EMULATE_ALPHA,
+
+            /** Hull */
+
+            H_OBJECT,
+            H_OBJECT_PRE,
+            H_OBJECT_PRE_ALPHA,
+            H_OBJECT_SIMPLE,
+
+            /** Domain */
+
+            D_OBJECT,
+            D_OBJECT_PRE,
+            D_OBJECT_PRE_ALPHA,
+            D_OBJECT_SIMPLE,
+
+            /** Compute */
+
+            C_LUM1,
+            C_LUM2,
+            C_SRC,
+            C_SRC_DEBUG,
+            C_TILE_FRUSTUM,
+            C_LIGHTCULL,
+            C_LIGHTCULL_DEBUG,
+            C_LIGHTCULL_ADV,
+            C_LIGHTCULL_ADV_DEBUG,
+            C_RESOLVE_MSAA,
+            C_VXGI_OFFSET,
+            C_VXGI_TEMPORAL,
+            C_VXGI_SDF,
+            C_VXGI_DIFFUSE,
+            C_VXGI_SPECULAR,
+            C_ATMO_TRANSMITTANCE,
+            C_ATMO_SCATTER,
+            C_ATMO_SKY,
+            C_ATMO_SKY_LUM,
+            C_ATMO_CAM,
+            C_MIP_2UNORM4,
+            C_MIP_2FLOAT4,
+            C_MIP_3UNORM4,
+            C_MIP_CUBE_UNORM4,
+            C_MIP_CUBE_FLOAT4,
+            C_MIP_CUBE_ARRAY_UNORM4,
+            C_MIP_CUBE_ARRAY_FLOAT4,
+            C_COMPRESS_1,
+            C_COMPRESS_2,
+            C_COMPRESS_3,
+            C_COMPRESS_4,
+            C_COMPRESS_5,
+            C_COMPRESS_6H,
+            C_COMPRESS_6H_CUBE,
+            C_FILTERENV,
+            C_COPY_2UNORM4,
+            C_COPY_2FLOAT4,
+            C_COPY_2UNORM4_EXPAND,
+            C_COPY_2FLOAT4_EXPAND,
+            C_SKINNING,
+            C_RAYTRACE,
+            C_PAINT_TEXTURE,
+            C_POST_BLUR_GAUSS_F1,
+            C_POST_BLUR_GAUSS_F3,
+            C_POST_BLUR_GAUSS_F4,
+            C_POST_BLUR_GAUSS_UNORM1,
+            C_POST_BLUR_GAUSS_UNORM4,
+            C_POST_BLUR_GAUSS_WIDE_F1,
+            C_POST_BLUR_GAUSS_WIDE_F3,
+            C_POST_BLUR_GAUSS_WIDE_F4,
+            C_POST_BLUR_GAUSS_WIDE_UNORM1,
+            C_POST_BLUR_GAUSS_WIDE_UNORM4,
+            C_POST_BLUR_BILAT_F1,
+            C_POST_BLUR_BILAT_F3,
+            C_POST_BLUR_BILAT_F4,
+            C_POST_BLUR_BILAT_UNORM1,
+            C_POST_BLUR_BILAT_UNORM4,
+            C_POST_BLUR_BILAT_WIDE_F1,
+            C_POST_BLUR_BILAT_WIDE_F3,
+            C_POST_BLUR_BILAT_WIDE_F4,
+            C_POST_BLUR_BILAT_WIDE_UNORM1,
+            C_POST_BLUR_BILAT_WIDE_UNORM4,
+            C_POST_SSAO,
+            C_POST_HBAO,
+            C_POST_MSAO_PREPARE1,
+            C_POST_MSAO_PREPARE2,
+            C_POST_MSAO_INTERLEAVE,
+            C_POST_MSAO,
+            C_POST_MSAO_BLUR_UPSAMPLE,
+            C_POST_MSAO_BLUR_UPSAMPLE_OUT,
+            C_POST_MSAO_BLUR_UPSAMPLE_PRE,
+            C_POST_MSAO_BLUR_UPSAMPLE_PRE_OUT,
+            C_POST_RT_REFLECT,
+            C_POST_RT_DIFFUSE,
+            C_POST_RT_DIFFUSE_SPATIAL,
+            C_POST_RT_DIFFUSE_TEMPORAL,
+            C_POST_RT_DIFFUSE_BILAT,
+            C_POST_SSR_TILEHORIZONTAL,
+            C_POST_SSR_TILEVERTICAL,
+            C_POST_SSR_DEPTH,
+            C_POST_SSR_RAYTRACE,
+            C_POST_SSR_RAYTRACE_SHORT,
+            C_POST_SSR_RAYTRACE_CHEAP,
+            C_POST_SSR_RESOLVE,
+            C_POST_SSR_TEMPORAL,
+            C_POST_SSR_BILAT,
+            C_POST_LIGHTSHAFTS,
+            C_POST_DOF_TILEHORIZONTAL,
+            C_POST_DOF_TILEVERTICAL,
+            C_POST_DOF_PRE,
+            C_POST_DOF_PRE_SHORT,
+            C_POST_DOF_MAIN,
+            C_POST_DOF_MAIN_SHORT,
+            C_POST_DOF_MAIN_CHEAP,
+            C_POST_DOF_POST,
+            C_POST_DOF_UPSAMPLE,
+            C_POST_MOTION_TILEHORIZONTAL,
+            C_POST_MOTION_TILEVERTICAL,
+            C_POST_MOTION_NEIGHBORMAX,
+            C_POST_MOTION,
+            C_POST_MOTION_SHORT,
+            C_POST_MOTION_CHEAP,
+            C_POST_BLOOM,
+            C_POST_AERIAL,
+            C_POST_AERIAL_CAP,
+            C_POST_AERIAL_CAP_MSAA,
+            C_POST_CLOUDS_SHAPE,
+            C_POST_CLOUDS_DETAIL,
+            C_POST_CLOUDS_CURL,
+            C_POST_CLOUDS_WEATHER,
+            C_POST_CLOUDS_RENDER,
+            C_POST_CLOUDS_RENDER_CAP,
+            C_POST_CLOUDS_RENDER_CAP_MSAA,
+            C_POST_CLOUDS_REPROJECT,
+            C_POST_CLOUDS_SHADOW,
+            C_POST_CLOUDS_SHADOW_FILTER,
+            C_POST_FXAA,
+            C_POST_TXAA,
+            C_POST_SHARPEN,
+            C_POST_TONEMAP,
+            C_POST_UNDERWATER,
+            C_POST_FSR_UPSCALE,
+            C_POST_FSR_SHARPEN,
+            C_POST_FSR2_REACTIVE,
+            C_POST_FSR2_LUMINANCE,
+            C_POST_FSR2_PREPARE_COLOR,
+            C_POST_FSR2_RECONSTRUCT_DEPTH,
+            C_POST_FSR2_DEPTH_CLIP,
+            C_POST_FSR2_LOCK,
+            C_POST_FSR2_ACCUMULATE,
+            C_POST_FSR2_RCAS,
+            C_POST_CHROMATIC_ABERRATION,
+            C_POST_UPSAMPLE_FLOAT1,
+            C_POST_UPSAMPLE_UNORM1,
+            C_POST_UPSAMPLE_FLOAT4,
+            C_POST_UPSAMPLE_UNORM4,
+            C_POST_UPSAMPLE_UINT4,
+            C_POST_DOWNSAMPLE,
+            C_POST_NORMALS,
+            C_POST_SCREENSPACE_SHADOW,
+            C_POST_RT_SHADOW,
+            C_POST_RT_SHADOW_DENOISE_TILE,
+            C_POST_RT_SHADOW_DENOISE_FILTER,
+            C_POST_RT_SHADOW_DENOISE_TEMPORAL,
+            C_POST_RTAO,
+            C_POST_RTAO_DENOISE_TILE,
+            C_POST_RTAO_DENOISE_FILTER,
+            C_POST_SURFEL_COVERAGE,
+            C_POST_SURFEL_PREPARE,
+            C_POST_SURFEL_RAYTRACE,
+            C_POST_SURFEL_UPDATE,
+            C_POST_SURFEL_OFFSETS,
+            C_POST_SURFEL_BINNING,
+            C_POST_SURFEL_INTEGRATE,
+            C_POST_VISIBILITY_RESOLVE,
+            C_POST_VISIBILITY_RESOLVE_MSAA,
+            C_POST_VISIBILITY_SKY,
+            C_POST_VISIBILITY_VELOCITY,
+            C_POST_VISIBILITY_SURFACE_REDUCED_PERMUTE_BEGIN,
+            C_POST_VISIBILITY_SURFACE_REDUCED_PERMUTE_END,
+            C_POST_VISIBILITY_SURFACE_PERMUTE_BEGIN,
+            C_POST_VISIBILITY_SURFACE_PERMUTE_END,
+            C_POST_VISIBILITY_SHADE_PERMUTE_BEGIN,
+            C_POST_VISIBILITY_SHADE_PERMUTE_END,
+            C_DDGI_RAYTRACE,
+            C_DDGI_UPDATE,
+            C_DDGI_UPDATE_DEPTH,
+            C_TERRAIN_COLOR,
+            C_TERRAIN_NORMAL,
+            C_TERRAIN_SURFACE,
+            C_MESH_PREPARE,
+            C_BILLBOARD_PREPARE,
+            C_VIRTUAL_REQUESTS,
+            C_VIRTUAL_ALLOCATE,
+            C_VIRTUAL_UPDATE,
+            C_WIND,
+            C_YUV_RGB,
+
+            RTTYPE_REFLECT,
+
+            SIZE
+        };
+
+        enum class InputLayout {
+            OBJECT_DEBUG,
+            LIGHTMAP,
+            VERTEX_COLOR,
+            POSITION,
+            SIZE
+        };
+
+        enum class RasterizerState {
+            FRONT,
+            BACK,
+            BOTH,
+            WIREFRAME,
+            WIREFRAME_SMOOTHED,
+            WIREFRAME_BOTH,
+            WIREFRAME_BOTH_SMOOTHED,
+            SHADOW,
+            SHADOW_BOTH,
+            OCCLUDED,
+            VOXELIZE,
+            SKY,
+            SIZE
+        };
+
+        enum class DepthStencilState {
+            DEFAULT,
+            TRANSPARENT,
+            SHADOW,
+            DISABLED,
+            READONLY,
+            READ_EQUAL,
+            ENVMAP,
+            CAPTURE_BILLBOARD,
+            WRITE_ONLY,
+            HOLOGRAM,
+            SIZE
+        };
+
+        enum class BindState {
+            OPAQUE,
+            TRANSPARENT,
+            ADDITIVE,
+            PREMULTIPLIED,
+            COLOR_WRITE_DISABLED,
+            MULTIPLY,
+            TRANSPARENT_SHADOW,
+            SIZE
+        };
+
+        enum class SamplerType {
+            OBJECT_SHADER,
+            LINEAR_CLAMP,
+            LINEAR_WRAP,
+            LINEAR_MIRROR,
+            POINT_CLAMP,
+            POINT_WRAP,
+            POINT_MIRROR,
+            ANISO_CLAMP,
+            ANISO_WRAP,
+            ANISO_MIRROR,
+            COMPARE_DEPTH,
+
+            SIZE
+        };
+    }
+}
+
 // Metadata
 namespace rx {
     /**
@@ -33,10 +453,10 @@ namespace rx {
      * Also affects the logging of the renderer modules internally.
      */
     enum class Validation {
-        Disabled, // No validation messages.
-        CPUOnly,  // Command validation only
-        CPUGPU,   // Include GPU validation too
-        Verbose   // All errors, warnings and info. Not always useful!
+        DISABLED,  // No validation messages.
+        CPU_ONLY,  // Command validation only
+        CPU_GPU,   // Include GPU validation too
+        VERBOSE,   // All errors, warnings and info. Not always useful!
     };
 
     /**
@@ -44,11 +464,11 @@ namespace rx {
      * Determines the render capabilities, and sometimes informs us internally about how much memory we can afford to use regularly.
      */
     enum class RenderDeviceType {
-        Other,       // An unknown type of device that doesn't fit into the below categories.
-        Integrated,  // A GPU built into the physical CPU unit. Usually shares memory.
-        Discrete,    // A GPU that is separate from the CPU entirely, usually connected via PCIe.
-        Virtual,     // A GPU that is given a portion of the processing power and memory of a discrete GPU, usually for render farms, or VPS.
-        Software     // A GPU that doesn't exist - fallback to software (CPU) based rendering.
+        OTHER,       // An unknown type of device that doesn't fit into the below categories.
+        INTEGRATED,  // A GPU built into the physical CPU unit. Usually shares memory.
+        DISCRETE,    // A GPU that is separate from the CPU entirely, usually connected via PCIe.
+        VIRTUAL,     // A GPU that is given a portion of the processing power and memory of a discrete GPU, usually for render farms, or VPS.
+        SOFTWARE     // A GPU that doesn't exist - fallback to software (CPU) based rendering.
     };
 
     /**
@@ -56,8 +476,8 @@ namespace rx {
      * Defaults to discrete.
      */
     enum class RenderDeviceTypePreference {
-        Discrete,
-        Integrated
+        DISCRETE,
+        INTEGRATED
     };
 
     /**
