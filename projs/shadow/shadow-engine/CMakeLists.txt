@@ -1,6 +1,7 @@
 find_package(Vulkan REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui REQUIRED)
+find_package(D3D12 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -36,10 +37,11 @@ target_include_directories(shadow-engine
         ${glm_SOURCE_DIR}
         INTERFACE
             ${imgui_SOURCE_DIR}
-            ${imgui_SOURCE_DIR}/backends)
+            ${imgui_SOURCE_DIR}/backends
+        ${D3D12_INCLUDE_DIRS})
 
 target_link_libraries(shadow-engine
-        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui
+        PUBLIC Vulkan::Vulkan SDL2::SDL2 spdlog dylib imgui ${D3D12_LIBRARIES}
 )
 target_compile_definitions(shadow-engine PRIVATE "EXPORTING_SH_ENGINE")
 
