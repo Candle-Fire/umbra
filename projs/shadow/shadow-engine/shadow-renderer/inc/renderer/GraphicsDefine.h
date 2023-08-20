@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <traits/Bitmask.h>
 
 /**
  * Contains enums and structs that are used by Render classes.
@@ -539,26 +540,20 @@ namespace rx {
      */
     bitfield GraphicsDeviceCapability {
         NONE = 0,
-        TESSELLATION = bit(
-                0), // Dynamic vertex bumping in the positive or negative direction, usually for on-GPU terrain gen.
+        TESSELLATION = bit(0), // Dynamic vertex bumping in the positive or negative direction, usually for on-GPU terrain gen.
         CONSERVATIVE_RASTERIZATION = bit(1),    // Helps minimise the render load a bit more.
         RASTERIZER_ORDERED_VIEWS = bit(2),      // Shaders should expect resources in the order they're used4
-        UAV_LOAD_FORMAT_COMMON = bit(
-                3),        // Unordered Access Views (samplers) should expect resources in common formats (RGBA16, RGBA8)
+        UAV_LOAD_FORMAT_COMMON = bit(3),        // Unordered Access Views (samplers) should expect resources in common formats (RGBA16, RGBA8)
         UAV_LOAD_FORMAT_R11G11B10_FLOAT = bit(4), // HDR
         RT_VIEWPORT_WITHOUT_GEOMETRY_SHADER = bit(5),
         VARIABLE_RATE_SHADING = bit(6),
         VARIABLE_RATE_SHADING_TIER2 = bit(7),
-        SUPPORTS_MESH_SHADER = bit(
-                8),          // The first shader stage... if the driver supports it! Otherwise, usually Vertex Shader.
-        RAY_TRACING = bit(
-                9),                   // Hardware accelerated raytracing, specifically. We can still do it with a compute shader if this isn't supported. In fact, we will! Just to show them who's boss. It's me. I'm the boss around here.
-        PREDICATION = bit(
-                10),                  // Documentation is sparse. I assume this discards the render job entirely if there's no pixels.
+        SUPPORTS_MESH_SHADER = bit(8),          // The first shader stage... if the driver supports it! Otherwise, usually Vertex Shader.
+        RAY_TRACING = bit(9),                   // Hardware accelerated raytracing, specifically. We can still do it with a compute shader if this isn't supported. In fact, we will! Just to show them who's boss. It's me. I'm the boss around here.
+        PREDICATION = bit(10),                  // Documentation is sparse. I assume this discards the render job entirely if there's no pixels.
         SAMPLER_MINMAX = bit(11),
         DEPTH_BOUNDS_TEST = bit(12),
-        SPARSE_BUFFER = bit(
-                13),                // Useful for storing very temporary data on GPU. It should assign you a little bucket of memory when the binary loads.
+        SPARSE_BUFFER = bit(13),                // Useful for storing very temporary data on GPU. It should assign you a little bucket of memory when the binary loads.
         SPARSE_TEXTURE2D = bit(14),             // Useful for storing a 2D buffer temporarily in the shader.
         SPARSE_TEXTURE3D = bit(15),             // Useful for storing a 3D buffer temporarily in the shader.
         SPARSE_NULL_MAPPING = bit(16),          // Map all uninitialized sparse buffers to null.
@@ -587,8 +582,7 @@ namespace rx {
         RENDER_TARGET = bit(5),     // Render output. Read+Write
         DEPTH_STENCIL = bit(6),
         DEPTH_STENCIL_RO = bit(7),      // Same as above, but read-only.
-        SHADING_RATE_SOURCE = bit(
-                8),   // Control shading rate per tile (allows optimizing larger areas where detail isn't more important).
+        SHADING_RATE_SOURCE = bit(8),   // Control shading rate per tile (allows optimizing larger areas where detail isn't more important).
 
         // Data buffer specific
         VERTEX_BUFFER = bit(9),
@@ -1988,3 +1982,13 @@ namespace rx {
         return size;
     }
 }
+
+template<>
+struct enable_bitmask_operators<rx::BindFlag> {
+    static const bool enable = true;
+};
+
+template<>
+struct enable_bitmask_operators<rx::GraphicsDeviceCapability> {
+    static const bool enable = true;
+};
