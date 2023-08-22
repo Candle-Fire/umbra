@@ -29,7 +29,7 @@
 // Enums
 namespace rx {
     namespace defs {
-        enum class BlendModes {
+        enum class BlendModes : uint32_t {
             OPAQUE,
             ALPHA,
             PREMULTIPLIED, // color is normally sqrt
@@ -38,7 +38,7 @@ namespace rx {
             SIZE
         };
 
-        enum class Filter {
+        enum class Filter : uint32_t {
             NONE = 0,
             OPAQUE = 1,
             TRANSPARENT = 2,
@@ -47,10 +47,10 @@ namespace rx {
             OBJECTS = OPAQUE | TRANSPARENT | WATER | NAVMESH,
 
             COLLIDER = 16,
-            ALL = ~0
+            ALL = OBJECTS | COLLIDER
         };
 
-        enum class RenderPass {
+        enum class RenderPass : uint32_t {
             MAIN,
             PRE,
             ENVMAPPING,
@@ -59,13 +59,14 @@ namespace rx {
             SIZe
         };
 
-        enum class StencilMask {
+        enum class StencilMask : uint32_t {
             ENGINE = 0xF,
             USER = 0xF0,
-            ALL = ENGINE | USER
+            ALL = ENGINE | USER,
+            SIZE
         };
 
-        enum class StencilReference {
+        enum class StencilReference : uint32_t {
             EMPTY = 0,
             DEFAULT = 1,
             CUSTOMSHADER = 2,
@@ -74,13 +75,13 @@ namespace rx {
             LAST = 15
         };
 
-        enum class BufferType {
+        enum class BufferType : uint32_t {
             FRAME,
             ENTITY,
             SIZE
         };
 
-        enum class TextureType {
+        enum class TextureType : uint32_t {
             CLOUD_SHADOW,
             ATMO_TRANSMITTANCE,
             ATMO_SCATTER,
@@ -92,7 +93,7 @@ namespace rx {
             SIZE
         };
 
-        enum class ShaderType {
+        enum class ShaderType : uint32_t {
             V_OBJECT_DEBUG,
             V_OBJECT_COMMON,
             V_OBJECT_SIMPLE,
@@ -379,7 +380,7 @@ namespace rx {
             SIZE
         };
 
-        enum class InputLayout {
+        enum class InputLayout : uint32_t {
             OBJECT_DEBUG,
             LIGHTMAP,
             VERTEX_COLOR,
@@ -387,7 +388,7 @@ namespace rx {
             SIZE
         };
 
-        enum class RasterizerState {
+        enum class RasterizerState : uint32_t {
             FRONT,
             BACK,
             BOTH,
@@ -403,7 +404,7 @@ namespace rx {
             SIZE
         };
 
-        enum class DepthStencilState {
+        enum class DepthStencilState : uint32_t {
             DEFAULT,
             TRANSPARENT,
             SHADOW,
@@ -417,7 +418,7 @@ namespace rx {
             SIZE
         };
 
-        enum class BindState {
+        enum class BindState : uint32_t {
             OPAQUE,
             TRANSPARENT,
             ADDITIVE,
@@ -428,7 +429,7 @@ namespace rx {
             SIZE
         };
 
-        enum class SamplerType {
+        enum class SamplerType : uint32_t {
             OBJECT_SHADER,
             LINEAR_CLAMP,
             LINEAR_WRAP,
@@ -452,7 +453,7 @@ namespace rx {
      * The status of validation layers.
      * Also affects the logging of the renderer modules internally.
      */
-    enum class Validation {
+    enum class Validation : uint32_t {
         DISABLED,  // No validation messages.
         CPU_ONLY,  // Command validation only
         CPU_GPU,   // Include GPU validation too
@@ -463,7 +464,7 @@ namespace rx {
      * The "class" of the render device.
      * Determines the render capabilities, and sometimes informs us internally about how much memory we can afford to use regularly.
      */
-    enum class RenderDeviceType {
+    enum class RenderDeviceType : uint32_t {
         OTHER,       // An unknown type of device that doesn't fit into the below categories.
         INTEGRATED,  // A GPU built into the physical CPU unit. Usually shares memory.
         DISCRETE,    // A GPU that is separate from the CPU entirely, usually connected via PCIe.
@@ -475,7 +476,7 @@ namespace rx {
      * Which type of device the application should prefer to take as the primary device.
      * Defaults to discrete.
      */
-    enum class RenderDeviceTypePreference {
+    enum class RenderDeviceTypePreference : uint32_t {
         DISCRETE,
         INTEGRATED
     };
@@ -486,7 +487,7 @@ namespace rx {
      * The ones you probably want are VS (Vertex Shader) and FS (Fragment Shader).
      * Listed in order as per the Khronos docs.
      */
-    enum class ShaderStage {
+    enum class ShaderStage : uint32_t {
         MS,  // Mesh Shader.
         AS,  // Amplification Shader.
         VS,  // Vertex Shader.
@@ -502,7 +503,7 @@ namespace rx {
     /**
      * The engine accepts shaders in a lot of formats. Generally, this will either be HLSL6 or SPIRV.
      */
-    enum class ShaderFormat {
+    enum class ShaderFormat : uint32_t {
         NONE,   // Unused?
         HLSL5,  // DX11
         HLSL6,  // DX12
@@ -514,7 +515,7 @@ namespace rx {
      * Supported model depends on the active driver.
      * Not relevant for SPIRV shaders.
      */
-    enum class ShaderModel {
+    enum class ShaderModel : uint32_t {
         SM50, // Shader Model 5.0
         SM60, // 6.0
         SM61, // 6.1
@@ -531,7 +532,7 @@ namespace rx {
      * Usually, it's a list of triangles. However, there are other ways to send geometry, such as a strip where each triangle shares a face (which is 33% more efficient!).
      * Each render API has its own constants for this, so we expose our own here.
      */
-    enum class Topology {
+    enum class Topology : uint32_t {
         UNDEFINED,
         TRIANGLELIST,  // point1, point2, point3. point4, point5, point6.
         TRIANGLESTRIP, // point1, point2, point3. (point2, point3), point4. (point3, point4), point5.
@@ -545,7 +546,7 @@ namespace rx {
      * When comparing pixel values in a buffer, there are all kinds of functions we can use in the comparison.
      * By default, less than or equal.
      */
-    enum class ComparisonFunc {
+    enum class ComparisonFunc : uint32_t {
         NEVER,          // Always false.
         LESS,           // <
         EQUAL,          // ==
@@ -554,13 +555,14 @@ namespace rx {
         NOT_EQUAL,      // !=
         GREATER_EQUAL,  // >=
         ALWAYS,         // Always true.
+        SIZE
     };
 
     /**
      * A simple way to mask out (disable) the depth buffer for writing.
      * Useful when rendering some object (a hologram?) that shouldn't occlude other objects, or otherwise affect depth calculations through those vertexes.
      */
-    enum class DepthWriteMask {
+    enum class DepthWriteMask : uint32_t {
         MASKED,   // Writing is Disabled
         UNMASKED, // Writing is Enabled
     };
@@ -569,7 +571,7 @@ namespace rx {
      * When using a stencil buffer, you can specify what should happen "outside" the stencil (in the transparent pixels).
      * These allow you to simulate a lot of retro style visual effects.
      */
-    enum class StencilOp {
+    enum class StencilOp : uint32_t {
         KEEP,                   // Do Nothing
         DISCARD,                // Set the pixel to the clear color.
         REPLACE,                // Set the pixel to a specified color.
@@ -584,7 +586,7 @@ namespace rx {
      * When blending between multiple images, there are a lot of variables that can be referenced.
      * Documentation omitted because umbra is not expected to use blending.
      */
-    enum class BlendData {
+    enum class BlendData : uint32_t {
         CLEAR,
         ONE,
         SOURCE_COLOR,
@@ -608,7 +610,7 @@ namespace rx {
      * When performing blending, there are a few operations that can be performed.
      * Documentation omitted because umbra is not expected to use blending.
      */
-    enum class BlendOp {
+    enum class BlendOp : uint32_t {
         ADD,
         SUBTRACT,
         SUBTRACT_INVERSE,
@@ -620,7 +622,7 @@ namespace rx {
      * There are a couple ways we can interpret sets of vertices that are submitted.
      * Especially relevant in TRIANGLELIST and TRIANGLESTRIP modes, this will specify whether we want to fill in the faces, or just treat them as points connected by lines.
      */
-    enum class DrawMode {
+    enum class DrawMode : uint32_t {
         WIREFRAME,  // Only lines connecting vertices.
         SOLID,      // Filled faces.
     };
@@ -630,7 +632,7 @@ namespace rx {
      * We can choose to remove some of the faces before they get submitted to the GPU.
      * This is a very simple and very easy optimization.
      */
-    enum class CullingMode {
+    enum class CullingMode : uint32_t {
         NONE,   // Render all faces. The GPU will discard faces naturally via depth sorting.
         BACK,   // Backfaces (normal vectors pointing away from the view plane) are discarded before render begins.
         FRONT,  // Frontfaces (normal vectors pointing towards the view plane) are discarded before render begins. Generates a freaky effect.
@@ -639,7 +641,7 @@ namespace rx {
     /**
      * When submitting data to the GPU related to objects, we need to tell it whether this data is intended for a vertex (such as uniform buffers), or for the whole instance (such as position data).
      */
-    enum class InputClassification {
+    enum class InputClassification : uint32_t {
         VERTEX_DATA,
         INSTANCE_DATA
     };
@@ -647,7 +649,7 @@ namespace rx {
     /**
      * When an image is used on the GPU, there are a couple different "ways" it can be used.
      */
-    enum class BufferUsage {
+    enum class BufferUsage : uint32_t {
         DEVICE,     // Image only exists in GPU native memory. CPU cannot access.
         STAGING,    // Image exists on both CPU and GPU. The CPU can only write, the GPU can only read. Intended to copy to a DEVICE image.
         READBACK,   // Image exists on both CPU and GPU. The CPU can only read, the GPU can only write. Intended for compute shaders to return a result back to the CPU for later usage.
@@ -657,12 +659,13 @@ namespace rx {
      * When reading an image, we can sometimes index it out of bounds.
      * This tells the GPU how we should deal with oversampling.
      */
-    enum class ImageTiling {
+    enum class ImageTiling : uint32_t {
         WRAP,           // pixel % size - wrap back around to the start of the image, effectively tiling it to infinity.
         MIRROR,         // size - (pixel % size) - invert every even number of "iterations" out.
         CLAMP,          // Prevent access > size.
         BORDER,         // Repeat the edge pixel when indexed out of bounds.
         MIRROR_ONCE,    // Mirror the image side to size in x and y, once. Accesses > size*2 are prevented.
+        SIZE
     };
 
     /**
@@ -671,7 +674,7 @@ namespace rx {
      * Documentation excluded because... i mean, look at it.
      * You probably want Anisotropic.
      */
-    enum class Filtering {
+    enum class Filtering : uint32_t {
         MIN_MAG_MIP_POINT,
         MIN_MAG_POINT_MIP_LINEAR,
         MIN_POINT_MAG_LINEAR_MIP_POINT,
@@ -716,7 +719,7 @@ namespace rx {
     /**
      * When sampling the border of an image (with a filter kernel especially), we can set what it will read.
      */
-    enum class SamplerBorderColor {
+    enum class SamplerBorderColor : uint32_t {
         TRANSPARENT_BLACK,
         OPAQUE_BLACK,
         OPAQUE_WHITE
@@ -727,7 +730,7 @@ namespace rx {
      * Usually, some variant of R G B A pixels with varying bit depth, represented as a number after the component.
      * They can either be represented as a float, unsigned int, signed int, or unsigned normalized value.
      */
-    enum class ImageFormat {
+    enum class ImageFormat : uint32_t {
         UNKNOWN,
 
         R32G32B32A32_FLOAT,
@@ -815,7 +818,7 @@ namespace rx {
     /**
      * When querying the GPU, we can ask for some specific information.
      */
-    enum class GPUQueryType {
+    enum class GPUQueryType : uint32_t {
         ELAPSED_TIME,       // How long the current execution has been going
         OCCLUDED_PIXELS,    // How many pixels passed depth testing (useful for % efficiency in render submission
         OCCLUDED_BINARY     // Whether any pixels passed the depth test.
@@ -824,7 +827,7 @@ namespace rx {
     /**
      * For efficiency, we can pack the index buffer with uint16_t instead of uint32_t if there aren't enough indices.
      */
-    enum class IndexBufferFormat {
+    enum class IndexBufferFormat : uint32_t {
         UINT16,
         UINT32
     };
@@ -832,7 +835,7 @@ namespace rx {
     /**
      * Samplers can view into different types of images. The value changes how they are accessed and "barriered" by the GPU.
      */
-    enum class ImageViewType {
+    enum class ImageViewType : uint32_t {
         SHADER_RESOURCE,    // Texture Sample
         UNORDERED_ACCESS,   // Data Sample
         RENDER_TARGET,      // Texture Output
@@ -842,7 +845,7 @@ namespace rx {
     /**
      * When executing the fragment shader, we can batch multiple pixels in a line / square, to make it faster.
      */
-    enum class ShadingRate {
+    enum class ShadingRate : uint32_t {
         RATE_11, // 1x1, default.
         RATE_12, // 1x2
         RATE_21, // 2x1
@@ -857,7 +860,7 @@ namespace rx {
     /**
      * Certain types of operation can use a Predication, which is a weird way of saying "condition".
      */
-    enum class PredicationOp {
+    enum class PredicationOp : uint32_t {
         EQUAL_TO_ZERO,
         NOT_EQUAL_TO_ZERO
     };
@@ -865,7 +868,7 @@ namespace rx {
     /**
      * An "aspect" is a usage, or a purpose.
      */
-    enum class ImageAspect {
+    enum class ImageAspect : uint32_t {
         COLOR,
         DEPTH,
         STENCIL,
@@ -876,7 +879,7 @@ namespace rx {
     /**
      * Videos can either contain intra-frame data, or predict the data that should be between them.
      */
-    enum class VideoFrameType {
+    enum class VideoFrameType : uint32_t {
         INTRA,
         PREDICTIVE
     };
@@ -884,7 +887,7 @@ namespace rx {
     /**
      * Video data uses special encoding to make sure the filesize doesn't blow way out of proportion.
      */
-    enum class VideoEncoding {
+    enum class VideoEncoding : uint32_t {
         H264 // We only support AVC H.264
     };
 
@@ -892,7 +895,7 @@ namespace rx {
      * "Swizzle" is a way of swapping the order of color components.
      * This specifies the components that can partake in a swizzle.
      */
-    enum class ComponentSwizzle {
+    enum class ComponentSwizzle : uint32_t {
         R,
         G,
         B,
@@ -1140,7 +1143,7 @@ namespace rx {
      * We can configure how the renderer works when rasterizing geometry.
      * This does not apply to ray tracing, hence the "Rasterizer" prefix.
      */
-    descriptor RasterizerMeta {
+    descriptor RasterizerState {
         DrawMode fillMode = DrawMode::SOLID;
         CullingMode culling = CullingMode::NONE;
         bool reverseWindingOrder = false; // Normal winding order is clockwise, looking "against" the normal.
@@ -1157,7 +1160,7 @@ namespace rx {
     /**
      * Just like regular images, we can configure the state of the depth stencil buffers.
      */
-    descriptor DepthStencilMeta {
+    descriptor DepthStencilState {
         bool depth = false;
         DepthWriteMask mask = DepthWriteMask::MASKED;
         ComparisonFunc comparison = ComparisonFunc::NEVER;
@@ -1182,7 +1185,7 @@ namespace rx {
      * Provided for brevity.
      * I don't expect umbra to use blending.
      */
-    struct BlendMeta {
+    struct BlendState {
         bool alpha = false;
         bool independent = false;
 
@@ -1240,9 +1243,9 @@ namespace rx {
         const Shader* geometry = nullptr;
         const Shader* mesh = nullptr;
         const Shader* amplification = nullptr;
-        const BlendMeta* blend = nullptr;
-        const RasterizerMeta* rasterizer = nullptr;
-        const DepthStencilMeta* depthStencil = nullptr;
+        const BlendState* blend = nullptr;
+        const RasterizerState* rasterizer = nullptr;
+        const DepthStencilState* depthStencil = nullptr;
         const InputLayout* layout = nullptr;
         Topology topology = Topology::TRIANGLELIST;
         uint32_t patchPoints = 3;

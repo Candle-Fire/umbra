@@ -92,7 +92,7 @@ namespace rx {
         virtual bool CreateSubresource(GPUBuffer* buf, SubresourceMeta meta, size_t offset, size_t size = ~0u, const ImageFormat* formatChange = nullptr, uint32_t* strideChange = nullptr) const = 0;
 
         // Fetch the descriptor index for a (sub)resource in the current active shader. TODO: is this necessary with bindless?
-        virtual int GetDescriptorIdx(const GPUResource* resource, SubresourceMeta sub, int subIdx = -1) const = 0;
+        virtual int GetDescriptorIdx(const GPUResource* resource, ImageViewType sub, int subIdx = -1) const = 0;
         // Fetch the descriptor info for a sampler in the current active shader. TODO: is this necessary with bindless?
         virtual int GetDescriptorIdx(const Sampler* sampler) const = 0;
 
