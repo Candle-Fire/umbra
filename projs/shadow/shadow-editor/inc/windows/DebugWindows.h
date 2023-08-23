@@ -1,12 +1,12 @@
 
 #pragma once
 
-#include "../EditorWindow.h"
+#include "../EditorWidget.h"
 #include "debug/DebugModule.h"
 
 namespace ShadowEngine::Editor {
 
-    class DebugWindows : public EditorWindow {
+  class DebugWindows : public EditorWidget {
       SHObject_Base(DebugWindows)
 
         std::weak_ptr<ShadowEngine::Debug::DebugModule> debugModule;
@@ -14,7 +14,7 @@ namespace ShadowEngine::Editor {
       public:
         DebugWindows();
 
-        void Draw() override;
+        void Draw();
     };
 
 }

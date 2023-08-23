@@ -7,10 +7,6 @@ namespace SH::Events {
 
     Event_Impl(PreRender)
 
-    SHObject_Base_Impl(Render)
-
-    Event_Impl(Render)
-
     SHObject_Base_Impl(PostRender)
 
     Event_Impl(PostRender)

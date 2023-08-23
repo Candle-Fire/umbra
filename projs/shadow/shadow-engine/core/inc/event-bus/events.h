@@ -22,7 +22,15 @@ namespace SH::Events {
       SHObject_Base(OverlayRender)
     };
 
+    class Render : public Event {
+      SHObject_Base(Render)
+    };
+
     class Recreate : public Event {
       SHObject_Base(Recreate)
+    };
+
+    class EditorRender : public Event {
+        SHObject_Base(EditorRender);
     };
 }

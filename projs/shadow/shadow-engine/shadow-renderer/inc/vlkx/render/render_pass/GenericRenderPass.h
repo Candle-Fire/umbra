@@ -34,6 +34,8 @@ namespace vlkx {
             return attachments[subpass];
         }
 
+        static const RenderPass* getActiveRenderPass();
+
         /**
          * Upload all of the subpass render commands to the command buffer.
          * The size of ops must be equal to the number of subpasses in this render pass.

@@ -9,6 +9,8 @@
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "vlkx/vulkan/VulkanModule.h"
+#include "../../../../shadow-editor/inc/EditorWindow.h"
+#include "renderer/RenderOrchestrator.h"
 
 #include <d3d12.h>
 #include <directxmath.h>
@@ -23,10 +25,6 @@ namespace ShadowEngine {
     SHObject_Base_Impl(ShadowApplication)
 
     ShadowApplication *ShadowApplication::instance = nullptr;
-
-    std::unique_ptr<vlkx::RenderCommand> renderCommands;
-
-    std::weak_ptr<VulkanModule> renderer;
 
     ShadowApplication::ShadowApplication(int argc, char *argv[]) {
         instance = this;
@@ -61,10 +59,6 @@ namespace ShadowEngine {
         }
 
         moduleManager.Init();
-
-        renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
-
-        renderCommands = std::make_unique<vlkx::RenderCommand>(2);
     }
 
     void ShadowApplication::Start() {
@@ -79,13 +73,12 @@ namespace ShadowEngine {
             }
 
             eventBus.fire(SH::Events::PreRender());
+            eventBus.fire(SH::Events::Render());
 
-            if (!renderer.expired()) {
-                auto r = renderer.lock();
-                r->BeginRenderPass(renderCommands);
-            }
+            auto submitter = moduleManager.GetById<vlkx::RenderOrchestrator>("module:/render").lock()->getSubmitter();
 
-            renderCommands->nextFrame();
+            if (!submitter.expired()) submitter.lock()->Draw();
+
             Time::UpdateTime();
         }
 

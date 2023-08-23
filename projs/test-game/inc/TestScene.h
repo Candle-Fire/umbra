@@ -8,4 +8,5 @@ class TestScene : public ShadowEngine::Entities::Scene {
     TestScene() : Scene("Test scene") {}
 
     void Build() override;
+    void Rebuild() override;
 };

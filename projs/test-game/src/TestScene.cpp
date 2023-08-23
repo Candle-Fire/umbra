@@ -7,14 +7,16 @@
 #include "vlkx/render/Geometry.h"
 #include "core/ShadowApplication.h"
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
+#include <renderer/RenderOrchestrator.h>
 
 SHObject_Base_Impl(TestScene)
+
+std::shared_ptr<vlkxtemp::Model> model;
 
 void TestScene::Build() {
     using ShadowEngine::Assets::Mesh;
     //Add 2 nodes to the scene that have a position and mesh components on them
 
-    std::shared_ptr<vlkxtemp::Model> model;
     std::shared_ptr<vlkx::PushConstant> push;
 
     push = std::make_unique<vlkx::PushConstant>(
@@ -33,15 +35,7 @@ void TestScene::Build() {
             .shader(VK_SHADER_STAGE_FRAGMENT_BIT, "resources/walrus/cube.frag.spv")
             .build();
 
-    auto rendererPtr = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::RendererModule>(
-            "module:/renderer/vulkan");
-    auto renderer = rendererPtr.lock();
-    auto extent = renderer->GetRenderExtent();
-    model->update(true,
-            extent,
-            VK_SAMPLE_COUNT_1_BIT,
-            *VulkanModule::getInstance()->getRenderPass()->getPass(),
-            0);
+    Rebuild();
 
     using namespace ShadowEngine::Entities::Builtin;
 
@@ -62,4 +56,16 @@ void TestScene::Build() {
     light->SetName("Light");
     light->Add<Position>({0, 0, 0});
     light->Add<Light>({});
+}
+
+void TestScene::Rebuild() {
+    auto renderer = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<vlkx::RenderOrchestrator>(
+        "module:/renderer");
+    auto extent = renderer.lock()->getSubmitter().lock()->GetRenderExtent();
+    VkExtent2D extentvk { .width = static_cast<uint32_t>(extent.x), .height = static_cast<uint32_t>(extent.y) };
+    model->update(true,
+                  extentvk,
+                  VK_SAMPLE_COUNT_1_BIT,
+                  *vlkx::RenderPass::getActiveRenderPass(),
+                  0);
 }

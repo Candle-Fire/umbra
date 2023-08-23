@@ -15,7 +15,7 @@ namespace ShadowEngine::Entities {
 
     MODULE_ENTRY(ShadowEngine::Entities::EntitySystem, EntitySystem)
 
-    void EntitySystem::OverlayRender(SH::Events::OverlayRender &) {
+    void EntitySystem::OverlayRender(SH::Events::EditorRender&) {
         ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
         ShadowEngine::Entities::Editor::HierarchyWindow::Draw();
     }
@@ -44,34 +44,6 @@ namespace ShadowEngine::Entities {
     void EntitySystem::Init() {
         ShadowEngine::ShadowApplication::Get().GetEventBus()
             .subscribe(this, &EntitySystem::OverlayRender);
-        ShadowEngine::ShadowApplication::Get().GetEventBus()
-            .subscribe(this, &EntitySystem::Render);
-    }
-
-    void EntitySystem::Render(SH::Events::Render &render) {
-        // Collect renderables
-        auto& container = *world.GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
-        rtm_ptr<NodeBase> positionNode;
-        Builtin::MeshComponent* mesh;
-
-        for (auto & it : container) {
-            // Try find the sister position first
-            auto parent = *it.GetParent().Get();
-            for (auto& comp : parent.GetHierarchy()) {
-                if (comp.Get()->GetTypeId() == ShadowEngine::Entities::Builtin::Position::TypeId()) {
-                    positionNode = comp;
-                    mesh = &it;
-
-                    if (mesh->isMesh) return;
-
-                    // Translate by position, submit mesh for render
-                    auto pos = dynamic_cast<ShadowEngine::Entities::Builtin::Position*>(positionNode.Get());
-                    *mesh->transform_constant->getData<Builtin::MeshComponent::Transformation>(render.frame) = { glm::translate(glm::identity<glm::mat4>(), { pos->x, pos->y, pos->z } ) };
-                    mesh->model->draw(render.buffer, render.frame, 1);
-                }
-            }
-        }
-
     }
 
     void EntitySystem::Update(int frame) {

@@ -3,6 +3,7 @@
 #include "SHObject.h"
 #include "SDL_events.h"
 #include <memory>
+#include <glm/vec2.hpp>
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "event-bus/events.h"
 
@@ -43,19 +44,15 @@ namespace ShadowEngine {
         };
     };
 
-/**
- * A class especially for modules that are renderers.
- * Allows the engine to access state from the renderer independent of implementation.
- */
-    class RendererModule : public Module {
+    /**
+     * A class especially for modules that submit data to the screen.
+     * There can be only one of these at a time, usually either the editor or the game.
+     */
+    class SubmitterModule : public Module {
       public:
-        // Begin the render pass using the given commands.
-        // Will call out through the regular modules to gather geometry to render.
-        virtual void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) = 0;
+        virtual void Draw() = 0;
 
-        virtual void EnableEditor() = 0;
-
-        virtual VkExtent2D GetRenderExtent() = 0;
+        virtual glm::vec2 GetRenderExtent() = 0;
     };
 
 }

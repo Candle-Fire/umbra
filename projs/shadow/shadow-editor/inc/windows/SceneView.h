@@ -1,14 +1,12 @@
 #pragma once
 
-#include "../EditorWindow.h"
+#include "../EditorWidget.h"
 #include "vlkx/vulkan/VulkanModule.h"
 
 namespace ShadowEngine::Editor {
 
-    class SceneView : public EditorWindow{
+    class SceneView : public EditorWidget {
     SHObject_Base(SceneView)
-
-    VulkanModule* renderer;
 
     public:
         SceneView();

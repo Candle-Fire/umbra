@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 #include <vector>
 #include <cassert>
 #include <functional>
@@ -199,10 +200,11 @@ namespace ShadowEngine::Entities {
 
       public:
         virtual void Build() = 0;
+        virtual void Rebuild() = 0;
 
         const std::string& GetName() const { return name; }
 
-        void SetName(std::string name) { this->name = name; }
+        void SetName(std::string name) { this->name = std::move(name); }
     };
 
     class API Entity : public Node {
@@ -216,6 +218,7 @@ namespace ShadowEngine::Entities {
         Scene(std::string name) : Actor() { this->name = name; }
 
         void Build() override {};
+        void Rebuild() override {};
 
         std::vector<rtm_ptr<NodeBase>> &GetStaticHierarchy() { return static_hierarchy; }
     };

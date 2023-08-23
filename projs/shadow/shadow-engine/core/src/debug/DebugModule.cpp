@@ -14,7 +14,7 @@ void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
         return;
 
     if (ImGui::Begin("Time", &w_time, ImGuiWindowFlags_MenuBar)) {
-        ImGui::Text("Time since start: %lf", Time::deltaTime_ms);
+        ImGui::Text("Time since start: %lf", Time::timeSinceStart);
         ImGui::Text("Delta time in ms: %lf", Time::deltaTime);
     }
 
@@ -44,10 +44,6 @@ void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
 }
 
 void ShadowEngine::Debug::DebugModule::DrawImguiDemo() {
-
-    if (w_imguiDemo)
-        ImGui::ShowDemoWindow(&w_imguiDemo);
-
 }
 
 void ShadowEngine::Debug::DebugModule::Init() {

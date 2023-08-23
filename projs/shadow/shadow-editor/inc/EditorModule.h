@@ -3,6 +3,7 @@
 #include "core/Module.h"
 #include "EditorWindow.h"
 #include "core/ShadowApplication.h"
+#include "EditorWidget.h"
 
 #include <map>
 
@@ -16,7 +17,7 @@ namespace ShadowEngine::Editor {
     class EditorModule : public ShadowEngine::Module {
       SHObject_Base(EditorModule)
 
-        std::vector<std::shared_ptr<EditorWindow>> windows;
+        std::vector<std::shared_ptr<EditorWidget>> windows;
 
         std::map<std::string, Menu> menus;
 

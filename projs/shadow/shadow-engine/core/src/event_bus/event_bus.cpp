@@ -17,4 +17,11 @@ namespace SH::Events {
 
     Event_Impl(Recreate)
 
+    SHObject_Base_Impl(EditorRender)
+
+    Event_Impl(EditorRender)
+
+    SHObject_Base_Impl(Render)
+
+    Event_Impl(Render)
 }

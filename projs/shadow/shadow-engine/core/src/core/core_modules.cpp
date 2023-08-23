@@ -11,6 +11,26 @@ void assembly_entry(ShadowEngine::ModuleManager &m) {
                      });
 
     m.AddDescriptors({
+        .id = "module:/renderer/game",
+        .name = "Game Renderer",
+        .class_name = "GameRenderer",
+        .assembly = "assembly:/core",
+        .dependencies= {
+            "module:/platform/sdl2",
+            "module:/renderer"
+        }
+    });
+
+    m.AddDescriptors({
+        .id = "module:/renderer",
+        .name = "Render Manager",
+        .class_name = "RenderOrchestrator",
+        .assembly = "assembly:/core",
+        .dependencies = {
+        }
+    });
+
+    m.AddDescriptors({
                          .id="module:/core",
                          .name = "Core",
                          .class_name = "CoreModule",

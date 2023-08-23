@@ -6,6 +6,8 @@
 
 namespace vlkx {
 
+    const vlkx::RenderPass* activePass;
+
     /**
      * Creates the necessary Clear Value struct to erase the given attachment.
      * @param attachment the attachment metadata
@@ -250,6 +252,8 @@ namespace vlkx {
 
         vkCmdBeginRenderPass(commands, &begin, VK_SUBPASS_CONTENTS_INLINE);
 
+        activePass = this;
+
         for (int i = 0; i < ops.size(); i++) {
             if (i != 0)
                 vkCmdNextSubpass(commands, VK_SUBPASS_CONTENTS_INLINE);
@@ -257,6 +261,7 @@ namespace vlkx {
         }
 
         vkCmdEndRenderPass(commands);
+        activePass = VK_NULL_HANDLE;
     }
 
     RenderPass::~RenderPass() {
@@ -265,4 +270,5 @@ namespace vlkx {
         vkDestroyRenderPass(VulkanModule::getInstance()->getDevice()->logical, renderPass, nullptr);
     }
 
+    const vlkx::RenderPass* RenderPass::getActiveRenderPass() { return activePass; }
 }

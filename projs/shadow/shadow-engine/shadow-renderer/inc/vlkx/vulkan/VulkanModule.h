@@ -14,11 +14,11 @@
 
 namespace vlkx { class ScreenRenderPassManager; }
 
-class VulkanModule : public ShadowEngine::RendererModule {
+class VulkanModule : ShadowEngine::Module {
   SHObject_Base(VulkanModule);
   public:
 
-    VulkanModule() : RendererModule() { instance = this; }
+    VulkanModule() { instance = this; }
 
     ~VulkanModule() override;
 
@@ -34,15 +34,7 @@ class VulkanModule : public ShadowEngine::RendererModule {
 
     void Recreate();
 
-    void PreRender(SH::Events::PreRender);
-
     void Destroy() override;
-
-    void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) override;
-
-    void EnableEditor() override;
-
-    VkExtent2D GetRenderExtent() override;
 
     // VulkanModule is a singleton class.
     static VulkanModule *instance;
@@ -53,13 +45,6 @@ class VulkanModule : public ShadowEngine::RendererModule {
     void initVulkan(SDL_Window *window);
 
     void createAppAndVulkanInstance(bool enableValidation, ValidationAndExtension *validations);
-
-    // Start and end a frame render.
-    void startDraw();
-
-    void endDraw();
-
-    VkDescriptorSet getEditorRenderPlanes();
 
     // Cleanup after the application has closed.
     void cleanup();
@@ -72,17 +57,7 @@ class VulkanModule : public ShadowEngine::RendererModule {
 
     VmaAllocator getAllocator() { return allocator; }
 
-    SDL_Window *getWind() { return wnd; }
-
-    const std::unique_ptr<vlkx::ScreenRenderPassManager> &getRenderPass();
-
   private:
-    bool editorEnabled = false;
-    std::vector<VkDescriptorSet> editorRenderPlanes;
-    std::vector<std::unique_ptr<vlkx::Image>> editorContentFrames;
-
-    // The SDL Window contains the size of the drawable area.
-    SDL_Window *wnd;
     // To handle the validation of Vulkan API usage
     ValidationAndExtension *validators{};
     // To manage interaction with the hardware
@@ -95,5 +70,4 @@ class VulkanModule : public ShadowEngine::RendererModule {
     VkInstance vulkan{};
     // To manage the canvas that was given to us by GLFW
     VkSurfaceKHR surface{};
-
 };
