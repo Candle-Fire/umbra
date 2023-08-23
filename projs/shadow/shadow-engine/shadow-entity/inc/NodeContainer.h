@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <assert.h>
 
+#include "SHObject.h"
+
 namespace ShadowEngine::Entities {
 
     //TODO: this could be converted into a generic container
@@ -17,6 +19,10 @@ namespace ShadowEngine::Entities {
         virtual void *allocate() = 0;
 
         virtual void DestroyObject(void *object) = 0;
+
+        virtual std::string getTypeName() = 0;
+
+        virtual int getCount() = 0;
     };
 
     /**
@@ -26,7 +32,7 @@ namespace ShadowEngine::Entities {
      * This container is created by the <see cref="NodeManager"/> for each entity type that gets registered.
      * @tparam Type
      */
-    template<class Type>
+    template<IsSHObject Type>
     class NodeContainer : public INodeContainer {
 
         /**
@@ -331,6 +337,20 @@ namespace ShadowEngine::Entities {
             }
 
             assert(false && "Failed to delete object. Memory corruption?!");
+        }
+
+        std::string getTypeName() override {
+            return Type::Type();
+        }
+
+        int getCount() override {
+            int count = 0;
+
+            for (auto chunk : this->m_chunks) {
+                count += chunk->count;
+            }
+
+            return count;
         }
 
         inline Iterator begin() { return Iterator(this, 0); }

@@ -8,11 +8,11 @@ namespace ShadowEngine::Entities::Debugger {
         if (ImGui::Begin("Allocation Debugger")) {
             if (!entitySystem.expired()) {
                 auto a = entitySystem.lock();
-                
+
                 auto &mgr = a->GetWorld().GetManager();
 
                 for (auto allocator : mgr.m_NodeContainerRegistry) {
-                    ImGui::Text("%i", allocator.first);
+                    ImGui::Text("%s : %i", allocator.second->getTypeName().c_str(), allocator.second->getCount());
                 }
 
             }

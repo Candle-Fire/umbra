@@ -45,6 +45,8 @@ namespace ShadowEngine {
         virtual ~SHObject() = default;
     };
 
+    template<typename T>
+    concept IsSHObject = std::is_base_of<SHObject, T>::value;
 
     /**
      * \brief Macro to make the override functions of SHObject. This should be added in each derived class
