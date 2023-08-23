@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 }
 
 extern "C" {
-void assembly_entry(ShadowEngine::ModuleManager &m) {
+void __declspec(dllexport) assembly_entry(ShadowEngine::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/editor",
                          .name = "Editor",

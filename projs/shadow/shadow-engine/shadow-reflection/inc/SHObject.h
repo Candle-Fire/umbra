@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <typeinfo>
+#include <cstdint>
 
 #include "exports.h"
 

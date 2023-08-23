@@ -1,7 +1,7 @@
 #include "core/ShadowApplication.h"
 
 extern "C" {
-void assembly_entry(ShadowEngine::ModuleManager &m) {
+void __declspec(dllexport) assembly_entry(ShadowEngine::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/game",
                          .name = "Test Game",

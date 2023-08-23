@@ -7,7 +7,7 @@
 namespace ShadowEngine::Entities::Builtin {
 
     //A component that holds a mesh reference
-    class MeshComponent : public ShadowEngine::Entities::Component {
+    class API MeshComponent : public ShadowEngine::Entities::Component {
       SHObject_Base(MeshComponent)
       public:
         MeshComponent() : Component() {}

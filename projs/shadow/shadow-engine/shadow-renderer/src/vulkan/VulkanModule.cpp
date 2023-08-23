@@ -3,7 +3,7 @@
 #include <vulkan/vk_mem_alloc.h>
 #include <vlkx/vulkan/Tools.h>
 
-#include <vlkx\vulkan\VulkanModule.h>
+#include "vlkx/vulkan/VulkanModule.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "core/ShadowApplication.h"
@@ -243,7 +243,6 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
         );
 
     if (res.has_value()) {
-        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Recreate();
         ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Recreate());
     }
 }
@@ -258,12 +257,9 @@ void VulkanModule::PreRender(SH::Events::PreRender) {
                                                 renderPass->getPass()->execute(buffer, frame, {
                                                     [&](const VkCommandBuffer &commands) {
                                                         renderingGeometry = true;
-                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
-                                                        //    const_cast<VkCommandBuffer &>(commands),
-                                                        //    frame);
-                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
-                                                        //    const_cast<VkCommandBuffer &>(commands),
-                                                        //    frame);
+                                                        //ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Render(const_cast<VkCommandBuffer&>(commands), frame));
+
+                                                        //ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::PostRender(const_cast<VkCommandBuffer&>(commands), frame));
                                                         renderingGeometry = false;
                                                     }
                                                 });

@@ -16,9 +16,9 @@ namespace ShadowEngine {
             return;
         }
         try {
-            auto module_init = assembly.lib->get_function<std::shared_ptr<ShadowEngine::Module>()>(symbolName);
+            auto module_init = assembly.lib->get_function<void(std::shared_ptr<ShadowEngine::Module> *)>(symbolName);
 
-            holder.module = module_init();
+            module_init(&holder.module);
         }
         catch (std::exception &e) {
             spdlog::error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id,
@@ -32,7 +32,7 @@ namespace ShadowEngine {
 
     void ModuleManager::Init() {
 
-        for (const auto &i: this->modules) {
+        for (const auto &i : this->modules) {
             spdlog::debug("\"{0}\" is registered", i.descriptor.id);
         }
 
@@ -40,12 +40,12 @@ namespace ShadowEngine {
         this->SortModules();
 
         spdlog::debug("Sorted order:");
-        for (const auto &i: this->modules) {
+        for (const auto &i : this->modules) {
             spdlog::debug("\"{0}\" is registered", i.descriptor.id);
         }
 
         //Load
-        for (auto &i: this->modules) {
+        for (auto &i : this->modules) {
             spdlog::info("Loading {0}", i.descriptor.id);
             if (std::any_of(ITERATE(this->assemblies), [i](Assembly a) {
                 return a.id == i.descriptor.assembly && a.lib != nullptr;
@@ -65,12 +65,12 @@ namespace ShadowEngine {
 
         //PreInit
         spdlog::info("Running PreInit");
-        for (auto &holder: this->modules) {
+        for (auto &holder : this->modules) {
             if (holder.enabled) {
-                try{
+                try {
                     holder.module->PreInit();
                 }
-                catch (const std::exception& e) {
+                catch (const std::exception &e) {
                     spdlog::error("❌ Error while running PreInit for module \"{0}\" Error: {1}", holder.descriptor.id,
                                   e.what());
                 }
@@ -80,12 +80,12 @@ namespace ShadowEngine {
         this->SortModules();
 
         spdlog::info("Running Init");
-        for (auto &holder: this->modules) {
+        for (auto &holder : this->modules) {
             if (holder.enabled) {
                 try {
                     holder.module->Init();
                 }
-                catch (const std::exception& e) {
+                catch (const std::exception &e) {
                     spdlog::error("❌ Error while running Init for module \"{0}\" Error: {1}", holder.descriptor.id,
                                   e.what());
                 }
@@ -106,7 +106,6 @@ namespace ShadowEngine {
             return;
         }
 
-
         dylib *dllptr;
 
         try {
@@ -124,26 +123,23 @@ namespace ShadowEngine {
     }
 
     void ModuleManager::Dfs(ModuleHolder &module_holder, std::vector<ModuleHolder> &sorted) {
-        for (auto u: module_holder.descriptor.dependencies) {
+        for (auto u : module_holder.descriptor.dependencies) {
             if (!std::ranges::any_of(sorted, ModulePredicate(u)) && u != module_holder.descriptor.id) {
                 auto it = std::ranges::find_if(this->modules, ModulePredicate(u));
 
                 if (it != modules.end()) {
-                    if(!it->enabled){
+                    if (!it->enabled) {
                         spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
                         module_holder.enabled = false;
-                    }
-                    else
+                    } else
                         Dfs(*it, sorted);
-                }
-                else
+                } else
                     spdlog::info("Module {0} is missing, required by {1}", u, module_holder.descriptor.id);
 
-            }
-            else{
+            } else {
                 auto it = std::ranges::find_if(sorted, ModulePredicate(u));
-                if(it != sorted.end()){
-                    if(!it->enabled){
+                if (it != sorted.end()) {
+                    if (!it->enabled) {
                         spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
                         module_holder.enabled = false;
                     }
@@ -157,7 +153,7 @@ namespace ShadowEngine {
         std::vector<ModuleHolder> sorted;
         sorted.clear();
 
-        for (auto i: this->modules) {
+        for (auto i : this->modules) {
             if (!std::ranges::any_of(sorted, ModulePredicate(i.descriptor.id)))
                 Dfs(i, sorted);
         }
@@ -188,7 +184,7 @@ namespace ShadowEngine {
     }
 
     void ModuleManager::Update(int frame) {
-        for (auto &holder: this->modules) {
+        for (auto &holder : this->modules) {
             if (holder.enabled) {
                 holder.module->Update(frame);
             }

@@ -2,7 +2,7 @@
 #include "imgui.h"
 #include "spdlog/spdlog.h"
 #include "imgui_impl_vulkan.h"
-#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdl2.h"
 #include "core/Time.h"
 #include "vlkx/render/Camera.h"
 #include "vlkx/vulkan/abstraction/Buffer.h"

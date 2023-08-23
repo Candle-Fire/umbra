@@ -1,7 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl2.h>
 #include <spdlog/spdlog.h>
 
 #include "core/ShadowApplication.h"
@@ -9,6 +9,9 @@
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "vlkx/vulkan/VulkanModule.h"
+
+#include <d3d12.h>
+#include <directxmath.h>
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -38,18 +41,6 @@ namespace ShadowEngine {
                     this->game = argv[i + 1];
                 }
             }
-        }
-        SetConsoleOutputCP(CP_UTF8);
-        CONSOLE_FONT_INFOEX cfi;
-        cfi.cbSize = sizeof cfi;
-        cfi.nFont = 0;
-        cfi.dwFontSize.X = 0;
-        cfi.dwFontSize.Y = 14;
-        cfi.FontFamily = FF_DONTCARE;
-        cfi.FontWeight = FW_NORMAL;
-        wcscpy_s(cfi.FaceName, LF_FACESIZE, L"Lucida Console");
-        if (SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &cfi) == 0) {
-            // handle error
         }
 
         if (this->debug)

@@ -7,6 +7,6 @@
 #    define API __declspec(dllimport)
 #  endif
 #else // non windows
-#  define SH_EXPORT
+#  define API
 #endif
 

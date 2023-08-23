@@ -14,7 +14,7 @@ namespace ShadowEngine::Entities::Builtin {
         Spot
     };
 
-    class Light : public ShadowEngine::Entities::Component {
+    class API Light : public ShadowEngine::Entities::Component {
       SHObject_Base(Light)
       public:
         Light() : Component() {}

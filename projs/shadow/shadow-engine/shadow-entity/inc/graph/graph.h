@@ -34,7 +34,7 @@ namespace ShadowEngine::Entities {
      * @tparam Type
      */
     template<class Type>
-    class API rtm_ptr {
+    class rtm_ptr {
       private:
         Type *m_ptr;
 
@@ -378,6 +378,9 @@ namespace ShadowEngine::Entities {
             int CID = T::TypeId();
 
             auto it = this->m_NodeContainerRegistry.find(CID);
+
+            if (it == this->m_NodeContainerRegistry.end())
+                return nullptr;
 
             return static_cast<NodeContainer<T> *>(it->second);
         }

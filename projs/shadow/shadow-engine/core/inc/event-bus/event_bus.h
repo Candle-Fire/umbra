@@ -34,9 +34,9 @@ namespace SH::Events {
     using SubscriptionList = std::vector<SubRef<T>>;
 
     template<EventType T>
-    class EventDispatcherHolder {
-        using BusMap = std::vector<SubscriptionList<T>>;
+    class API EventDispatcherHolder {
       public:
+        using BusMap = std::vector<SubscriptionList<T>>;
         static BusMap subscriptions;
     };
 

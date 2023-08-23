@@ -3,7 +3,7 @@
 #include "module-manager-v2.h"
 #include "exports.h"
 #include "imgui.h"
-#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
 #include "event-bus/event_bus.h"
 
@@ -14,7 +14,7 @@ namespace ShadowEngine {
     /// <summary>
     /// Represents the application
     /// </summary>
-    class ShadowApplication : ShadowEngine::SHObject {
+    class API ShadowApplication : ShadowEngine::SHObject {
       SHObject_Base(ShadowApplication)
         /// <summary>
         /// This is the singleton instance

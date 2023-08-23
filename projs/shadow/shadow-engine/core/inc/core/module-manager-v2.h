@@ -18,7 +18,7 @@ using ID = std::string;
 */
 /// @brief This is a helper for creating module specific entry points. This is doggy.
 /// Only change if you know what you are doing.
-#define MODULE_ENTRY(name, shortname) extern "C" { std::shared_ptr<name> shortname ## _entry(){return std::make_shared<name>();} }
+#define MODULE_ENTRY(name, shortname) extern "C" { void __declspec(dllexport) shortname ## _entry(std::shared_ptr<name>* ptr){*ptr = std::make_shared<name>();} }
 
 /// @brief Helper macro for standard funcs iterate
 // TODO: Move this to a global helper file
@@ -26,7 +26,7 @@ using ID = std::string;
 
 namespace ShadowEngine {
 
-    enum AssemblyType{
+    enum AssemblyType {
         LIB,
         EXE,
     };
@@ -71,7 +71,6 @@ namespace ShadowEngine {
         bool enabled = true;
     };
 
-
     /// @brief Central manager for runtime loaded engine modules
     class ModuleManager {
 
@@ -108,7 +107,7 @@ namespace ShadowEngine {
         /// @brief Helper predicate function for finding modules based on id
         /// @param target The module ID that is being searched
         /// @return Gives back a function lambda that is usable as a predicate in std functions.
-        static std::function<bool(const ModuleHolder&)> ModulePredicate(const std::string &target) {
+        static std::function<bool(const ModuleHolder &)> ModulePredicate(const std::string &target) {
             return [target](const auto &item) { return target == item.descriptor.id; };
         }
 
@@ -120,7 +119,7 @@ namespace ShadowEngine {
         /// @brief Sorts the modules based on their dependencies
         void SortModules();
 
-    public:
+      public:
 
         /// @brief Registers a new module descriptor
         /// @param descriptor The module descriptor to register
@@ -129,7 +128,7 @@ namespace ShadowEngine {
         /// @brief Adds a new assembly to the known Assembly
         /// This doesn't load the assembly only makes it known
         /// @param assembly The Assembly to add
-        void AddAssembly(const Assembly& assembly) { this->assemblies.push_back(assembly); }
+        void AddAssembly(const Assembly &assembly) { this->assemblies.push_back(assembly); }
 
         /// @brief [BEWARE DRAGONS] Instructs the module manager to load modules form an assembly's default entry point
         /// @param id The id of the assembly to load from
@@ -147,12 +146,12 @@ namespace ShadowEngine {
         /// @brief Deactivaes the module
         ///
         /// @param force [BEWARE DRAGONS] This forces the deactivation even if the module stack has been finalized
-        void DeactivateModule(Module* module_ptr, bool force = false){
-            if(!this->finalized || force){
-                auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder& item){
+        void DeactivateModule(Module *module_ptr, bool force = false) {
+            if (!this->finalized || force) {
+                auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder &item) {
                     return item.module.get() == module_ptr;
                 });
-                if(m != this->modules.end()){
+                if (m != this->modules.end()) {
                     m->enabled = false;
                 }
             }
@@ -163,7 +162,7 @@ namespace ShadowEngine {
         /// @param id The module id to find
         template<class T>
         std::weak_ptr<T> GetById(const std::string &id) {
-            for (const auto &i: this->modules) {
+            for (const auto &i : this->modules) {
                 if (i.enabled && i.descriptor.id == id) {
                     return std::dynamic_pointer_cast<T>(i.module);
                 }
@@ -172,25 +171,25 @@ namespace ShadowEngine {
         }
 
         /// @brief Retruns the full list of known modules
-        const std::vector<ModuleHolder>& GetModules(){ return this->modules; }
+        const std::vector<ModuleHolder> &GetModules() { return this->modules; }
 
         /// @brief Returns if the module is active
         /// @param id The id of the module to check
-        bool IsModuleActive(const ID& id){
+        bool IsModuleActive(const ID &id) {
             auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
             return m != this->modules.end() && m->enabled;
         }
 
         /// @brief Runs the calback function if the given module is active
-        void IfModuleActive(const ID& id, const std::function<void()>& callback){
-            if(IsModuleActive(id))
+        void IfModuleActive(const ID &id, const std::function<void()> &callback) {
+            if (IsModuleActive(id))
                 callback();
         }
 
         /// @brief Runs the calback function if the given module is active
         template<class T>
-        void IfModuleActive(const ID& id, const std::function<void(T&)>& callback){
-            if(IsModuleActive(id)) {
+        void IfModuleActive(const ID &id, const std::function<void(T &)> &callback) {
+            if (IsModuleActive(id)) {
                 auto m = GetById<T>(id);
                 callback(m);
             }

@@ -8,7 +8,7 @@
 namespace ShadowEngine {
 
 /// @brief ShadowModules are the base of the engine. They add core abilities.
-    class Module : public SHObject {
+    class API Module : public SHObject {
       SHObject_Base(Module)
 
       protected:
