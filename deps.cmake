@@ -15,6 +15,27 @@ if (WIN32)
 
 endif ()
 
+if (DX12)
+    file(
+            DOWNLOAD
+            https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/1.610.5
+            ./Microsoft.Direct3D.D3D12.zip
+    )
+
+    FetchContent_Declare(
+            DX12Agility
+            URL https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/1.610.5
+    )
+    FetchContent_MakeAvailable(DX12Agility)
+endif ()
+
+FetchContent_Declare(
+        DxMath
+        GIT_REPOSITORY https://github.com/microsoft/DirectXMath.git
+        GIT_TAG 22e6d747994600e00834faff5fc2a95ab60f1790
+)
+FetchContent_MakeAvailable(DxMath)
+
 
 # ###############################################
 # Fetch Catch2 for the file format tests

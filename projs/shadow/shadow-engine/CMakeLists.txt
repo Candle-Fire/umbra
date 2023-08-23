@@ -1,5 +1,5 @@
 find_package(Vulkan REQUIRED)
-find_package(D3D12 REQUIRED)
+#find_package(D3D12 REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui REQUIRED)
 
@@ -8,6 +8,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 FILE(GLOB_RECURSE SOURCES
         core/src/**/*.cpp
+        core/src/*.cpp
         shadow-assets/src/*.cpp
         shadow-entity/src/*.cpp
         shadow-renderer/src/*.cpp
@@ -27,10 +28,11 @@ SET(IncludeDirs
         shadow-math/inc
 )
 
-add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>)
+add_library(shadow-engine SHARED ${SOURCES} $<TARGET_OBJECTS:imgui>
+        core/src/compilation-test.cpp)
 
 target_include_directories(shadow-engine
-        PRIVATE ${SDL2_INCLUDE_DIRS} #${D3D12_INCLUDE_DIRS}
+        PRIVATE ${SDL2_INCLUDE_DIRS} ${DirectXMath_SOURCE_DIR}/Inc #${D3D12_INCLUDE_DIRS}
         PUBLIC ${IncludeDirs}
         ${glm_SOURCE_DIR}
         INTERFACE

@@ -10,9 +10,6 @@
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "vlkx/vulkan/VulkanModule.h"
 
-#include <d3d12.h>
-#include <directxmath.h>
-
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
 
