@@ -21,18 +21,20 @@ namespace ShadowEngine::Entities::Editor {
     void DrawTree(rtm_ptr<NodeBase> node) {
         ImGuiTreeNodeFlags flags = treeSelectableFlags(selected_ent, node);
 
-        const char *name = (char *) node->GetType().c_str();
+        const char *name = (const char *) node->GetType().c_str();
 
         Node *h_node = dynamic_cast<Node *>(node.Get());
 
-        if (h_node == nullptr || h_node->GetHierarchy().size() <= 0)
+        if (h_node == nullptr || h_node->GetHierarchy().empty()) {
             flags |= ImGuiTreeNodeFlags_Leaf;
+        }
 
-        if (Actor *h_actor = dynamic_cast<Actor *>(node.Get())) {
+        auto *h_actor = dynamic_cast<Actor *>(node.Get());
+        if (h_actor != nullptr) {
             name = h_actor->GetName().c_str();
         }
 
-        if (ImGui::TreeNodeEx(node.GetInternalPointer(), flags, name)) {
+        if (ImGui::TreeNodeEx(node.GetInternalPointer(), flags, "%s", name)) {
 
             if (ImGui::IsItemClicked()) {
                 selected_ent = node;
