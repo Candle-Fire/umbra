@@ -13,7 +13,7 @@ namespace ShadowEngine::Editor {
 
     MODULE_ENTRY(ShadowEngine::Editor::EditorModule, EditorModule)
 
-    void EditorModule::OverlayRender(SH::Events::OverlayRender &) {
+    void EditorModule::EditorRender(SH::Events::EditorRender &) {
         static bool dockspaceOpen = true;
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -80,7 +80,7 @@ namespace ShadowEngine::Editor {
 
     void EditorModule::Init() {
         ShadowEngine::ShadowApplication::Get().GetEventBus()
-            .subscribe(this, &EditorModule::OverlayRender);
+            .subscribe(this, &EditorModule::EditorRender);
 
         windows.push_back(std::make_shared<SceneView>());
         windows.push_back(std::make_shared<DebugWindows>());

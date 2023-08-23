@@ -41,7 +41,7 @@ namespace ShadowEngine {
 
         spdlog::debug("Sorted order:");
         for (const auto &i : this->modules) {
-            spdlog::debug("\"{0}\" is registered", i.descriptor.id);
+            spdlog::debug("\"{0}\"", i.descriptor.id);
         }
 
         //Load
@@ -82,6 +82,7 @@ namespace ShadowEngine {
         spdlog::info("Running Init");
         for (auto &holder : this->modules) {
             if (holder.enabled) {
+                spdlog::info("Initializing {0}", holder.descriptor.name);
                 try {
                     holder.module->Init();
                 }

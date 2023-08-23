@@ -17,6 +17,7 @@ void assembly_entry(ShadowEngine::ModuleManager &m) {
         .assembly = "assembly:/core",
         .dependencies= {
             "module:/platform/sdl2",
+            "module:/renderer/vulkan",
             "module:/renderer"
         }
     });

@@ -3,8 +3,8 @@
   <component name="CMakeSharedSettings">
     <configurations>
       <configuration PROFILE_NAME="Debug-VS" ENABLED="true" GENERATION_DIR="bin/Debug/cmake-build/MSVC" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Visual Studio" />
-      <configuration PROFILE_NAME="Debug-MinGW-brechtsanders" ENABLED="true" GENERATION_DIR="bin/Debug/cmake-build/MinGW-brechtsanders" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW-brechtsanders" />
-      <configuration PROFILE_NAME="Debug-MinGW" ENABLED="false" GENERATION_DIR="bin/Debug/cmake-build/MinGW" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW" />
+      <configuration PROFILE_NAME="Debug-MinGW-brechtsanders" ENABLED="false" GENERATION_DIR="bin/Debug/cmake-build/MinGW-brechtsanders" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW-brechtsanders" />
+      <configuration PROFILE_NAME="Debug-MinGW-brechtsanders (1)" ENABLED="false" GENERATION_DIR="bin/Debug/cmake-build/MinGW" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW-brechtsanders" />
     </configurations>
   </component>
 </project>

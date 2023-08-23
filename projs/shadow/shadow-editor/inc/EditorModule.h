@@ -26,7 +26,7 @@ namespace ShadowEngine::Editor {
 
         void RegisterMenu(std::string path, Menu m);
 
-        void OverlayRender(SH::Events::OverlayRender &);
+        void EditorRender(SH::Events::EditorRender &);
 
         void DrawMenu();
 

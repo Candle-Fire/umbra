@@ -14,11 +14,6 @@ namespace vlkx {
     MODULE_ENTRY(GameRenderer, GameRenderer)
 
     void GameRenderer::Init() {
-        auto renderer = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<VulkanModule>("module:/renderer/vulkan").lock();
-
-        renderPass = std::make_unique<vlkx::ScreenRenderPassManager>(vlkx::RendererConfig { 1, gameOutput, false });
-        renderPass->initializeRenderPass();
-        renderCommands = std::make_unique<vlkx::RenderCommand>(1);
 
         gameOutput.resize(1);
         for (size_t i = 0; i < 1; i++) {
@@ -28,12 +23,17 @@ namespace vlkx {
             gameOutput[i] = std::make_unique<vlkx::TextureImage>(0, vlkx::ImageSampler::Config {}, meta);
         }
 
+        renderPass = std::make_unique<vlkx::ScreenRenderPassManager>(vlkx::RendererConfig { 1, gameOutput, false });
+        renderPass->initializeRenderPass();
+        renderCommands = std::make_unique<vlkx::RenderCommand>(1);
+
+
         gameImguiTextures.resize(gameOutput.size());
         for (size_t i = 0; i < gameOutput.size(); i++) {
             gameImguiTextures[i] = ImGui_ImplVulkan_AddTexture(VkTools::createSampler(VK_FILTER_LINEAR,
                                                                                        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
                                                                                        0,
-                                                                                       renderer->getDevice()->logical),
+                                                                                       VulkanModule::getInstance()->getDevice()->logical),
                                                                                        gameOutput[i]->getView(),
                                                                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }

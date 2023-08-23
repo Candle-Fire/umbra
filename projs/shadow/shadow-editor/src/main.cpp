@@ -30,7 +30,7 @@ void __declspec(dllexport) assembly_entry(ShadowEngine::ModuleManager &m) {
                          .name = "Editor",
                          .class_name = "EditorModule",
                          .assembly="assembly:/shadow-editor",
-                         .dependencies={"module:/platform/sdl2"},
+                         .dependencies={"module:/platform/sdl2", "module:/renderer/game", "module:/renderer/editor" },
                      }
     );
 
@@ -39,7 +39,7 @@ void __declspec(dllexport) assembly_entry(ShadowEngine::ModuleManager &m) {
         .name = "Editor Window",
         .class_name = "EditorWindow",
         .assembly = "assembly:/shadow-editor",
-        .dependencies = { "module:/platform/sdl2", "module:/renderer", "module:/renderer/vulkan", "module:/renderer/game" }
+        .dependencies = { "module:/platform/sdl2",  "module:/renderer/vulkan" }
     });
 
     }
