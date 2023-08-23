@@ -200,7 +200,7 @@ namespace ShadowEngine::Entities {
       public:
         virtual void Build() = 0;
 
-        std::string GetName() const { return name; }
+        const std::string& GetName() const { return name; }
 
         void SetName(std::string name) { this->name = name; }
     };
