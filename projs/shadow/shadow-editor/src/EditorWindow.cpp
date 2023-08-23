@@ -17,7 +17,7 @@ namespace ShadowEngine::Editor {
         renderCommands = std::make_unique<vlkx::RenderCommand>(2);
 
         IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
+        auto* c = ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
         (void) io;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -68,7 +68,10 @@ namespace ShadowEngine::Editor {
 
         ImGui_ImplVulkan_Init(&init_info, **editorPass->getPass());
 
+        ImGui::SetCurrentContext(c);
+
         VkTools::immediateExecute([](const VkCommandBuffer &commands) { ImGui_ImplVulkan_CreateFontsTexture(commands); }, renderer->getDevice());
+
     }
 
     void EditorWindow::Draw() {

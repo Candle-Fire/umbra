@@ -14,7 +14,6 @@ namespace vlkx {
         SHObject_Base(GameRenderer)
 
         std::vector<std::unique_ptr<vlkx::Image>> gameOutput;
-        std::vector<VkDescriptorSet> gameImguiTextures;
         std::unique_ptr<vlkx::RenderCommand> renderCommands;
         std::unique_ptr<vlkx::ScreenRenderPassManager> renderPass;
 
@@ -23,6 +22,5 @@ namespace vlkx {
         void Init();
 
         const std::vector<std::unique_ptr<vlkx::Image>>& getOutput() { return gameOutput; }
-        const std::vector<VkDescriptorSet>& getImages() { return gameImguiTextures; }
     };
 }

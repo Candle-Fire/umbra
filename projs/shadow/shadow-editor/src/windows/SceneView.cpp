@@ -13,6 +13,16 @@ namespace ShadowEngine::Editor {
 
     SceneView::SceneView() {
         renderer = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<vlkx::GameRenderer>("module:/renderer/game");
+        auto& output = renderer.lock()->getOutput();
+        gameImguiTextures.resize(output.size());
+        for (size_t i = 0; i < output.size(); i++) {
+            gameImguiTextures[i] = ImGui_ImplVulkan_AddTexture(VkTools::createSampler(VK_FILTER_LINEAR,
+                                                                                      VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+                                                                                      0,
+                                                                                      VulkanModule::getInstance()->getDevice()->logical),
+                                                               output[i]->getView(),
+                                                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
     }
 
     void SceneView::Draw() {
@@ -22,7 +32,7 @@ namespace ShadowEngine::Editor {
             ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
             glm::vec2 m_ViewportSize = {viewportPanelSize.x, viewportPanelSize.y};
 
-            ImGui::Image((ImTextureID) renderer.lock()->getImages()[0],
+            ImGui::Image((ImTextureID) gameImguiTextures[0],
                          ImVec2{m_ViewportSize.x, m_ViewportSize.y},
                          ImVec2{0, 0},
                          ImVec2{1, 1});

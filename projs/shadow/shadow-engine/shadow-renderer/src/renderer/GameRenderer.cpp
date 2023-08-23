@@ -27,17 +27,6 @@ namespace vlkx {
         renderPass->initializeRenderPass();
         renderCommands = std::make_unique<vlkx::RenderCommand>(1);
 
-
-        gameImguiTextures.resize(gameOutput.size());
-        for (size_t i = 0; i < gameOutput.size(); i++) {
-            gameImguiTextures[i] = ImGui_ImplVulkan_AddTexture(VkTools::createSampler(VK_FILTER_LINEAR,
-                                                                                       VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-                                                                                       0,
-                                                                                       VulkanModule::getInstance()->getDevice()->logical),
-                                                                                       gameOutput[i]->getView(),
-                                                                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        }
-
         if (entitySystem.expired())
             entitySystem =
                 ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::Entities::EntitySystem>("module:/entity-system");

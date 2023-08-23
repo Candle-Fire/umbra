@@ -8,6 +8,7 @@ namespace ShadowEngine::Editor {
     class SceneView : public EditorWidget {
     SHObject_Base(SceneView)
 
+        std::vector<VkDescriptorSet> gameImguiTextures;
     public:
         SceneView();
 

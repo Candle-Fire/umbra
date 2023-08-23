@@ -1,4 +1,5 @@
 #include "temp/model/Loader.h"
+#include "spdlog/spdlog.h"
 #include <fstream>
 #include <map>
 #include <string>
@@ -53,6 +54,7 @@ namespace vlkxtemp {
                             break;
                         }
                         default:
+                            spdlog::error("Unexpected symbol " + std::to_string(line[non_space + 1]));
                             throw std::runtime_error("Unexpected symbol " + std::to_string(line[non_space + 1]));
                     }
                     break;
@@ -76,6 +78,7 @@ namespace vlkxtemp {
                     break;
                 }
                 default:
+                    spdlog::error("Unexpected symbol in OBJ file: " + std::to_string(line[non_space]));
                     throw std::runtime_error("Unexpected symbol in OBJ file: " + std::to_string(line[non_space]));
             }
         };
@@ -85,7 +88,8 @@ namespace vlkxtemp {
         try {
             for (; std::getline(file, line); ++line_num)
                 parse_line(line);
-        } catch (const std::exception& e) {
+        } catch (const std::runtime_error& e) {
+            spdlog::error("Failed to parse obj file, error on line " + std::to_string(line_num) + ": " + line + "; " + e.what());
             throw std::runtime_error("Failed to parse obj file, error on line " + std::to_string(line_num) + ": " + line + "; " + e.what());
         }
     }
