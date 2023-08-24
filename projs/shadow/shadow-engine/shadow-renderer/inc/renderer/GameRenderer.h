@@ -18,7 +18,7 @@ namespace vlkx {
         std::unique_ptr<vlkx::ScreenRenderPassManager> renderPass;
 
       public:
-        void Render();
+        void Render(SH::Events::Render&);
         void Init();
 
         const std::vector<std::unique_ptr<vlkx::Image>>& getOutput() { return gameOutput; }

@@ -75,10 +75,10 @@ namespace ShadowEngine::Editor {
     }
 
     void EditorWindow::Draw() {
-            auto& sc = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<VulkanModule>("module:/renderer/vulkan").lock()->getSwapchain()->swapChain;
-
+            auto sc = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<VulkanModule>("module:/renderer/vulkan").lock();
+            vkDeviceWaitIdle(sc->getDevice()->logical);
             // Submit to the screen
-            renderCommands->execute(renderCommands->getFrame(), sc, [](int){},
+            renderCommands->execute(renderCommands->getFrame(), sc->getSwapchain()->swapChain, [](int){},
                               [this](const VkCommandBuffer& commands, int frame) {
                                   editorPass->getPass()->execute(commands,
                                                 frame,

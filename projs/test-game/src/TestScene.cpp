@@ -1,10 +1,8 @@
 #include "../inc/TestScene.h"
-#include "entities/Player.h"
 #include "entities/NullActor.h"
 #include "entities/Position.h"
 #include "entities/MeshComponent.h"
 #include "entities/Light.h"
-#include "vlkx/render/Geometry.h"
 #include "core/ShadowApplication.h"
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
 #include <renderer/RenderOrchestrator.h>
@@ -54,9 +52,12 @@ void TestScene::Build() {
     light->SetName("Light");
     light->Add<Position>({0, 0, 0});
     light->Add<Light>({});
+
+    ShadowEngine::ShadowApplication::Get().GetEventBus().subscribe(this, &TestScene::Recreate);
 }
 
-void TestScene::Rebuild() {
+void TestScene::Recreate(SH::Events::Recreate& r) {
+    if (!needsRebuild) return;
     auto renderer = ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<vlkx::RenderOrchestrator>(
         "module:/renderer");
     auto extent = renderer.lock()->getSubmitter().lock()->GetRenderExtent();

@@ -11,7 +11,6 @@ namespace ShadowEngine::Entities::Builtin {
       public:
         //Empty Build function
         void Build() override {};
-        void Rebuild() override {};
     };
 
 }

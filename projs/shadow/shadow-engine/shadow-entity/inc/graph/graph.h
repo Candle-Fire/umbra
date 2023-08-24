@@ -200,7 +200,6 @@ namespace ShadowEngine::Entities {
 
       public:
         virtual void Build() = 0;
-        virtual void Rebuild() = 0;
 
         const std::string& GetName() const { return name; }
 
@@ -219,7 +218,6 @@ namespace ShadowEngine::Entities {
         bool needsRebuild = true;
 
         void Build() override {};
-        void Rebuild() override {};
 
         std::vector<rtm_ptr<NodeBase>> &GetStaticHierarchy() { return static_hierarchy; }
     };

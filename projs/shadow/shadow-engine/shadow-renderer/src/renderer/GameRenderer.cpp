@@ -30,9 +30,11 @@ namespace vlkx {
         if (entitySystem.expired())
             entitySystem =
                 ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::Entities::EntitySystem>("module:/entity-system");
+
+        ShadowEngine::ShadowApplication::Get().GetEventBus().subscribe(this, &GameRenderer::Render);
     }
 
-    void GameRenderer::Render() {
+    void GameRenderer::Render(SH::Events::Render& render) {
 
         // Collect renderables
         auto& container = *entitySystem.lock()->GetWorld().GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
@@ -44,7 +46,7 @@ namespace vlkx {
                                       [&](const VkCommandBuffer &buffer, int frame) {
                                           renderPass->getPass()->execute(buffer, frame, {
                                               [&](const VkCommandBuffer &commands) {
-                                                  if (scene.begin()->needsRebuild) { scene.begin()->Rebuild(); }
+                                                  ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Recreate());
 
                                                   for (auto & it : container) {
                                                       // Try find the sister position first
@@ -54,12 +56,16 @@ namespace vlkx {
                                                               positionNode = comp;
                                                               mesh = &it;
 
-                                                              if (mesh->isMesh) return;
-
                                                               // Translate by position, submit mesh for render
                                                               auto pos = dynamic_cast<ShadowEngine::Entities::Builtin::Position*>(positionNode.Get());
-                                                              *mesh->transform_constant->getData<ShadowEngine::Entities::Builtin::MeshComponent::Transformation>(1) = { glm::translate(glm::identity<glm::mat4>(), { pos->x, pos->y, pos->z } ) };
-                                                              mesh->model->draw(commands, 1, 1);
+                                                              auto ext = gameOutput[0]->getExtent();
+                                                              const glm::mat4 model = glm::translate(glm::mat4{1.0f},
+                                                                                                     { pos->x, pos->y, pos->z });
+                                                              const glm::mat4 view = glm::lookAt(glm::vec3{3.0f}, glm::vec3{0.0f},
+                                                                                                 glm::vec3{0.0f, 0.0f, 1.0f});
+                                                              const glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float) ext.width / ext.height, 0.1f, 100.0f);
+                                                              *mesh->transform_constant->getData<ShadowEngine::Entities::Builtin::MeshComponent::Transformation>(1) = { model * view * proj };
+                                                              mesh->model->draw(commands, 0, 1);
                                                           }
                                                       }
                                                   }

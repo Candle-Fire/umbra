@@ -165,7 +165,7 @@ namespace ShadowEngine {
             for (const auto &i : this->modules) {
                 if (i.enabled && i.descriptor.id == id && dynamic_cast<T*>(i.module.get()) != nullptr) {
                     return std::dynamic_pointer_cast<T>(i.module);
-                } else spdlog::debug("t1 {0}, t2 {0}", T::Type(), i.module->GetType());
+                }
             }
             throw std::logic_error("Module " + id + " could not be found.");
         }
