@@ -1,9 +1,20 @@
 set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 CONFIG REQUIRED)
 
+add_executable(shadow-editor)
+
 FILE(GLOB_RECURSE SOURCES src/*.cpp inc/*.h)
 
-add_executable(shadow-editor ${SOURCES})
+# ##################################################
+# DirectX 12
+# ##################################################
+if (WIN32 AND DX12)
+    find_package(D3D12 REQUIRED)
+    add_dx12(shadow-editor)
+    LIST(APPEND SOURCES ../platforms/dx12/dx12_agility.cpp)
+endif ()
+
+target_sources(shadow-editor PRIVATE ${SOURCES})
 
 target_include_directories(shadow-editor
         PUBLIC inc/

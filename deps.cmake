@@ -15,6 +15,9 @@ if (WIN32)
 
 endif ()
 
+# ###############################################
+# Fetch the DirectX Agility pack for up to date Dx12 headers
+# ###############################################
 if (DX12)
     file(
             DOWNLOAD
@@ -29,6 +32,9 @@ if (DX12)
     FetchContent_MakeAvailable(DX12Agility)
 endif ()
 
+# ###############################################
+# Fetch DirectX Math library for constexpr math operations
+# ###############################################
 FetchContent_Declare(
         DxMath
         GIT_REPOSITORY https://github.com/microsoft/DirectXMath.git
