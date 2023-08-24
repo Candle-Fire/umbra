@@ -14,7 +14,7 @@ if (WIN32 AND DX12)
     LIST(APPEND SOURCES ../platforms/dx12/dx12_agility.cpp)
 endif ()
 
-target_sources(shadow-editor PRIVATE ${SOURCES})
+target_sources(shadow-runtime PRIVATE ${SOURCES})
 
 target_include_directories(shadow-runtime PRIVATE ${SDL2_INCLUDE_DIRS})
 target_link_libraries(shadow-runtime PRIVATE SDL2::SDL2main PUBLIC shadow-engine)

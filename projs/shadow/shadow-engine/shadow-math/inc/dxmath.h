@@ -3,7 +3,14 @@
 #include <algorithm>
 #include <utility>
 
+#ifdef WIN32
 #include <intrin.h>
+#endif
+
+#ifndef WIN32
+#include "sal.h"
+
+#endif
 
 #if !defined(_MSC_VER)
 #undef __cpuid

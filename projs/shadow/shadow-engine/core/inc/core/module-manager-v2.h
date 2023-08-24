@@ -8,6 +8,7 @@
 #include "dylib.hpp"
 
 #include "Module.h"
+#include "exports.h"
 
 using ID = std::string;
 
@@ -18,7 +19,7 @@ using ID = std::string;
 */
 /// @brief This is a helper for creating module specific entry points. This is doggy.
 /// Only change if you know what you are doing.
-#define MODULE_ENTRY(name, shortname) extern "C" { void __declspec(dllexport) shortname ## _entry(std::shared_ptr<name>* ptr){*ptr = std::make_shared<name>();} }
+#define MODULE_ENTRY(name, shortname) extern "C" { void EXPORT shortname ## _entry(std::shared_ptr<name>* ptr){*ptr = std::make_shared<name>();} }
 
 /// @brief Helper macro for standard funcs iterate
 // TODO: Move this to a global helper file

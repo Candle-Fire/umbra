@@ -1,4 +1,5 @@
 Include(FetchContent)
+include(ExternalProject)
 
 if (WIN32)
 
@@ -73,27 +74,28 @@ endif ()
 # ###############################################
 # Fetch SpdLog for.. logging
 # ###############################################
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.10.0
-)
 
-FetchContent_GetProperties(spdlog)
-if (NOT spdlog_POPULATED)
-    FetchContent_Populate(spdlog)
-    add_subdirectory(${spdlog_SOURCE_DIR} ${spdlog_BINARY_DIR})
-endif ()
+#ExternalProject_Add(spdlog
+#        PREFIX spdlog
+#        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/extern/spdlog
+#        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+#        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+#        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+#        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+#        -DCMAKE_INSTALL_PREFIX=${STAGING_DIR}
+#        -DSPDLOG_BUILD_SHARED=OFF
+#)
+
 
 # ###############################################
 # Imgui
 # ###############################################
-FetchContent_Declare(
-        imgui
-        GIT_REPOSITORY https://github.com/ocornut/imgui
-        GIT_TAG d2291df55190e2f070af2635863f47a96d378a52
-)
-FetchContent_MakeAvailable(imgui)
+#FetchContent_Declare(
+#        imgui
+#        GIT_REPOSITORY https://github.com/ocornut/imgui
+#        GIT_TAG d2291df55190e2f070af2635863f47a96d378a52
+#)
+#FetchContent_MakeAvailable(imgui)
 
 # ###############################################
 # dynlib - DLL loading libary

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="test-game" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-game test-game" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalBuildDir$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="umbra" TARGET_NAME="test-game" CONFIG_NAME="Debug-VS" RUN_TARGET_PROJECT_NAME="umbra" RUN_TARGET_NAME="shadow-runtime">
+  <configuration default="false" name="test-game" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-game test-game" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$CMakeCurrentLocalBuildDir$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="umbra" TARGET_NAME="test-game" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="umbra" RUN_TARGET_NAME="shadow-runtime">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

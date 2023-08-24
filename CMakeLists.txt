@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.24)
 
-include(deps.cmake)
+if (UNIX)
+    #add_link_options(-Wl,-fPIC)
+    SET(CMAKE_POSITION_INDEPENDENT_CODE FALSE)
+endif ()
+
 
 if (MSVC)
     add_compile_options(-Zc:externC /permissive- /Zc:__cplusplus /Zc:inline /Zc:preprocessor /Zc:lambda /Zc:templateScope)
 endif ()
-if (MINGW)
+if (MINGW OR LINUX)
     add_compile_options(-fpermissive)
 endif ()
 
@@ -13,6 +17,8 @@ endif ()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(umbra)
+
+include(deps.cmake)
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")

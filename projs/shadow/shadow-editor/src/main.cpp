@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     /*...*/
 
     ShadowEngine::ShadowApplication app(argc, argv);
-    app.GetModuleManager().AddAssembly({.id="assembly:/shadow-editor", .path="shadow-editor.exe", .type=ShadowEngine::AssemblyType::EXE});
+    app.GetModuleManager().AddAssembly({.id="assembly:/shadow-editor", .path="shadow-editor", .type=ShadowEngine::AssemblyType::EXE});
     app.GetModuleManager().LoadModulesFromAssembly("assembly:/shadow-editor");
     app.Init();
     app.Start();
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 }
 
 extern "C" {
-void __declspec(dllexport) assembly_entry(ShadowEngine::ModuleManager &m) {
+void EXPORT assembly_entry(ShadowEngine::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/editor",
                          .name = "Editor",

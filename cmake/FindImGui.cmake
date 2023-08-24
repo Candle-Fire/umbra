@@ -2,13 +2,15 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(Vulkan REQUIRED)
 
+SET(imgui_SOURCE_DIR ${PROJECT_SOURCE_DIR}/extern/imgui)
+
 FILE(GLOB_RECURSE SOURCES ${imgui_SOURCE_DIR}/*.cpp)
 FILE(GLOB_RECURSE HEADERS ${imgui_SOURCE_DIR}/*.h)
 
 FILE(GLOB_RECURSE HEADERS ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.h)
 FILE(GLOB_RECURSE SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
 
-add_library(imgui OBJECT
+add_library(imgui STATIC
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_demo.cpp
         ${imgui_SOURCE_DIR}/imgui_draw.cpp

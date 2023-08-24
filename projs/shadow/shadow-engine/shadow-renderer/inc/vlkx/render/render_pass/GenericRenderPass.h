@@ -17,18 +17,30 @@ namespace vlkx {
      * RenderPass objects are disposable, and should be discarded when the framebuffer changes.
      */
     class RenderPass {
-    public:
-        using RenderFunc = std::function<void(const VkCommandBuffer& buffer)>;
+      public:
+        using RenderFunc = std::function<void(const VkCommandBuffer &buffer)>;
 
         // Delete copy and move constructors to prevent the GPU getting confused with what we're trying to do
-        RenderPass(const RenderPass&) = delete;
-        RenderPass& operator=(const RenderPass&) = delete;
+        RenderPass(const RenderPass &) = delete;
+
+        RenderPass &operator=(const RenderPass &) = delete;
+
         ~RenderPass();
 
-        RenderPass(int subpasses, VkRenderPass pass, std::vector<VkClearValue> clear, VkExtent2D ext, std::vector<VkFramebuffer> fbs, std::vector<int> attachs)
-            : subpassCount(subpasses), renderPass(pass), clearValues(std::move(clear)), extent(ext), framebuffers(std::move(fbs)), attachments(std::move(attachs)) {}
+        RenderPass(int subpasses,
+                   VkRenderPass pass,
+                   std::vector<VkClearValue> clear,
+                   VkExtent2D ext,
+                   std::vector<VkFramebuffer> fbs,
+                   std::vector<int> attachs)
+            : subpassCount(subpasses),
+              renderPass(pass),
+              clearValues(std::move(clear)),
+              extent(ext),
+              framebuffers(std::move(fbs)),
+              attachments(std::move(attachs)) {}
 
-        const VkRenderPass& operator*() const { return renderPass; }
+        const VkRenderPass &operator*() const { return renderPass; }
 
         int getAttachsInSubpass(int subpass) const {
             return attachments[subpass];
@@ -41,9 +53,9 @@ namespace vlkx {
          * @param imageIndex the index of the image on the swapchain that we're rendering to; the target framebuffer.
          * @param ops the render operations to add onto the command buffer.
          */
-        void execute(const VkCommandBuffer& commands, int imageIndex, std::vector<RenderFunc> ops) const;
+        void execute(const VkCommandBuffer &commands, int imageIndex, std::vector<RenderFunc> ops) const;
 
-    private:
+      private:
         // The number of sub-render-passes in this pass.
         const int subpassCount;
         // The VkRenderPass that this class wraps.
@@ -66,7 +78,7 @@ namespace vlkx {
      * Allows setting sub-passes, sub-pass dependencies, operations to read and write them, etc.
      */
     class RenderPassBuilder {
-    public:
+      public:
 
         /**
          * Information required to define an attachment to be used in a render pass.
@@ -171,9 +183,12 @@ namespace vlkx {
                 VkAccessFlags access;
             };
 
-            SubpassMeta source;         // The source subpass of this dependency (will take effect after this pass completes)
-            SubpassMeta destination;    // The destination subpass of this dependency (will take effect before this pass)
-            VkDependencyFlags flags;    // Other information that Vulkan needs to know about this dependency; for example, if we use an inputAttachment.
+            SubpassMeta
+                source;         // The source subpass of this dependency (will take effect after this pass completes)
+            SubpassMeta
+                destination;    // The destination subpass of this dependency (will take effect before this pass)
+            VkDependencyFlags
+                flags;    // Other information that Vulkan needs to know about this dependency; for example, if we use an inputAttachment.
         };
 
         /**
@@ -196,38 +211,48 @@ namespace vlkx {
         /**
          * Create a list of VkAttachmentReference that describes the multisampling setup.
          */
-        static std::vector<VkAttachmentReference> parseMutisampling(int colorReferencesCount, std::vector<ColorAttachmentMeta> meta);
+        static std::vector<VkAttachmentReference> parseMutisampling(int colorReferencesCount,
+                                                                    std::vector<ColorAttachmentMeta> meta);
 
-        RenderPassBuilder(const RenderPassBuilder&) = delete;
-        RenderPassBuilder& operator=(const RenderPassBuilder&) = delete;
+        RenderPassBuilder(const RenderPassBuilder &) = delete;
+
+        RenderPassBuilder &operator=(const RenderPassBuilder &) = delete;
+
         ~RenderPassBuilder() = default;
+
         RenderPassBuilder() = default;
 
         /** Fluent API Features; chain calls to set data on the render pass.*/
+        #ifdef fluent
+        #  undef fluent
+        #endif
         #define fluent RenderPassBuilder&
 
         // Set the number of framebuffers in the render pass
         fluent setFramebufferCount(int count);
         // Set an attachment description in the render pass
-        fluent setAttachment(int idx, const Attachment& attachment);
+        fluent setAttachment(int idx, const Attachment &attachment);
         // Update the image backing an attachment. The function must be executable during execute() later on.
-        fluent updateAttachmentBacking(int idx, std::function<const Image&(int idx)>&& getBacking);
+        fluent updateAttachmentBacking(int idx, std::function<const Image &(int idx)> &&getBacking);
         // Set a specific subpass. Use the static parse methods to create these vectors.
-        fluent setSubpass(int idx, std::vector<VkAttachmentReference>&& color, std::vector<VkAttachmentReference>&& multisample, VkAttachmentReference& depthStencil);
+        fluent setSubpass(int idx,
+                          std::vector<VkAttachmentReference> &&color,
+                          std::vector<VkAttachmentReference> &&multisample,
+                          VkAttachmentReference &depthStencil);
         // Add a dependency between two subpasses.
-        fluent addDependency(const SubpassDependency& dep);
+        fluent addDependency(const SubpassDependency &dep);
 
         // Build the Render Pass with all the information given.
         // Can be called multiple times with the same Builder.
         [[nodiscard]] std::unique_ptr<vlkx::RenderPass> build() const;
 
-    private:
+      private:
         // Number of framebuffers in the render pass
         std::optional<int> framebufferCount;
         // Descriptions of used attachments
         std::vector<VkAttachmentDescription> attachmentDescriptors;
         // Functions to return attachment images.
-        std::vector<std::function<const Image&(int idx)>> attachmentGetters;
+        std::vector<std::function<const Image &(int idx)>> attachmentGetters;
         // Values to clear all attachments
         std::vector<VkClearValue> clearValues;
         // Descriptions of subpasses.
