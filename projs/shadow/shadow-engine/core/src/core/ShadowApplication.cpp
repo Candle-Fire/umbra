@@ -1,7 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <imgui.h>
-#include <imgui_impl_sdl2.h>
 #include <spdlog/spdlog.h>
 
 #include "core/ShadowApplication.h"
@@ -9,6 +7,8 @@
 #include "dylib.hpp"
 #include "vlkx/vulkan/abstraction/Commands.h"
 #include "vlkx/vulkan/VulkanModule.h"
+
+#include "console-setup.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -42,6 +42,8 @@ namespace ShadowEngine {
 
         if (this->debug)
             spdlog::set_level(spdlog::level::debug);
+
+        InitConsole();
     }
 
     ShadowApplication::~ShadowApplication() {

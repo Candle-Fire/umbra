@@ -38,11 +38,7 @@ namespace ShadowEngine {
 
         //Sort
         this->SortModules();
-
-        spdlog::debug("Sorted order:");
-        for (const auto &i : this->modules) {
-            spdlog::debug("\"{0}\" is registered", i.descriptor.id);
-        }
+        this->PrintModuleInfo();
 
         //Load
         for (auto &i : this->modules) {
@@ -62,6 +58,7 @@ namespace ShadowEngine {
         }
 
         this->SortModules();
+        this->PrintModuleInfo();
 
         //PreInit
         spdlog::info("Running PreInit");
@@ -78,6 +75,7 @@ namespace ShadowEngine {
         }
 
         this->SortModules();
+        this->PrintModuleInfo();
 
         spdlog::info("Running Init");
         for (auto &holder : this->modules) {
@@ -93,6 +91,8 @@ namespace ShadowEngine {
         }
 
         //Sort
+        this->SortModules();
+        this->PrintModuleInfo();
 
         this->finalized = true;
     }
@@ -188,6 +188,38 @@ namespace ShadowEngine {
             if (holder.enabled) {
                 holder.module->Update(frame);
             }
+        }
+    }
+
+    void ModuleManager::DeactivateModule(Module *module_ptr, bool force) {
+        spdlog::info("Deactivating module {0}", module_ptr->GetType());
+        if (!this->finalized || force) {
+            auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder &item) {
+                return item.module.get() == module_ptr;
+            });
+            if (m != this->modules.end()) {
+                m->enabled = false;
+            }
+        }
+    }
+
+    bool ModuleManager::IsModuleActive(const ID &id) {
+        auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
+        return m != this->modules.end() && m->enabled;
+    }
+
+    void ModuleManager::IfModuleActive(const ID &id, const std::function<void()> &callback) {
+        if (IsModuleActive(id))
+            callback();
+    }
+
+    void ModuleManager::PrintModuleInfo() {
+        spdlog::info("Module info:");
+        for (const auto &i : this->modules) {
+            spdlog::info("Module {0}({1}) is {2}",
+                         i.descriptor.name,
+                         i.descriptor.id,
+                         i.enabled ? "enabled" : "disabled");
         }
     }
 

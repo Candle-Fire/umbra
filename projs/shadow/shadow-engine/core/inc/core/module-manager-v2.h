@@ -119,6 +119,8 @@ namespace ShadowEngine {
         /// @brief Sorts the modules based on their dependencies
         void SortModules();
 
+        void PrintModuleInfo();
+
       public:
 
         /// @brief Registers a new module descriptor
@@ -146,24 +148,17 @@ namespace ShadowEngine {
         /// @brief Deactivaes the module
         ///
         /// @param force [BEWARE DRAGONS] This forces the deactivation even if the module stack has been finalized
-        void DeactivateModule(Module *module_ptr, bool force = false) {
-            if (!this->finalized || force) {
-                auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder &item) {
-                    return item.module.get() == module_ptr;
-                });
-                if (m != this->modules.end()) {
-                    m->enabled = false;
-                }
-            }
-        }
+        void DeactivateModule(Module *module_ptr, bool force = false);
 
         /// @brief Returns a module by it's logical ID and casts it to T
         /// 
         /// @param id The module id to find
         template<class T>
         std::weak_ptr<T> GetById(const std::string &id) {
+            spdlog::debug("Searching for module {0} of type {1}", id, T::Type());
             for (const auto &i : this->modules) {
-                if (i.enabled && i.descriptor.id == id) {
+                spdlog::debug("T:{0} id:{1}, test: {2}, {3}", T::Type(), id, i.module->GetType(), i.descriptor.id);
+                if (i.enabled && i.descriptor.id == id && dynamic_cast<T *>(i.module.get()) != nullptr) {
                     return std::dynamic_pointer_cast<T>(i.module);
                 }
             }
@@ -175,16 +170,10 @@ namespace ShadowEngine {
 
         /// @brief Returns if the module is active
         /// @param id The id of the module to check
-        bool IsModuleActive(const ID &id) {
-            auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
-            return m != this->modules.end() && m->enabled;
-        }
+        bool IsModuleActive(const ID &id);
 
         /// @brief Runs the calback function if the given module is active
-        void IfModuleActive(const ID &id, const std::function<void()> &callback) {
-            if (IsModuleActive(id))
-                callback();
-        }
+        void IfModuleActive(const ID &id, const std::function<void()> &callback);
 
         /// @brief Runs the calback function if the given module is active
         template<class T>

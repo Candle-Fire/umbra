@@ -38,5 +38,12 @@ void assembly_entry(ShadowEngine::ModuleManager &m) {
                          .class_name = "EntitySystem",
                          .assembly="assembly:/core",
                      });
+
+    m.AddDescriptors({
+                         .id="module:/logger",
+                         .name = "Logger",
+                         .class_name = "LoggerModule",
+                         .assembly="assembly:/core",
+                     });
 }
 }
