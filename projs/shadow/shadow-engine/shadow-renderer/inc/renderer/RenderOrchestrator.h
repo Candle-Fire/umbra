@@ -4,7 +4,7 @@
 
 namespace vlkx {
 
-    class RenderOrchestrator : ShadowEngine::Module {
+    class RenderOrchestrator : public ShadowEngine::Module {
       SHObject_Base(RenderOrchestrator)
 
       std::vector<std::shared_ptr<ShadowEngine::SubmitterModule>> submitters;

@@ -75,7 +75,7 @@ namespace ShadowEngine {
             eventBus.fire(SH::Events::PreRender());
             eventBus.fire(SH::Events::Render());
 
-            auto submitter = moduleManager.GetById<vlkx::RenderOrchestrator>("module:/render").lock()->getSubmitter();
+            auto submitter = moduleManager.GetById<vlkx::RenderOrchestrator>("module:/renderer").lock()->getSubmitter();
 
             if (!submitter.expired()) submitter.lock()->Draw();
 

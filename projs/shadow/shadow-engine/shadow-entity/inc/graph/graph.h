@@ -216,6 +216,7 @@ namespace ShadowEngine::Entities {
         std::vector<rtm_ptr<NodeBase>> static_hierarchy;
       public:
         Scene(std::string name) : Actor() { this->name = name; }
+        bool needsRebuild = true;
 
         void Build() override {};
         void Rebuild() override {};

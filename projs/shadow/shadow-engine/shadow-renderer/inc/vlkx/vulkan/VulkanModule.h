@@ -14,7 +14,7 @@
 
 namespace vlkx { class ScreenRenderPassManager; }
 
-class VulkanModule : ShadowEngine::Module {
+class VulkanModule : public ShadowEngine::Module {
   SHObject_Base(VulkanModule);
   public:
 

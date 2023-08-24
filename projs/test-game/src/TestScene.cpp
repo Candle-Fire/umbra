@@ -35,8 +35,6 @@ void TestScene::Build() {
             .shader(VK_SHADER_STAGE_FRAGMENT_BIT, "resources/walrus/cube.frag.spv")
             .build();
 
-    Rebuild();
-
     using namespace ShadowEngine::Entities::Builtin;
 
     MeshComponent component(model, push);
@@ -68,4 +66,5 @@ void TestScene::Rebuild() {
                   VK_SAMPLE_COUNT_1_BIT,
                   *vlkx::RenderPass::getActiveRenderPass(),
                   0);
+    needsRebuild = false;
 }

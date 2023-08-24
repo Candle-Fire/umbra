@@ -10,7 +10,7 @@
 #include "vlkx/render/render_pass/ScreenRenderPass.h"
 
 namespace vlkx {
-    class GameRenderer : ShadowEngine::Module {
+    class GameRenderer : public ShadowEngine::Module {
         SHObject_Base(GameRenderer)
 
         std::vector<std::unique_ptr<vlkx::Image>> gameOutput;

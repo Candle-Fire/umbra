@@ -59,7 +59,7 @@ namespace ShadowEngine::Editor {
         init_info.Queue = renderer->getDevice()->graphicsQueue;
         init_info.PipelineCache = VK_NULL_HANDLE;
         init_info.DescriptorPool = imGuiPool;
-        init_info.Subpass = 1;
+        init_info.Subpass = 0;
         init_info.MinImageCount = renderer->getSwapchain()->images.size();
         init_info.ImageCount = renderer->getSwapchain()->images.size();
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;

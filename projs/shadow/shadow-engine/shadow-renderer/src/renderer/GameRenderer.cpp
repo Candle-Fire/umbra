@@ -36,6 +36,7 @@ namespace vlkx {
 
         // Collect renderables
         auto& container = *entitySystem.lock()->GetWorld().GetManager().GetContainerByType<ShadowEngine::Entities::Builtin::MeshComponent>();
+        auto& scene = *entitySystem.lock()->GetWorld().GetManager().GetContainerByType<ShadowEngine::Entities::Scene>();
         ShadowEngine::Entities::rtm_ptr<ShadowEngine::Entities::NodeBase> positionNode;
         ShadowEngine::Entities::Builtin::MeshComponent* mesh;
 
@@ -43,6 +44,7 @@ namespace vlkx {
                                       [&](const VkCommandBuffer &buffer, int frame) {
                                           renderPass->getPass()->execute(buffer, frame, {
                                               [&](const VkCommandBuffer &commands) {
+                                                  if (scene.begin()->needsRebuild) { scene.begin()->Rebuild(); }
 
                                                   for (auto & it : container) {
                                                       // Try find the sister position first
