@@ -1,7 +1,7 @@
 #include "core/module-manager-v2.h"
 
 extern "C" {
-void assembly_entry(ShadowEngine::ModuleManager &m) {
+void assembly_entry(SH::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/renderer/vulkan",
                          .name = "Vulkan",

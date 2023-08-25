@@ -19,7 +19,7 @@ namespace SH::Events {
     struct Subscription {
         Callback<T> callback;
 
-        std::weak_ptr<ShadowEngine::SHObject> binding;
+        std::weak_ptr<SH::SHObject> binding;
 
         explicit Subscription(Callback<T> call) : callback(call) {}
     };

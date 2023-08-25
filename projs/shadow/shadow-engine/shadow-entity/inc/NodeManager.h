@@ -8,7 +8,7 @@
 #include "SHObject.h"
 #include "graph/graph.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     class NodeManager;
 

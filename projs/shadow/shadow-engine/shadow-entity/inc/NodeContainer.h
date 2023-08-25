@@ -9,7 +9,7 @@
 
 #include "SHObject.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     //TODO: this could be converted into a generic container
 

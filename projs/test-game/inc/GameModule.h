@@ -3,7 +3,7 @@
 #include <SDL_events.h>
 #include "core/Module.h"
 
-class GameModule : public ShadowEngine::Module {
+class GameModule : public SH::Module {
 
   SHObject_Base(GameModule)
 

@@ -25,7 +25,7 @@ using ID = std::string;
 // TODO: Move this to a global helper file
 #define ITERATE(It) (It).begin(), (It).end()
 
-namespace ShadowEngine {
+namespace SH {
 
     enum AssemblyType {
         LIB,
@@ -65,7 +65,7 @@ namespace ShadowEngine {
         /// @brief Desricptor for the module
         ModuleDescriptor descriptor;
         /// @brief Reference to the module
-        std::shared_ptr<ShadowEngine::Module> module;
+        std::shared_ptr<SH::Module> module;
         /// @brief weather this module is enabled
         /// This could mean that it was not enabled for running
         /// or it was deactivated while setup (eg.: not able to run on the platform)

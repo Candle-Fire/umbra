@@ -2,7 +2,7 @@
 
 #include "graph/graph.h"
 
-class TestScene : public ShadowEngine::Entities::Scene {
+class TestScene : public SH::Entities::Scene {
   SHObject_Base(TestScene)
   public:
     TestScene() : Scene("Test scene") {}

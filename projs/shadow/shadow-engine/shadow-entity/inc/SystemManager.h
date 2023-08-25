@@ -4,6 +4,6 @@
 #include "graph/graph.h"
 #include "entities/Position.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
 }

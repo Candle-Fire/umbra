@@ -7,13 +7,13 @@
 
 #include "event-bus/events.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     class SDL2Module : public Module {
       SHObject_Base(SDL2Module)
 
       public:
-        ShadowEngine::ShadowWindow *window;
+        SH::ShadowWindow *window;
 
         SDL2Module() : Module() {}
 

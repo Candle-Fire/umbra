@@ -7,11 +7,11 @@
 #include "string-helpers.h"
 #include "core/module-manager-v2.h"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     SHObject_Base_Impl(EditorModule)
 
-    MODULE_ENTRY(ShadowEngine::Editor::EditorModule, EditorModule)
+    MODULE_ENTRY(SH::Editor::EditorModule, EditorModule)
 
     void EditorModule::OverlayRender(SH::Events::OverlayRender &) {
         static bool dockspaceOpen = true;
@@ -60,7 +60,7 @@ namespace ShadowEngine::Editor {
 
         for (const auto &menu : this->menus) {
             std::vector<std::string> menu_path =
-                explode(menu.first, '/');
+                SH::Util::Str::explode(menu.first, '/');
 
             int depth = 0;
             for (; depth < menu_path.size() - 1; ++depth) {
@@ -79,7 +79,7 @@ namespace ShadowEngine::Editor {
     }
 
     void EditorModule::Init() {
-        ShadowEngine::ShadowApplication::Get().GetEventBus()
+        SH::ShadowApplication::Get().GetEventBus()
             .subscribe(this, &EditorModule::OverlayRender);
 
         windows.push_back(std::make_shared<SceneView>());

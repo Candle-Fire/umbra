@@ -4,7 +4,7 @@
 #include <ranges>
 #include <algorithm>
 
-namespace ShadowEngine {
+namespace SH {
 
     void ModuleManager::LoadModule(ModuleHolder &holder) {
         auto assembly = GetAssembly(holder.descriptor.assembly);
@@ -16,7 +16,7 @@ namespace ShadowEngine {
             return;
         }
         try {
-            auto module_init = assembly.lib->get_function<void(std::shared_ptr<ShadowEngine::Module> *)>(symbolName);
+            auto module_init = assembly.lib->get_function<void(std::shared_ptr<SH::Module> *)>(symbolName);
 
             module_init(&holder.module);
         }

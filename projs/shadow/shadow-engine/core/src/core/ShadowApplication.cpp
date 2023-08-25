@@ -13,7 +13,7 @@
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
 
-namespace ShadowEngine {
+namespace SH {
 
     dylib *gameLib;
 
@@ -38,6 +38,11 @@ namespace ShadowEngine {
                     this->game = argv[i + 1];
                 }
             }
+        }
+
+        auto self = dlopen(NULL, RTLD_LAZY);
+        if (self != nullptr) {
+            std::cout << "Self: " << self << std::endl;
         }
 
         if (this->debug)

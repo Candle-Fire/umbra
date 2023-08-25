@@ -2,7 +2,7 @@
 #include "NodeManager.h"
 #include "graph/graph.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     //NodeManager *NodeManager::Instance = nullptr;
 

@@ -22,7 +22,7 @@ namespace SH {
 
     LoggerModule *Logger;
 
-    class LoggerModule : ShadowEngine::Module {
+    class LoggerModule : SH::Module {
 
       SHObject_Base(LoggerModule)
 

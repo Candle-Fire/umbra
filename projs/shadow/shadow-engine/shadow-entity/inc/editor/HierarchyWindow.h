@@ -7,18 +7,18 @@
 
 #define ICON_FA_CUBE u8"\uf1b2"
 
-namespace ShadowEngine::Entities::Editor {
+namespace SH::Entities::Editor {
 
     class HierarchyWindow {
 
-        static std::weak_ptr<ShadowEngine::Entities::EntitySystem> entitySystem;
+        static std::weak_ptr<SH::Entities::EntitySystem> entitySystem;
 
       public:
         static void Draw() {
 
             if (entitySystem.expired())
                 entitySystem =
-                    ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::Entities::EntitySystem>(
+                    SH::ShadowApplication::Get().GetModuleManager().GetById<SH::Entities::EntitySystem>(
                         "module:/entity-system");
 
             DebugHierarchy();

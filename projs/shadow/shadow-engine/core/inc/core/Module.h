@@ -5,7 +5,7 @@
 #include <memory>
 #include "vlkx/vulkan/abstraction/Commands.h"
 
-namespace ShadowEngine {
+namespace SH {
 
 /// @brief ShadowModules are the base of the engine. They add core abilities.
     class API Module : public SHObject {

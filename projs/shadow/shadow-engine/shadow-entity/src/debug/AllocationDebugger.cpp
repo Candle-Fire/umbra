@@ -1,8 +1,8 @@
 #include "debug/AllocationDebugger.h"
 
-namespace ShadowEngine::Entities::Debugger {
+namespace SH::Entities::Debugger {
 
-    std::weak_ptr<ShadowEngine::Entities::EntitySystem> AllocationDebugger::entitySystem;
+    std::weak_ptr<SH::Entities::EntitySystem> AllocationDebugger::entitySystem;
 
     void AllocationDebugger::DrawAllocationDebugger() {
         if (ImGui::Begin("Allocation Debugger")) {

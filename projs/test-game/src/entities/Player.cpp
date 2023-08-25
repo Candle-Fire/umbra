@@ -10,6 +10,6 @@ void Player::Build() {
     //Add position, health, and camera components
     Add<TestCamera>({});
     Add<Health>({});
-    Add<ShadowEngine::Entities::Builtin::Position>({});
+    Add<SH::Entities::Builtin::Position>({});
 
 }

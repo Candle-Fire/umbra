@@ -5,7 +5,7 @@
 
 #include "exports.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     typedef uint64_t TypeID;
 
@@ -55,13 +55,13 @@ namespace ShadowEngine {
 #define SHObject_Base(type)    \
 public: \
     static const std::string& Type();                 \
-    static ShadowEngine::TypeID TypeId();                         \
+    static SH::TypeID TypeId();                         \
     const std::string& GetType() const override        { return Type();  } \
-    ShadowEngine::TypeID GetTypeId() const override        { return  type::TypeId(); } \
+    SH::TypeID GetTypeId() const override        { return  type::TypeId(); } \
 private:
 
 #define SHObject_Base_Impl(type)    \
     const std::string& type::Type()                { static const std::string t = typeid(type).name(); return t; } \
-    ShadowEngine::TypeID type::TypeId()                        { static const ShadowEngine::TypeID id = GenerateId(); return id; }
+    SH::TypeID type::TypeId()                        { static const SH::TypeID id = GenerateId(); return id; }
 
 }

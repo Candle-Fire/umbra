@@ -14,8 +14,11 @@ int main(int argc, char *argv[]) {
     std::cout << "argv[" << argc << "] == " << static_cast<void *>(argv[argc]) << '\n';
     /*...*/
 
-    ShadowEngine::ShadowApplication app(argc, argv);
-    app.GetModuleManager().AddAssembly({.id="assembly:/shadow-editor", .path="shadow-editor", .type=ShadowEngine::AssemblyType::EXE});
+    SH::ShadowApplication app(argc, argv);
+    app.GetModuleManager().AddAssembly({
+        .id="assembly:/shadow-editor",
+        .path="shadow-editor",
+        .type=SH::AssemblyType::EXE});
     app.GetModuleManager().LoadModulesFromAssembly("assembly:/shadow-editor");
     app.Init();
     app.Start();
@@ -24,7 +27,7 @@ int main(int argc, char *argv[]) {
 }
 
 extern "C" {
-void EXPORT assembly_entry(ShadowEngine::ModuleManager &m) {
+void EXPORT assembly_entry(SH::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/editor",
                          .name = "Editor",

@@ -3,7 +3,7 @@
 #include <vector>
 #include <optional>
 #include <fstream>
-#include "shadow/util/RefCounter.h"
+#include "util/RefCounter.h"
 #include "vlkx/vulkan/VulkanModule.h"
 
 namespace vlkx {

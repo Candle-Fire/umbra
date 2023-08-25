@@ -4,11 +4,11 @@
 #include "core/module-manager-v2.h"
 #include "core/ShadowApplication.h"
 
-SHObject_Base_Impl(ShadowEngine::Debug::DebugModule)
+SHObject_Base_Impl(SH::Debug::DebugModule)
 
-MODULE_ENTRY(ShadowEngine::Debug::DebugModule, DebugModule)
+MODULE_ENTRY(SH::Debug::DebugModule, DebugModule)
 
-void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
+void SH::Debug::DebugModule::DrawTimeWindow() {
 
     if (!w_time)
         return;
@@ -21,14 +21,14 @@ void ShadowEngine::Debug::DebugModule::DrawTimeWindow() {
     ImGui::End();
 }
 
-void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
+void SH::Debug::DebugModule::DrawModuleWindow() {
 
     if (!w_modules)
         return;
 
     if (ImGui::Begin("Active Modules", &w_modules, ImGuiWindowFlags_MenuBar)) {
 
-        ShadowEngine::ModuleManager &m = ShadowEngine::ShadowApplication::Get().GetModuleManager();
+        SH::ModuleManager &m = SH::ShadowApplication::Get().GetModuleManager();
 
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.4f, 1.0f), "Active Modules:", 0);
         for (auto &module : m.GetModules()) {
@@ -43,21 +43,21 @@ void ShadowEngine::Debug::DebugModule::DrawModuleWindow() {
     ImGui::End();
 }
 
-void ShadowEngine::Debug::DebugModule::DrawImguiDemo() {
+void SH::Debug::DebugModule::DrawImguiDemo() {
 
     if (w_imguiDemo)
         ImGui::ShowDemoWindow(&w_imguiDemo);
 
 }
 
-void ShadowEngine::Debug::DebugModule::Init() {
-    ShadowEngine::ShadowApplication::Get().GetEventBus().subscribe(
+void SH::Debug::DebugModule::Init() {
+    SH::ShadowApplication::Get().GetEventBus().subscribe(
         this,
         &DebugModule::DrawDirect
     );
 }
 
-void ShadowEngine::Debug::DebugModule::DrawDirect(SH::Events::OverlayRender &) {
+void SH::Debug::DebugModule::DrawDirect(SH::Events::OverlayRender &) {
     //this->DrawModuleWindow();
     //this->DrawImguiDemo();
     //this->DrawTimeWindow();

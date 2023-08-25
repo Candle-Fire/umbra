@@ -32,8 +32,8 @@ void GameModule::Init() {
     spdlog::info("{0} Init", this->GetName());
     spdlog::info("Game Module loading level..");
 
-    auto w_ensys = ShadowEngine::ShadowApplication::Get().GetModuleManager()
-        .GetById<ShadowEngine::Entities::EntitySystem>("module:/entity-system");
+    auto w_ensys = SH::ShadowApplication::Get().GetModuleManager()
+        .GetById<SH::Entities::EntitySystem>("module:/entity-system");
 
     if (w_ensys.expired())
         return;

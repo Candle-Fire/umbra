@@ -3,7 +3,7 @@
 
 #include <string>
 
-ShadowEngine::ShadowWindow::ShadowWindow(int W, int H) : Height(H), Width(W)
+SH::ShadowWindow::ShadowWindow(int W, int H) : Height(H), Width(W)
 {
     // Create our window
     sdlWindowPtr = SDL_CreateWindow( "Candlefire", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Width, Height, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN );
@@ -16,6 +16,6 @@ ShadowEngine::ShadowWindow::ShadowWindow(int W, int H) : Height(H), Width(W)
 
 }
 
-ShadowEngine::ShadowWindow::~ShadowWindow()
+SH::ShadowWindow::~ShadowWindow()
 {
 }

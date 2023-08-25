@@ -8,12 +8,12 @@
 
 //Holds the reference to the active scene
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     /**
      * The module that manages all the entities and Scenes
      */
-    class API EntitySystem : public ShadowEngine::Module {
+    class API EntitySystem : public SH::Module {
       SHObject_Base(EntitySystem)
       private:
         World world;

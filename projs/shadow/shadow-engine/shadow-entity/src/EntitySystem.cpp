@@ -7,15 +7,15 @@
 
 #include "core/module-manager-v2.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     SHObject_Base_Impl(EntitySystem)
 
-    MODULE_ENTRY(ShadowEngine::Entities::EntitySystem, EntitySystem)
+    MODULE_ENTRY(SH::Entities::EntitySystem, EntitySystem)
 
     void EntitySystem::OverlayRender(SH::Events::OverlayRender &) {
-        ShadowEngine::Entities::Debugger::AllocationDebugger::Draw();
-        ShadowEngine::Entities::Editor::HierarchyWindow::Draw();
+        SH::Entities::Debugger::AllocationDebugger::Draw();
+        SH::Entities::Editor::HierarchyWindow::Draw();
     }
 
     EntitySystem::EntitySystem() {
@@ -40,7 +40,7 @@ namespace ShadowEngine::Entities {
     }
 
     void EntitySystem::Init() {
-        ShadowEngine::ShadowApplication::Get().GetEventBus()
+        SH::ShadowApplication::Get().GetEventBus()
             .subscribe(this, &EntitySystem::OverlayRender);
     }
 

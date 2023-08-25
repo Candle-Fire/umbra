@@ -6,14 +6,14 @@
 
 #include <map>
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     class Menu {
       public:
         std::function<void()> clk;
     };
 
-    class EditorModule : public ShadowEngine::Module {
+    class EditorModule : public SH::Module {
       SHObject_Base(EditorModule)
 
         std::vector<std::shared_ptr<EditorWindow>> windows;

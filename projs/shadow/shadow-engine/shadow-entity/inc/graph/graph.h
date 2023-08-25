@@ -9,7 +9,7 @@
 #include "SHObject.h"
 #include "NodeManager.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     typedef int RtmUuid;
 
@@ -317,7 +317,7 @@ namespace ShadowEngine::Entities {
         }
 
       public:
-        friend class ShadowEngine::Entities::Debugger::AllocationDebugger;
+        friend class SH::Entities::Debugger::AllocationDebugger;
 
         NodeManager();
 

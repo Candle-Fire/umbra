@@ -5,7 +5,7 @@
 #include "graph/graph.h"
 
 //A light component in the builtin namespace with light color, type, and intensity
-namespace ShadowEngine::Entities::Builtin {
+namespace SH::Entities::Builtin {
 
     //enum of light types
     enum class LightType {
@@ -14,7 +14,7 @@ namespace ShadowEngine::Entities::Builtin {
         Spot
     };
 
-    class API Light : public ShadowEngine::Entities::Component {
+    class API Light : public SH::Entities::Component {
       SHObject_Base(Light)
       public:
         Light() : Component() {}

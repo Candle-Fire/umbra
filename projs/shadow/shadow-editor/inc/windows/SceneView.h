@@ -3,7 +3,7 @@
 #include "../EditorWindow.h"
 #include "vlkx/vulkan/VulkanModule.h"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     class SceneView : public EditorWindow{
     SHObject_Base(SceneView)

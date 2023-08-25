@@ -2,7 +2,7 @@
 
 #include "Module.h"
 
-class CoreModule : public ShadowEngine::Module {
+class CoreModule : public SH::Module {
   SHObject_Base(CoreModule)
   public:
     CoreModule() : Module() {}

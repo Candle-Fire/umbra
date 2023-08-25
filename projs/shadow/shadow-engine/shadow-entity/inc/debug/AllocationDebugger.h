@@ -5,18 +5,18 @@
 #include "core/module-manager-v2.h"
 #include "core/ShadowApplication.h"
 
-namespace ShadowEngine::Entities::Debugger {
+namespace SH::Entities::Debugger {
 
     class AllocationDebugger {
 
-        static std::weak_ptr<ShadowEngine::Entities::EntitySystem> entitySystem;
+        static std::weak_ptr<SH::Entities::EntitySystem> entitySystem;
 
       public:
         static void Draw() {
 
             if (entitySystem.expired())
                 entitySystem =
-                    ShadowEngine::ShadowApplication::Get().GetModuleManager().GetById<ShadowEngine::Entities::EntitySystem>(
+                    SH::ShadowApplication::Get().GetModuleManager().GetById<SH::Entities::EntitySystem>(
                         "module:/entity-system");
 
             DrawAllocationDebugger();

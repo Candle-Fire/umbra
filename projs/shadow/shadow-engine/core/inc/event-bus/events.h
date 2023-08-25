@@ -6,7 +6,7 @@
 
 namespace SH::Events {
 
-    class Event : public ShadowEngine::SHObject {
+    class Event : public SH::SHObject {
       SHObject_Base(Event)
     };
 

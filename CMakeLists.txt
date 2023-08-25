@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
 
-if (UNIX)
-    #add_link_options(-Wl,-fPIC)
-    SET(CMAKE_POSITION_INDEPENDENT_CODE FALSE)
-endif ()
-
-
 if (MSVC)
     add_compile_options(-Zc:externC /permissive- /Zc:__cplusplus /Zc:inline /Zc:preprocessor /Zc:lambda /Zc:templateScope)
 endif ()

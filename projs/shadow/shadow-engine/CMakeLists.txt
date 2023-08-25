@@ -18,6 +18,13 @@ FILE(GLOB_RECURSE SOURCES
         shadow-reflection/src/*.cpp
         shadow-utility/src/*.cpp
         shadow-math/src/*.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/backends/imgui_impl_vulkan.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/backends/imgui_impl_sdl2.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/imgui.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/imgui_draw.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/imgui_widgets.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/imgui_demo.cpp
+        ${PROJECT_SOURCE_DIR}/extern/imgui/imgui_tables.cpp
 )
 list(FILTER SOURCES EXCLUDE REGEX ".*.test.cpp$")
 
@@ -59,7 +66,7 @@ if (WIN32 AND DX12)
     add_dx12(shadow-engine)
 endif ()
 
-target_sources(shadow-engine PRIVATE ${SOURCES} $<TARGET_OBJECTS:imgui>
+target_sources(shadow-engine PRIVATE ${SOURCES}
         core/src/compilation-test.cpp)
 
 target_include_directories(shadow-engine
@@ -71,12 +78,16 @@ target_include_directories(shadow-engine
         INTERFACE
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
-        PUBLIC ${PROJECT_SOURCE_DIR}/extern/spdlog/include/)
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/extern/spdlog/include/
+        ${PROJECT_SOURCE_DIR}/extern/imgui/
+        ${PROJECT_SOURCE_DIR}/extern/imgui/backends/
+)
 
 #add_dependencies(shadow-engine spdlog)
 
 target_link_libraries(shadow-engine
-        PUBLIC Vulkan::Vulkan SDL2::SDL2 dylib imgui
+        PUBLIC Vulkan::Vulkan SDL2::SDL2 dylib
         PRIVATE -static-libgcc -static-libstdc++
 )
 

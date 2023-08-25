@@ -2,7 +2,7 @@
 
 #include "graph/graph.h"
 
-namespace ShadowEngine::Entities::Builtin {
+namespace SH::Entities::Builtin {
 
     //Basic NullActor inherited from Actor
     class API NullActor : public Actor {

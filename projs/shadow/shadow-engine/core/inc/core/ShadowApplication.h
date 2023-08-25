@@ -9,12 +9,12 @@
 
 #include <string>
 
-namespace ShadowEngine {
+namespace SH {
 
     /// <summary>
     /// Represents the application
     /// </summary>
-    class API ShadowApplication : ShadowEngine::SHObject {
+    class API ShadowApplication : SH::SHObject {
       SHObject_Base(ShadowApplication)
         /// <summary>
         /// This is the singleton instance

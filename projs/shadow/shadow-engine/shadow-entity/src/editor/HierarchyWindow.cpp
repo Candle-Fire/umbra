@@ -1,11 +1,11 @@
 #include "editor/HierarchyWindow.h"
 
-namespace ShadowEngine::Entities::Editor {
+namespace SH::Entities::Editor {
 
-    std::weak_ptr<ShadowEngine::Entities::EntitySystem> HierarchyWindow::entitySystem;
+    std::weak_ptr<SH::Entities::EntitySystem> HierarchyWindow::entitySystem;
 
-    ShadowEngine::Entities::rtm_ptr<ShadowEngine::Entities::NodeBase> selected_ent;
-    ShadowEngine::Entities::rtm_ptr<ShadowEngine::Entities::NodeBase> selected_inspector;
+    SH::Entities::rtm_ptr<SH::Entities::NodeBase> selected_ent;
+    SH::Entities::rtm_ptr<SH::Entities::NodeBase> selected_inspector;
 
     ImGuiTreeNodeFlags node_flags =
         ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;

@@ -5,7 +5,7 @@
 #include "core/ShadowApplication.h"
 #include "spdlog/spdlog.h"
 
-class TestModule : public ShadowEngine::Module {
+class TestModule : public SH::Module {
   SHObject_Base(TestModule)
 
   public:
@@ -19,7 +19,7 @@ class TestModule : public ShadowEngine::Module {
 
     void Init() override {
         //auto self = ShadowEngine::ModuleManager::instance->GetModule<TestModule>();
-        ShadowEngine::ShadowApplication::Get().GetModuleManager().DeactivateModule(this);
+        SH::ShadowApplication::Get().GetModuleManager().DeactivateModule(this);
 
         spdlog::info("{0} Init", this->GetName());
     }

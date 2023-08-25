@@ -3,9 +3,9 @@
 #include "graph/graph.h"
 
 //Position component in the builtin namespace
-namespace ShadowEngine::Entities::Builtin {
+namespace SH::Entities::Builtin {
 
-    class API Position : public ShadowEngine::Entities::Component {
+    class API Position : public SH::Entities::Component {
       SHObject_Base(Position)
       public:
         float x = 0;

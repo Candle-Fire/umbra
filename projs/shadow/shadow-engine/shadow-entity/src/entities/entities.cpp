@@ -4,7 +4,7 @@
 #include "entities/MeshComponent.h"
 #include "entities/Light.h"
 
-namespace ShadowEngine::Entities::Builtin {
+namespace SH::Entities::Builtin {
 
     SHObject_Base_Impl(NullActor)
 

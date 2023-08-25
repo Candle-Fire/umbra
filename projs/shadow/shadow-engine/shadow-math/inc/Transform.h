@@ -8,7 +8,7 @@
 #pragma GCC diagnostic pop
 
 
-namespace ShadowEngine::ShadowEntity {
+namespace SH::ShadowEntity {
 
     class Transform
     {

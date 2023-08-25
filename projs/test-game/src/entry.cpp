@@ -2,7 +2,7 @@
 #include "exports.h"
 
 extern "C" {
-void API assembly_entry(ShadowEngine::ModuleManager &m) {
+void API assembly_entry(SH::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/game",
                          .name = "Test Game",

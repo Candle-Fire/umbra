@@ -2,7 +2,7 @@
 
 #include "SDL.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     class ShadowWindow {
     public:

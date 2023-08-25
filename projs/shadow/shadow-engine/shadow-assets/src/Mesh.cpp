@@ -1,6 +1,6 @@
 #include "../inc/Mesh.h"
 
-ShadowEngine::Assets::Mesh::Mesh() {
+SH::Assets::Mesh::Mesh() {
     //Create a cube
     //AI generated verts and indices LOL
     //Should be something

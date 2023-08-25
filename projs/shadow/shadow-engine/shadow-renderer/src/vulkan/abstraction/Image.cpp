@@ -7,7 +7,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "vlkx/vulkan/VulkanModule.h"
-#include "shadow/util/File.h"
+#include "util/File.h"
 
 namespace vlkx {
     struct ImageConfig {
@@ -495,8 +495,7 @@ namespace vlkx {
         switch (type) {
             case MultisampleBuffer::Type::Color: aspect = VK_IMAGE_ASPECT_COLOR_BIT;
                 break;
-            case MultisampleBuffer::Type::DepthStencil:
-                aspect = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            case MultisampleBuffer::Type::DepthStencil:aspect = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
                 break;
         }
         setView(VkTools::createImageView(buffer.getImage(),
@@ -532,8 +531,7 @@ namespace vlkx {
 
         VkImageUsageFlags usageFlags;
         switch (type) {
-            case Type::Color:
-                usageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+            case Type::Color:usageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
                 break;
             case Type::DepthStencil: usageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
                 break;

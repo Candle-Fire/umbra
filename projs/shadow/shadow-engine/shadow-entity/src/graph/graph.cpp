@@ -1,6 +1,6 @@
 #include "graph/graph.h"
 
-namespace ShadowEngine::Entities {
+namespace SH::Entities {
 
     SHObject_Base_Impl(NodeBase)
 

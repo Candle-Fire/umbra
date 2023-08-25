@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-namespace ShadowEngine::Assets {
+namespace SH::Assets {
     //Mesh with verts for a cube
     class Mesh {
       public:

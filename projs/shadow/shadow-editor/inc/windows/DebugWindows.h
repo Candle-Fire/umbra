@@ -4,12 +4,12 @@
 #include "../EditorWindow.h"
 #include "debug/DebugModule.h"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     class DebugWindows : public EditorWindow {
       SHObject_Base(DebugWindows)
 
-        std::weak_ptr<ShadowEngine::Debug::DebugModule> debugModule;
+        std::weak_ptr<SH::Debug::DebugModule> debugModule;
 
       public:
         DebugWindows();

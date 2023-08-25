@@ -5,7 +5,7 @@
 #include "event-bus/events.h"
 #include "imgui.h"
 
-namespace ShadowEngine::Debug {
+namespace SH::Debug {
 
     class DebugModule : public Module {
 

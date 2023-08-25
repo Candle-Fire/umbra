@@ -4,7 +4,7 @@
 
 #include "core/Module.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     SHObject_Base_Impl(Module)
 } // ShadowEngine

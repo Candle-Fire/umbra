@@ -4,7 +4,7 @@
 #include "vlkx/vulkan/VulkanModule.h"
 #include "glm/vec2.hpp"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     SHObject_Base_Impl(SceneView)
 
