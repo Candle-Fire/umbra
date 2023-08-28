@@ -4,3 +4,18 @@
 [submodule "extern/imgui"]
 	path = extern/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "extern/dxmath"]
+	path = extern/dxmath
+	url = https://github.com/microsoft/DirectXMath.git
+[submodule "extern/cathc2"]
+	path = extern/cathc2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "extern/glm"]
+	path = extern/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "extern/dylib"]
+	path = extern/dylib
+	url = https://github.com/martin-olivier/dylib
+[submodule "extern/vulkna_memory_allocator"]
+	path = extern/vulkna_memory_allocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git

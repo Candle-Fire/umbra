@@ -1,8 +1,9 @@
 #pragma execution_character_set("utf-8")
 
-#include "core/module-manager-v2.h"
 #include <ranges>
 #include <algorithm>
+
+#include "shadow/core/module-manager-v2.h"
 
 namespace SH {
 

@@ -1,6 +1,6 @@
 #include "../../inc/windows/DebugWindows.h"
 #include "imgui.h"
-#include "core/ShadowApplication.h"
+#include "shadow/core/ShadowApplication.h"
 #include "../../inc/EditorModule.h"
 
 namespace SH::Editor {

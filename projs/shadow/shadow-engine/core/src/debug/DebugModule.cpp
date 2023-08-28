@@ -1,8 +1,9 @@
-#include "debug/DebugModule.h"
-#include "imgui.h"
-#include "core/Time.h"
-#include "core/module-manager-v2.h"
-#include "core/ShadowApplication.h"
+#include <imgui.h>
+
+#include "shadow/debug/DebugModule.h"
+#include "shadow/core/Time.h"
+#include "shadow/core/module-manager-v2.h"
+#include "shadow/core/ShadowApplication.h"
 
 SHObject_Base_Impl(SH::Debug::DebugModule)
 

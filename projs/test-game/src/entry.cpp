@@ -1,5 +1,5 @@
-#include "core/ShadowApplication.h"
-#include "exports.h"
+#include "shadow/core/ShadowApplication.h"
+#include "shadow/exports.h"
 
 extern "C" {
 void API assembly_entry(SH::ModuleManager &m) {

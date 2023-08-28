@@ -1,4 +1,4 @@
-#include "core/ShadowApplication.h"
+#include "shadow/core/ShadowApplication.h"
 #include "../inc/EditorModule.h"
 
 #include <iostream>

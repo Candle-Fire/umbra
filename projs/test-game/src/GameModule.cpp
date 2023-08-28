@@ -3,15 +3,15 @@
 #include "spdlog/spdlog.h"
 #include "imgui_impl_vulkan.h"
 #include "imgui_impl_sdl2.h"
-#include "core/Time.h"
-#include "vlkx/render/Camera.h"
-#include "vlkx/vulkan/abstraction/Buffer.h"
-#include "vlkx/render/render_pass/ScreenRenderPass.h"
-#include "temp/model/Builder.h"
-#include "core/module-manager-v2.h"
-#include "core/ShadowApplication.h"
+#include "shadow/core/Time.h"
+#include "shadow/renderer/vulkan/vlkx/render/Camera.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Buffer.h"
+#include "shadow/renderer/vulkan/vlkx/render/render_pass/ScreenRenderPass.h"
+#include "shadow/renderer/vulkan/temp/model/Builder.h"
+#include "shadow/core/module-manager-v2.h"
+#include "shadow/core/ShadowApplication.h"
 #include "TestScene.h"
-#include "EntitySystem.h"
+#include "shadow/entitiy/EntitySystem.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }

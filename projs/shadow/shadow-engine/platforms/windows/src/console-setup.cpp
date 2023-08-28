@@ -1,4 +1,4 @@
-#include "console-setup.h"
+#include "shadow/platform/console-setup.h"
 
 #ifdef WIN32
 #include <Windows.h>

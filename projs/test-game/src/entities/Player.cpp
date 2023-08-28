@@ -1,7 +1,7 @@
 #include "entities/Player.h"
 #include "entities/TestCamera.h"
 
-#include "entities/Position.h"
+#include "shadow/entitiy/entities/Position.h"
 #include "entities/Health.h"
 
 SHObject_Base_Impl(Player)

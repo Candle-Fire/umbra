@@ -1,10 +1,6 @@
-//
-// Created by dpeter99 on 2023.08.21..
-//
-
-#include "log/LoggerModule.h"
-#include "core/module-manager-v2.h"
-#include "core/ShadowApplication.h"
+#include "shadow/log/LoggerModule.h"
+#include "shadow/core/module-manager-v2.h"
+#include "shadow/core/ShadowApplication.h"
 
 SHObject_Base_Impl(SH::LoggerModule)
 

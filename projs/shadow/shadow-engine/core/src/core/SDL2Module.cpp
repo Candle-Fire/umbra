@@ -1,10 +1,10 @@
-#include "core/SDL2Module.h"
-#include "core/ShadowWindow.h"
-#include "core/module-manager-v2.h"
+#include "shadow/core/SDL2Module.h"
+#include "shadow/core/ShadowWindow.h"
+#include "shadow/core/module-manager-v2.h"
 #include "spdlog/spdlog.h"
 #include "imgui_impl_sdl2.h"
 
-#include "core/ShadowApplication.h"
+#include "shadow/core/ShadowApplication.h"
 
 SHObject_Base_Impl(SH::SDL2Module)
 

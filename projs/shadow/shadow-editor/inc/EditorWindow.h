@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "SHObject.h"
+#include "shadow/SHObject.h"
 
 namespace SH::Editor {
 

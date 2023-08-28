@@ -1,5 +1,5 @@
-#include "core/ShadowWindow.h"
-#include "spdlog/spdlog.h"
+#include "shadow/core/ShadowWindow.h"
+#include <spdlog/spdlog.h>
 
 #include <string>
 

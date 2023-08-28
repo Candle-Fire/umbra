@@ -2,7 +2,7 @@
 // Created by dpeter99 on 23/08/2023.
 //
 
-#include "dxmath.h"
+#include "shadow/math/dxmath.h"
 
 #ifdef DX12
 #include <d3d12.h>

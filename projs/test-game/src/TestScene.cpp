@@ -1,9 +1,9 @@
 #include "../inc/TestScene.h"
 #include "entities/Player.h"
-#include "entities/NullActor.h"
-#include "entities/Position.h"
-#include "entities/MeshComponent.h"
-#include "entities/Light.h"
+#include "shadow/entitiy/entities/NullActor.h"
+#include "shadow/entitiy/entities/Position.h"
+#include "shadow/entitiy/entities/MeshComponent.h"
+#include "shadow/entitiy/entities/Light.h"
 
 SHObject_Base_Impl(TestScene)
 

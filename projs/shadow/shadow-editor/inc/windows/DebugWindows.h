@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../EditorWindow.h"
-#include "debug/DebugModule.h"
+#include "shadow/debug/DebugModule.h"
 
 namespace SH::Editor {
 

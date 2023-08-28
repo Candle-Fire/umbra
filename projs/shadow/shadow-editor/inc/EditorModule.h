@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Module.h"
+#include "shadow/core/Module.h"
 #include "EditorWindow.h"
-#include "core/ShadowApplication.h"
+#include "shadow/core/ShadowApplication.h"
 
 #include <map>
 

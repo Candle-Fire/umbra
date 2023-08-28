@@ -4,8 +4,8 @@
 
 #include "windows/SceneView.h"
 #include "windows/DebugWindows.h"
-#include "string-helpers.h"
-#include "core/module-manager-v2.h"
+#include "shadow/util/string-helpers.h"
+#include "shadow/core/module-manager-v2.h"
 
 namespace SH::Editor {
 

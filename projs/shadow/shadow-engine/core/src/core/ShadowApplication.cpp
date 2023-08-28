@@ -2,13 +2,13 @@
 
 #include <spdlog/spdlog.h>
 
-#include "core/ShadowApplication.h"
-#include "core/Time.h"
+#include "shadow/core/ShadowApplication.h"
+#include "shadow/core/Time.h"
 #include "dylib.hpp"
-#include "vlkx/vulkan/abstraction/Commands.h"
-#include "vlkx/vulkan/VulkanModule.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
-#include "console-setup.h"
+#include "shadow/platform/console-setup.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }

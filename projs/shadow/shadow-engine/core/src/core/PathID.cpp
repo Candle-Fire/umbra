@@ -1,4 +1,4 @@
-#include "core/PathID.h"
+#include "shadow/core/PathID.h"
 #include <string>
 
 #define __STDC_WANT_LIB_EXT1__ 1
@@ -8,7 +8,7 @@
 #define memcpy_s(dest, destsz, src, count) memcpy(dest, src, count)
 #endif
 
-#include "string-helpers.h"
+#include "shadow/util/string-helpers.h"
 
 namespace SH {
 

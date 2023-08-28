@@ -1,4 +1,4 @@
-#include "core/module-manager-v2.h"
+#include "shadow/core/module-manager-v2.h"
 
 extern "C" {
 void assembly_entry(SH::ModuleManager &m) {

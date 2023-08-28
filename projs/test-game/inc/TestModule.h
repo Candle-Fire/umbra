@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Module.h"
-#include "core/module-manager-v2.h"
-#include "core/ShadowApplication.h"
+#include "shadow/core/Module.h"
+#include "shadow/core/module-manager-v2.h"
+#include "shadow/core/ShadowApplication.h"
 #include "spdlog/spdlog.h"
 
 class TestModule : public SH::Module {

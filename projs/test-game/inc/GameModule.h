@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SDL_events.h>
-#include "core/Module.h"
+#include <SDL2/SDL_events.h>
+#include "shadow/core/Module.h"
 
 class GameModule : public SH::Module {
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../EditorWindow.h"
-#include "vlkx/vulkan/VulkanModule.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
 namespace SH::Editor {
 
