@@ -2,9 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include "runtime/runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
-#include "dylib.hpp"
 #include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
 #include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
@@ -15,88 +15,91 @@
 
 namespace SH {
 
-    dylib *gameLib;
+  dylib *gameLib;
 
-    SHObject_Base_Impl(ShadowApplication)
+  SHObject_Base_Impl(ShadowApplication)
 
-    ShadowApplication *ShadowApplication::instance = nullptr;
+  ShadowApplication *ShadowApplication::instance = nullptr;
 
-    std::unique_ptr<vlkx::RenderCommand> renderCommands;
+  std::unique_ptr<vlkx::RenderCommand> renderCommands;
 
-    std::weak_ptr<VulkanModule> renderer;
+  std::weak_ptr<VulkanModule> renderer;
 
-    ShadowApplication::ShadowApplication(int argc, char *argv[]) {
-        instance = this;
+  ShadowApplication::ShadowApplication(int argc, char *argv[]) {
+      instance = this;
 
-        if (argc > 1) {
-            for (size_t i = 0; i < argc; i++) {
-                std::string param(argv[i]);
-                if (param == "-debug") {
-                    this->debug = true;
-                }
-                if (param == "-game") {
-                    this->game = argv[i + 1];
-                }
-            }
-        }
+      if (argc > 1) {
+          for (size_t i = 0; i < argc; i++) {
+              std::string param(argv[i]);
+              if (param == "-debug") {
+                  this->debug = true;
+              }
+              if (param == "-game") {
+                  this->game = argv[i + 1];
+              }
+          }
+      }
 
-        auto self = dlopen(NULL, RTLD_LAZY);
-        if (self != nullptr) {
-            std::cout << "Self: " << self << std::endl;
-        }
+      auto self = dlopen(NULL, RTLD_LAZY);
+      if (self != nullptr) {
+          std::cout << "Self: " << self << std::endl;
+      }
 
-        if (this->debug)
-            spdlog::set_level(spdlog::level::debug);
+      if (this->debug)
+          spdlog::set_level(spdlog::level::debug);
 
-        InitConsole();
-    }
+      spdlog::set_level(spdlog::level::trace);
 
-    ShadowApplication::~ShadowApplication() {
-    }
+      InitConsole();
+  }
 
-    void ShadowApplication::Init() {
-        moduleManager.AddAssembly({.id="assembly:/core", .path="shadow-engine"});
-        moduleManager.LoadModulesFromAssembly("assembly:/core");
+  ShadowApplication::~ShadowApplication() {
+  }
 
-        if (!game.empty()) {
-            spdlog::info("Loading Game: {0}", game);
-            moduleManager.AddAssembly({.id="assembly:/" + game, .path=game});
-            moduleManager.LoadModulesFromAssembly("assembly:/" + game);
-        }
+  void ShadowApplication::Init() {
+      Runtime::Runtime::Get().AddAssembly({"assembly:/core"_id, "shadow-engine.so"});
+      moduleManager.LoadModulesFromAssembly("assembly:/core"_id);
 
-        moduleManager.Init();
+      if (!game.empty()) {
+          spdlog::info("Loading Game: {0}", game);
+          const auto &id = SH::Path("assembly:/" + game);
+          Runtime::Runtime::Get().AddAssembly({id, "./" + game + ".so"});
+          moduleManager.LoadModulesFromAssembly(id);
+      }
 
-        renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
+      moduleManager.Init();
 
-        renderCommands = std::make_unique<vlkx::RenderCommand>(2);
-    }
+      renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
 
-    void ShadowApplication::Start() {
-        SDL_Event event;
-        while (running) {
-            while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                SH::Events::SDLEvent e(event);
-                SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
-                //eventBus.fire(e);
-                if (event.type == SDL_QUIT)
-                    running = false;
-            }
+      renderCommands = std::make_unique<vlkx::RenderCommand>(2);
+  }
 
-            eventBus.fire(SH::Events::PreRender());
+  void ShadowApplication::Start() {
+      SDL_Event event;
+      while (running) {
+          while (SDL_PollEvent(&event)) {  // poll until all events are handled!
+              SH::Events::SDLEvent e(event);
+              SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
+              //eventBus.fire(e);
+              if (event.type == SDL_QUIT)
+                  running = false;
+          }
 
-            if (!renderer.expired()) {
-                auto r = renderer.lock();
-                r->BeginRenderPass(renderCommands);
-            }
+          eventBus.fire(SH::Events::PreRender());
 
-            renderCommands->nextFrame();
-            Time::UpdateTime();
-        }
+          if (!renderer.expired()) {
+              auto r = renderer.lock();
+              r->BeginRenderPass(renderCommands);
+          }
 
-        //moduleManager.Destroy();
+          renderCommands->nextFrame();
+          Time::UpdateTime();
+      }
 
-        delete gameLib;
-    }
+      //moduleManager.Destroy();
 
-    ShadowApplication &ShadowApplication::Get() { return *instance; };
+      delete gameLib;
+  }
+
+  ShadowApplication &ShadowApplication::Get() { return *instance; };
 }

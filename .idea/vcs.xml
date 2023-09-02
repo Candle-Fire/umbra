@@ -2,12 +2,12 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/cathc2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/dxmath" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/dylib" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/glm" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/imgui" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/spdlog" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/extern/vulkna_memory_allocator" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/cathc2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/dxmath" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/dylib" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/spdlog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/vulkan_memory_allocator" vcs="Git" />
   </component>
 </project>

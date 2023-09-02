@@ -12,5 +12,7 @@ namespace SH {
         std::string toLower(const std::string &str);
 
         std::vector<std::string> explode(const std::string &s, const char &c);
+
+        std::string substr_range(std::string const &str, size_t start, size_t end);
     }
 }

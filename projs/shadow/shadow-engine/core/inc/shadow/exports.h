@@ -13,5 +13,5 @@
 #if defined(_WIN32)
 #    define EXPORT __declspec(dllexport)
 #else // non windows
-#  define EXPORT
+#  define EXPORT __attribute ((visibility ("default")))
 #endif

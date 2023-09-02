@@ -26,4 +26,8 @@ namespace SH::Util::Str {
         }
         return temp;
     }
+
+    std::string substr_range(std::string const &str, size_t start, size_t end) {
+        return str.substr(start, end - start);
+    }
 }

@@ -9,7 +9,7 @@ FILE(GLOB_RECURSE SOURCES
         src/*.cpp
 )
 
-target_sources(shadow-editor PRIVATE ${SOURCES})
+target_sources(shadow-editor PUBLIC ${SOURCES})
 
 target_include_directories(shadow-editor
         PUBLIC inc/
@@ -18,6 +18,10 @@ target_include_directories(shadow-editor
 target_link_libraries(shadow-editor
         PRIVATE SDL2::SDL2main
         PUBLIC shadow-engine
+)
+
+target_link_options(shadow-editor
+        PRIVATE -Wl,--export-dynamic
 )
 
 add_custom_command(TARGET shadow-editor
