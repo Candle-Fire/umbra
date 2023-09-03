@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "shadow/core/module-manager-v2.h"
-#include "runtime/runtime.h"
+#include "runtime/Runtime.h"
 
 namespace SH {
 

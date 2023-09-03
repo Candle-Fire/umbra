@@ -1,5 +1,5 @@
 #include "shadow/core/ShadowApplication.h"
-#include "runtime/runtime.h"
+#include "runtime/Runtime.h"
 
 #include "EditorModule.h"
 

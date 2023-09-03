@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "runtime/runtime.h"
+#include "runtime/Runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
 #include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
@@ -57,13 +57,13 @@ namespace SH {
   }
 
   void ShadowApplication::Init() {
-      Runtime::Runtime::Get().AddAssembly({"assembly:/core"_id, "shadow-engine.so"});
+      Runtime::Runtime::Get().AddAssembly({"assembly:/core"_id, "shadow-engine"});
       moduleManager.LoadModulesFromAssembly("assembly:/core"_id);
 
       if (!game.empty()) {
           spdlog::info("Loading Game: {0}", game);
           const auto &id = SH::Path("assembly:/" + game);
-          Runtime::Runtime::Get().AddAssembly({id, "./" + game + ".so"});
+          Runtime::Runtime::Get().AddAssembly({id, "./" + game});
           moduleManager.LoadModulesFromAssembly(id);
       }
 

@@ -58,7 +58,7 @@ namespace Native {
       return symbol;
   }
 
-  [[maybe_unused]] native_symbol_type get_symbol(native_handle_type handle, const std::string &symbol_name) {
+  native_symbol_type get_symbol(native_handle_type handle, const std::string &symbol_name) {
       return get_symbol(handle, symbol_name.c_str());
   }
 

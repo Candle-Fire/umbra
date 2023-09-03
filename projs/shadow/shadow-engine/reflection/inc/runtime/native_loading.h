@@ -16,6 +16,11 @@
 
 namespace Native {
 
+  struct filename_components {
+    static constexpr const char *prefix = DYLIB_WIN_OTHER("", "lib");
+    static constexpr const char *suffix = DYLIB_WIN_MAC_OTHER(".dll", ".dylib", ".so");
+  };
+
   /**
   *  This exception is raised when the library failed to load a dynamic library or a symbol
   *
