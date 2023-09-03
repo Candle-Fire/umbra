@@ -7,7 +7,8 @@
 
 namespace SH {
 
-    typedef uint64_t TypeID;
+    //typedef uint64_t TypeId;
+    using TypeId = uint64_t;
 
     /**
      * \brief This is the base class for every class in the Engine that uses runtime reflection.
@@ -27,7 +28,7 @@ namespace SH {
          * \brief Generates a new UID for each call
          * \return the next Unique ID that was just generated
          */
-        API static TypeID GenerateId() noexcept;
+        API static TypeId GenerateId() noexcept;
 
       public:
         /**
@@ -40,7 +41,7 @@ namespace SH {
          * \brief Gets the top level type ID
          * \return UID of the class
          */
-        virtual TypeID GetTypeId() const = 0;
+        virtual TypeId GetTypeId() const = 0;
 
         virtual ~SHObject() = default;
     };
@@ -55,13 +56,13 @@ namespace SH {
 #define SHObject_Base(type)    \
 public: \
     static const std::string& Type();                 \
-    static SH::TypeID TypeId();                         \
+    static SH::TypeId TypeId();                         \
     const std::string& GetType() const override        { return Type();  } \
-    SH::TypeID GetTypeId() const override        { return  type::TypeId(); } \
+    SH::TypeId GetTypeId() const override        { return  type::TypeId(); } \
 private:
 
 #define SHObject_Base_Impl(type)    \
     const std::string& type::Type()                { static const std::string t = typeid(type).name(); return t; } \
-    SH::TypeID type::TypeId()                        { static const SH::TypeID id = GenerateId(); return id; }
+    SH::TypeId type::TypeId()                        { static const SH::TypeId id = GenerateId(); return id; }
 
 }

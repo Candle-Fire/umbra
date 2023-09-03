@@ -17,3 +17,5 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 add_subdirectory(projs/shadow)
 
 add_subdirectory(projs/test-game)
+
+add_subdirectory(projs/experiments/ecs)
