@@ -11,9 +11,9 @@ namespace SH::Entities::Debugger {
 
                 auto &mgr = a->GetWorld().GetManager();
 
-                for (auto allocator : mgr.m_NodeContainerRegistry) {
-                    ImGui::Text("%s : %i", allocator.second->getTypeName().c_str(), allocator.second->getCount());
-                }
+                //for (auto allocator : mgr.m_NodeContainerRegistry) {
+                //   ImGui::Text("%s : %i", allocator.second->getTypeName().c_str(), allocator.second->getCount());
+                //}
 
             }
         }

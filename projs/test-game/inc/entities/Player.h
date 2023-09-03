@@ -1,14 +1,14 @@
 #pragma once
 
-#include "shadow/entitiy/graph/graph.h"
+#include "shadow/entitiy/graph/nodes.h"
 
 class Player : public SH::Entities::Actor {
-  SHObject_Base(Player);
+SHObject_Base(Player);
 
-  public:
-    Player(std::string name) : Actor() {
-        this->name = name;
-    }
+public:
+  Player(std::string name) : Actor() {
+      this->name = name;
+  }
 
-    void Build() override;
+  void Build() override;
 };
