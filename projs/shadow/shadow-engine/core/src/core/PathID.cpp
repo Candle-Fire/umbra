@@ -22,7 +22,7 @@ namespace SH {
 
   void Path::set(const std::string &str) {
 #ifdef _WIN32
-      std::string temp = Str::toLower((std::string&) str);
+      std::string temp = Util::Str::toLower((std::string &) str);
       hash = PathHash(temp);
 #else
       hash = PathHash(str);
@@ -141,7 +141,7 @@ namespace SH {
       memcpy_s(extension, 10, extensionS.c_str(), extensionS.length());
   }
 
-  Path operator ""_id(const char *path, unsigned long length) {
+  Path operator ""_id(const char *path, unsigned long long length) {
       return Path(path);
   }
 }

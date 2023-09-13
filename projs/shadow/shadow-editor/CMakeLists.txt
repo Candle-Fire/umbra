@@ -28,3 +28,9 @@ add_custom_command(TARGET shadow-editor
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/vlkx-resources ${CMAKE_CURRENT_BINARY_DIR}/vlkx-resources
 )
+
+add_custom_command(TARGET shadow-editor
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:shadow-runtime> $<TARGET_FILE_DIR:shadow-editor>
+        COMMAND_EXPAND_LISTS
+)

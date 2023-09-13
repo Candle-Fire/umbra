@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]) {
     RUNTIME_BOOT();
 
-    std::cout << "CWD: " << std::filesystem::current_path().c_str() << '\n';
+    std::cout << "CWD: " << (char *) std::filesystem::current_path().c_str() << '\n';
 
     std::cout << "argc == " << argc << '\n';
 

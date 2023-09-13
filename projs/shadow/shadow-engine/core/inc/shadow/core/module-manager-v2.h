@@ -56,7 +56,7 @@ namespace SH {
   };
 
   /// @brief Central manager for runtime loaded engine modules
-  class ModuleManager {
+  class API ModuleManager {
 
     /// @brief List of all of the known modules
     /// These modules can be active, inactive or not even loaded

@@ -41,7 +41,7 @@ namespace Runtime {
    * handles loading, unloading, and accessing assemblies during the
    * application's lifetime.
    */
-  class Runtime {
+  class API Runtime {
 
     static Runtime *instance; ///< Singleton instance of Runtime.
 

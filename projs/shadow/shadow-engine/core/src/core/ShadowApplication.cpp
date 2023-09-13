@@ -40,11 +40,6 @@ namespace SH {
           }
       }
 
-      auto self = dlopen(NULL, RTLD_LAZY);
-      if (self != nullptr) {
-          std::cout << "Self: " << self << std::endl;
-      }
-
       if (this->debug)
           spdlog::set_level(spdlog::level::debug);
 

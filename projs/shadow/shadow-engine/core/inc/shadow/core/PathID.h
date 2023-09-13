@@ -93,7 +93,7 @@ namespace SH {
     PathHash hash;
   };
 
-  Path API operator ""_id(const char *path, unsigned long length);
+  Path API operator ""_id(const char *path, unsigned long long length);
 }
 
 using SH::operator ""_id;

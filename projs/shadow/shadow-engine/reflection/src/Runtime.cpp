@@ -11,7 +11,8 @@ namespace Runtime {
       new Runtime();
 
       //Create an assembly from the given path
-      SH::Path const id = SH::Path("assembly:/" + SH::Path::getFilename(path));
+      SH::Path const
+          id = SH::Path("assembly:/" + std::filesystem::path(path).filename().replace_extension("").string());
 
       Assembly assembly(id, path, AssemblyType::EXE);
 

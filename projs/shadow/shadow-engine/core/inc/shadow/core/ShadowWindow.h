@@ -1,25 +1,25 @@
 #pragma once
 
-#include "SDL2/SDL.h"
+#include "SDL.h"
 
 namespace SH {
 
-    class ShadowWindow {
-    public:
+  class ShadowWindow {
+  public:
 
-        int Height;
-        int Width;
+    int Height;
+    int Width;
 
-        SDL_Window *sdlWindowPtr;
+    SDL_Window *sdlWindowPtr;
 
-        SDL_Surface *sdlSurface = NULL;
+    SDL_Surface *sdlSurface = NULL;
 
 
-        //ShadowEngine::Ref<ShadowEngine::Rendering::GraphicsContext> context;
+    //ShadowEngine::Ref<ShadowEngine::Rendering::GraphicsContext> context;
 
-        ShadowWindow(int W, int H);
+    ShadowWindow(int W, int H);
 
-        ~ShadowWindow();
-    };
+    ~ShadowWindow();
+  };
 
 }

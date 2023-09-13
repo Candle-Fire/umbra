@@ -14,7 +14,12 @@ namespace Native {
 
   native_handle_type open(const char *path) noexcept {
 #if (defined(_WIN32) || defined(_WIN64))
-      return LoadLibraryA(path);
+      if (path == nullptr) {
+          return GetModuleHandle(0);
+      } else {
+          return LoadLibraryA(path);
+      }
+
 #else
       return dlopen(path, RTLD_NOW | RTLD_LOCAL);
 #endif
@@ -31,14 +36,14 @@ namespace Native {
   std::string get_error_description() noexcept {
 #if (defined(_WIN32) || defined(_WIN64))
       constexpr const size_t buf_size = 512;
-          auto error_code = GetLastError();
-          if (!error_code)
-              return "Unknown error (GetLastError failed)";
-          char description[512];
-          auto lang = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
-          const DWORD length =
-              FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error_code, lang, description, buf_size, nullptr);
-          return (length == 0) ? "Unknown error (FormatMessage failed)" : description;
+      auto error_code = GetLastError();
+      if (!error_code)
+          return "Unknown error (GetLastError failed)";
+      char description[512];
+      auto lang = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
+      const DWORD length =
+          FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error_code, lang, description, buf_size, nullptr);
+      return (length == 0) ? "Unknown error (FormatMessage failed)" : description;
 #else
       auto description = dlerror();
       return (description == nullptr) ? "Unknown error (dlerror failed)" : description;

@@ -1,7 +1,7 @@
 #include "shadow/core/module-manager-v2.h"
 
 extern "C" {
-[[maybe_unused]] void assembly_entry(SH::ModuleManager &m) {
+[[maybe_unused]] void EXPORT assembly_entry(SH::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/renderer/vulkan",
                          .name = "Vulkan",

@@ -1,33 +1,32 @@
 #pragma once
 
-#include <SDL2/SDL_events.h>
+#include <SDL_events.h>
 #include <imgui.h>
 #include "shadow/core/Module.h"
 #include "shadow/event-bus/events.h"
 
-
 namespace SH::Debug {
 
-    class DebugModule : public Module {
+  class API DebugModule : public Module {
 
-      SHObject_Base(DebugModule)
+  SHObject_Base(DebugModule)
 
-        bool active;
+    bool active;
 
-      public:
-        bool w_time = true;
-        bool w_modules = true;
-        bool w_imguiDemo = true;
+  public:
+    bool w_time = true;
+    bool w_modules = true;
+    bool w_imguiDemo = true;
 
-        void DrawDirect(SH::Events::OverlayRender &);
+    void DrawDirect(SH::Events::OverlayRender &);
 
-        void DrawModuleWindow();
+    void DrawModuleWindow();
 
-        void DrawTimeWindow();
+    void DrawTimeWindow();
 
-        void DrawImguiDemo();
+    void DrawImguiDemo();
 
-        void Init() override;
-    };
+    void Init() override;
+  };
 
 }

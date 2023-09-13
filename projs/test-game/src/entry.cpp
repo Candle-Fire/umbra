@@ -2,7 +2,7 @@
 #include "shadow/exports.h"
 
 extern "C" {
-[[maybe_unused]] void API assembly_entry(SH::ModuleManager &m) {
+[[maybe_unused]] void EXPORT assembly_entry(SH::ModuleManager &m) {
     m.AddDescriptors({
                          .id="module:/game",
                          .name = "Test Game",

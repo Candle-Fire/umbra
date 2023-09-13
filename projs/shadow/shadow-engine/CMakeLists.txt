@@ -33,16 +33,37 @@ target_link_libraries(shadow-engine
         glm::glm
         spdlog::spdlog
         dylib
-        ImGui
+        #        ImGui
         GPUOpen::VulkanMemoryAllocator
         Vulkan::Vulkan
+)
+
+target_compile_definitions(shadow-engine
+        PRIVATE
+        EXPORTING_SH_ENGINE
 )
 
 if (TRUE)
 
     target_sources(shadow-engine PRIVATE
+            ${imgui_SOURCE_DIR}/imgui.cpp
+            ${imgui_SOURCE_DIR}/imgui_demo.cpp
+            ${imgui_SOURCE_DIR}/imgui_draw.cpp
+            ${imgui_SOURCE_DIR}/imgui_tables.cpp
+            ${imgui_SOURCE_DIR}/imgui_widgets.cpp
             ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
             ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp
+    )
+
+    target_include_directories(shadow-engine
+            PUBLIC
+            ${imgui_SOURCE_DIR}
+            ${imgui_SOURCE_DIR}/backends
+    )
+
+    target_compile_definitions(shadow-engine
+            PRIVATE
+            IMGUI_USER_CONFIG="shadow/imguiConf.h"
     )
 
 endif ()
