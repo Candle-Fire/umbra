@@ -141,7 +141,7 @@ namespace SH {
       memcpy_s(extension, 10, extensionS.c_str(), extensionS.length());
   }
 
-  Path operator ""_id(const char *path, unsigned long long length) {
+  Path operator ""_id(const char *path, size_t length) {
       return Path(path);
   }
 }
