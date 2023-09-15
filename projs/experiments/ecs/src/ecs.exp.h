@@ -243,11 +243,33 @@ class Object {
 
 };
 
-class Entity {
+class Component : public Object{
+
+};
+
+class Entity : public Component {
 
 };
 template<class T>
 concept entity = std::is_base_of_v<Entity, T>;
+
+
+
+
+
+
+
+class Scene : public Entity{
+    std::string name = "Test";
+};
+
+
+
+
+//####################################################
+//################## ID system #######################
+//####################################################
+#pragma region ID
 
 union Id {
   std::byte bytes[sizeof(uint64_t)];
@@ -263,6 +285,9 @@ struct std::hash<TypeId> {
   };
 };
 
+bool operator==(const Id &lhs, const Id &rhs) { return lhs.id == rhs.id; }
+
+
 TypeId next_id;
 
 template<class T>
@@ -272,7 +297,11 @@ TypeId getTypeId() {
     return id;
 }
 
+#pragma endregion ID
+
+
 class Archetype {
+public:
   using Id = uint32_t;
   static Id next_id;
 
@@ -287,7 +316,7 @@ public:
 
 class EntityManager {
 
-  std::unordered_map<TypeId, SH::PoolAllocator> pools = {};
+  std::unordered_map<TypeId, SH::PoolAllocator> pools;
 
   template<entity Ent>
   SH::PoolAllocator &GetPool(TypeId type) {
@@ -297,6 +326,14 @@ class EntityManager {
       return pools.at(type);
   }
 
+
+  std::unordered_map<Archetype::Id, Archetype> archetypes;
+
+  Archetype& GetArchetype(Archetype arc){
+
+  }
+
+public:
   template<entity Ent>
   Ent *AddChild(Entity &parent) {
       // Allocate the space for the entity
@@ -307,6 +344,23 @@ class EntityManager {
       Ent *entity = new(pos)Ent();
 
       // Add it to the parent
+      return entity;
+  }
+
+  template<entity Ent>
+  Ent *Add() {
+      // Allocate the space for the entity
+      SH::PoolAllocator &pool = GetPool<Ent>(getTypeId<Ent>());
+      void *pos = pool.allocate();
+
+      // Create it
+      Ent *entity = new(pos)Ent();
+
+      //Find or make archetype
+      Archetype &a = GetArchetype(Archetype({getTypeId<Ent>()}));
+
+
+
       return entity;
   }
 

@@ -15,5 +15,7 @@ class Position {
 int main() {
     EntityManager em;
 
-    em.AddChild<>()
+    Scene *scene = em.Add<Scene>();
+
+    return 0;
 }
