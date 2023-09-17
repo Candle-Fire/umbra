@@ -10,6 +10,11 @@ FILE(GLOB_RECURSE SOURCES
 
 target_sources(experiment-ecs PUBLIC ${SOURCES})
 
+target_link_libraries(experiment-ecs
+        PRIVATE fmt::fmt-header-only
+)
+
+
 FILE(GLOB_RECURSE SOURCES_TESTS
         tests/*.cpp
 )

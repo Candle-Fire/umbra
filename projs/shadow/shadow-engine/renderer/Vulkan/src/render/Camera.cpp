@@ -2,7 +2,7 @@
 
 using namespace vlkx;
 
-Camera& Camera::move(const glm::vec3 &delta) {
+Camera &Camera::move(const glm::vec3 &delta) {
     position += delta;
     return *this;
 }
@@ -35,7 +35,7 @@ PerspectiveCamera &PerspectiveCamera::fieldOfView(float newFov) {
 PerspectiveCamera::RT PerspectiveCamera::getRT() const {
     const glm::vec3 upVec = glm::normalize(glm::cross(getRight(), getForward()));
     const float fovTan = glm::tan(glm::radians(fov));
-    return { upVec * fovTan, getForward(), getRight() * fovTan * aspectRatio };
+    return {upVec * fovTan, getForward(), getRight() * fovTan * aspectRatio};
 }
 
 glm::mat4 PerspectiveCamera::getProjMatrix() const {
@@ -51,17 +51,17 @@ OrthographicCamera &OrthographicCamera::setWidth(float vWidth) {
 
 glm::mat4 OrthographicCamera::getProjMatrix() const {
     const float height = width / aspectRatio;
-    const auto halfSize = glm::vec2 { width, height } / 2.0f;
+    const auto halfSize = glm::vec2{width, height} / 2.0f;
     return glm::ortho(-halfSize.x, halfSize.x, -halfSize.y, halfSize.y, nearPlane, farPlane);
 }
 
-template <typename Type>
+template<typename Type>
 void UserCamera<Type>::setInternal(std::function<void(Type *)> op) {
     op(camera.get());
     reset();
 }
 
-template <typename Type>
+template<typename Type>
 void UserCamera<Type>::move(double x, double y) {
     if (!isActive) return;
 
@@ -70,10 +70,10 @@ void UserCamera<Type>::move(double x, double y) {
 
     pitch = glm::clamp(pitch - offsetY, glm::radians(-89.9f), glm::radians(89.9f));
     yaw = glm::mod(yaw - offsetX, glm::radians(360.0f));
-    camera->forward( { glm::cos(pitch) * glm::cos(yaw), glm::sin(pitch), glm::cos(pitch) * glm::sin(yaw) });
+    camera->forward({glm::cos(pitch) * glm::cos(yaw), glm::sin(pitch), glm::cos(pitch) * glm::sin(yaw)});
 }
 
-template <typename Type>
+template<typename Type>
 bool UserCamera<Type>::scroll(double delta, double min, double max) {
     if (!isActive) return false;
 
@@ -96,7 +96,7 @@ bool UserCamera<Type>::scroll(double delta, double min, double max) {
     return false;
 }
 
-template <typename Type>
+template<typename Type>
 void UserCamera<Type>::press(Camera::Input key, float time) {
     using Key = Camera::Input;
     if (!isActive) return;
@@ -104,26 +104,28 @@ void UserCamera<Type>::press(Camera::Input key, float time) {
     if (!config.center.has_value()) {
         const float distance = time * config.moveSpeed;
         switch (key) {
-            case Key::Up:
-                camera->move(+camera->getForward() * distance); break;
-            case Key::Down:
-                camera->move(-camera->getForward() * distance); break;
-            case Key::Left:
-                camera->move(-camera->getRight() * distance); break;
-            case Key::Right:
-                camera->move(+camera->getRight() * distance); break;
+            case Key::Up:camera->Move(+camera->getForward() * distance);
+                break;
+            case Key::Down:camera->Move(-camera->getForward() * distance);
+                break;
+            case Key::Left:camera->Move(-camera->getRight() * distance);
+                break;
+            case Key::Right:camera->Move(+camera->getRight() * distance);
+                break;
         }
     } else {
         reset();
     }
 }
 
-template <typename Type>
+template<typename Type>
 void UserCamera<Type>::reset() {
     refForward = camera->getForward();
     refLeft = -camera->getRight();
     pitch = yaw = 0;
 }
 
-template class vlkx::UserCamera<PerspectiveCamera>;
-template class vlkx::UserCamera<OrthographicCamera>;
+template
+class vlkx::UserCamera<PerspectiveCamera>;
+template
+class vlkx::UserCamera<OrthographicCamera>;
