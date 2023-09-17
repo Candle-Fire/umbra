@@ -7,22 +7,26 @@
 #include <ranges>
 #include <algorithm>
 #include <functional>
+#include <numeric>
+
+#include <fmt/format.h>
 
 //#include "../../shadow/shadow-engine/reflection/inc/shadow/SHObject.h"
 //#include "../../shadow/shadow-engine/core/inc/shadow/exports.h"
+
 
 namespace SH {
 
   class span_dynamic {
     std::byte *p_start;
     std::byte *p_end;
-    size_t itemSize;
+    size_t item_size;
   public:
     span_dynamic() = default;
     span_dynamic(void *mem, size_t item_size, size_t count) :
         p_start(static_cast<std::byte *>(mem)),
         p_end(p_start + (item_size * count)),
-        itemSize(item_size) {
+        item_size(item_size) {
         assert((p_end - p_start) / item_size == count);
     }
 
@@ -39,12 +43,12 @@ namespace SH {
       iterator() : pos(nullptr), size(0) {};
       iterator(std::byte *p, size_t item_size) : pos(p), size(item_size) {};
 
-      void move(size_t n) {
+      void Move(size_t n) {
           pos += (n * size);
       }
 
       iterator &operator++() {
-          move(1);
+          Move(1);
           return *this;
       }
       iterator operator++(int) {
@@ -54,7 +58,7 @@ namespace SH {
       }
 
       iterator &operator--() {
-          move(-1);
+          Move(-1);
           return *this;
       }
       iterator operator--(int) {
@@ -64,28 +68,28 @@ namespace SH {
       }
 
       iterator &operator+=(difference_type n) {
-          move(n);
+          Move(n);
           return *this;
       }
       iterator &operator-=(difference_type n) {
-          move(-n);
+          Move(-n);
           return *this;
       }
 
       iterator operator+(const difference_type &n) const {
           iterator tmp(*this);
-          tmp.move(n);
+          tmp.Move(n);
           return tmp;
       }
       iterator operator-(const difference_type &n) const {
           iterator tmp(*this);
-          tmp.move(-n);
+          tmp.Move(-n);
           return tmp;
       }
 
       std::byte &operator[](const difference_type &n) const {
           iterator tmp(*this);
-          tmp.move(n);
+          tmp.Move(n);
           return *tmp;
       }
 
@@ -106,15 +110,15 @@ namespace SH {
       template<class T>
       T *as_ptr() { return (T *) pos; }
 
-      void *ptr() const { return pos; }
+      [[nodiscard]] void *ptr() const { return pos; }
     };
 
-    iterator begin() const {
-        return {p_start, itemSize};
+    [[nodiscard]] iterator begin() const {
+        return {p_start, item_size};
     }
 
     iterator end() const {
-        return {p_end, itemSize};
+        return {p_end, item_size};
     }
 
     iterator last() const {
@@ -124,12 +128,12 @@ namespace SH {
 
   span_dynamic::iterator operator+(span_dynamic::iterator::difference_type n, span_dynamic::iterator i) {
       span_dynamic::iterator tmp(i);
-      tmp.move(n);
+      tmp.Move(n);
       return tmp;
   }
   span_dynamic::iterator operator-(span_dynamic::iterator::difference_type n, span_dynamic::iterator i) {
       span_dynamic::iterator tmp(i);
-      tmp.move(-n);
+      tmp.Move(-n);
       return tmp;
   }
 
@@ -239,41 +243,23 @@ namespace SH {
  *
  *
  */
-class Object {
-
-};
-
-class Component : public Object{
-
-};
-
-class Entity : public Component {
-
-};
-template<class T>
-concept entity = std::is_base_of_v<Entity, T>;
-
-
-
-
-
-
-
-class Scene : public Entity{
-    std::string name = "Test";
-};
-
-
-
 
 //####################################################
 //################## ID system #######################
 //####################################################
-#pragma region ID
+#pragma region ID-System
 
 union Id {
   std::byte bytes[sizeof(uint64_t)];
+  uint32_t half[2];
   uint64_t id;
+
+  Id(uint64_t id) : id(id) {};
+  Id(uint32_t high, uint32_t low) : half{high, low} {};
+
+  Id Next() {
+      return Id(this->id++);
+  }
 };
 
 using TypeId = Id;
@@ -287,30 +273,136 @@ struct std::hash<TypeId> {
 
 bool operator==(const Id &lhs, const Id &rhs) { return lhs.id == rhs.id; }
 
+std::unordered_map<TypeId, std::string> typeMap;
 
-TypeId next_id;
+TypeId next_id(0);
 
 template<class T>
-TypeId getTypeId() {
-    static TypeId id = next_id;
-    id.id++;
+TypeId GetTypeId() {
+    static TypeId id = next_id.id++;
+    static auto a = typeMap.insert({id, typeid(T).name()});
     return id;
 }
 
-#pragma endregion ID
+#pragma endregion ID-System
 
+//####################################################
+//################## Entity base classes #############
+//####################################################
+
+class Object {
+
+};
+
+class Component : public Object {
+public:
+  static constexpr bool isEntity = false;
+  Id UUID;
+
+  Component(Id UUID) : UUID(UUID) {};
+};
+template<class T>
+concept component = std::is_base_of_v<Component, T>;
+
+template<class T>
+concept component_only = component<T> && T::isEntity == false;
+
+class Entity : public Component {
+public:
+  static constexpr bool isEntity = true;
+  Entity(Id UUID) : Component(UUID) {
+
+  }
+
+  template<component T>
+  T *AddInternalChild();
+
+};
+template<class T>
+concept entity = std::is_base_of_v<Entity, T> && T::isEntity == true;
+
+//####################################################
+//############### Prefab stuff #######################
+//####################################################
+
+class Asset {
+
+};
+
+class Prefab : public Asset {
+
+};
+
+class PrefabEntity : public Entity {
+  Prefab p;
+public:
+  PrefabEntity(Id UUID, Prefab asset) : Entity(UUID), p(asset) {
+
+  }
+
+};
+
+//####################################################
+//################Built in entities ##################
+//####################################################
+
+class Scene : public Entity {
+  std::string name = "Test";
+public:
+  Scene(Id UUID) : Entity(UUID) {};
+};
+
+enum Relation {
+  PARENT = 1,
+};
 
 class Archetype {
 public:
   using Id = uint32_t;
   static Id next_id;
 
-  std::vector<TypeId> types;
+  using Types = std::vector<TypeId>;
+
+  Types types;
   Id id;
+
+  using Column = std::vector<Object *>;
+
+  std::vector<Column> data = std::vector<Column>(0);
+
+  static Types sortTypes(Types t) {
+      std::ranges::sort(t, [](auto a, auto b) { return a.id < b.id; });
+      return t;
+  }
 public:
   Archetype() = default;
-  Archetype(std::initializer_list<TypeId> types) : types(types), id(next_id++) {
+  Archetype(std::initializer_list<TypeId> types) : types(sortTypes(types)), id(next_id++) {}
+  Archetype(Types types) : types(sortTypes(types)), id(next_id++) {}
 
+  std::pair<size_t, Column &> AddRow() {
+      auto &row = data.emplace_back(Column(types.size()));
+      return {data.size() - 1, row};
+  }
+
+  size_t getColumn(TypeId column_type) {
+      auto a = std::ranges::find(types, column_type);
+      size_t pos = std::distance(types.begin(), a);
+      return pos;
+  }
+
+  void RemoveRow(size_t i) {
+      data.erase(data.begin() + i);
+  };
+};
+
+template<>
+struct std::hash<Archetype::Types> {
+  std::size_t operator()(const Archetype::Types &vec) const noexcept {
+      std::size_t seed = vec.size();
+      for (auto &i : vec) {
+          seed ^= i.id + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      }
+      return seed;
   }
 };
 
@@ -318,52 +410,214 @@ class EntityManager {
 
   std::unordered_map<TypeId, SH::PoolAllocator> pools;
 
-  template<entity Ent>
+  template<component Ent>
   SH::PoolAllocator &GetPool(TypeId type) {
       if (!pools.contains(type)) {
-          pools.insert({type, SH::PoolAllocator(sizeof(Ent))});
+          pools.emplace(type, SH::PoolAllocator(sizeof(Ent)));
       }
       return pools.at(type);
   }
 
+  std::unordered_map<Archetype::Types, Archetype> archetypes;
 
-  std::unordered_map<Archetype::Id, Archetype> archetypes;
+  struct ArchetypeRecord {
+    Archetype *archetype;
+    size_t row;
+  };
 
-  Archetype& GetArchetype(Archetype arc){
+  std::unordered_map<Id, ArchetypeRecord> entity_archetype;
 
+  Archetype &GetArchetype(Archetype arc) {
+      if (archetypes.contains(arc.types)) {
+          return archetypes.at(arc.types);
+      } else {
+          auto res = archetypes.emplace(arc.types, arc).first;
+          return res->second;
+      }
+  }
+
+  ArchetypeRecord &GetEntityArchetype(Entity &ent) {
+      return entity_archetype.at(ent.UUID);
+  }
+
+  uint32_t nextUUID = 0;
+  Id GetNewUUID() {
+      return Id(nextUUID++, 0);
+  }
+
+  template<component Ent>
+  void *AllocateForNew() {
+      SH::PoolAllocator &pool = GetPool<Ent>(GetTypeId<Ent>());
+      void *pos = pool.allocate();
+      return pos;
   }
 
 public:
-  template<entity Ent>
-  Ent *AddChild(Entity &parent) {
-      // Allocate the space for the entity
-      SH::PoolAllocator &pool = GetPool<Ent>(getTypeId<Ent>());
-      void *pos = pool.allocate();
+  static EntityManager *entity_manager;
 
+  EntityManager() {
+      entity_manager = this;
+  }
+
+  template<component_only Comp>
+  Comp *AddChild(Entity &parent) {
+      // Allocate the space for the entity
+      const TypeId &comp_id = GetTypeId<Comp>();
+
+      void *memory = AllocateForNew<Comp>();
+
+      //Find old archetype
+      auto &record = GetEntityArchetype(parent);
+      auto &old_arch = *record.archetype;
+
+      //Construct new type list and find the archetype
+      Archetype::Types types(old_arch.types);
+      types.emplace_back(comp_id);
+
+      Archetype &new_arch = GetArchetype(Archetype(types));
+
+      auto new_row = new_arch.AddRow();
+      auto &row = new_row.second;
+
+      for (size_t i = 0; i < old_arch.types.size(); i++) {
+          auto column_type = old_arch.types[i];
+          size_t pos = new_arch.getColumn(column_type);
+          row[pos] = old_arch.data[record.row][i];
+      }
+      row[new_arch.getColumn(comp_id)] = (Comp *) memory;
+
+      old_arch.RemoveRow(record.row);
+
+      record.row = new_row.first;
+      record.archetype = &new_arch;
       // Create it
-      Ent *entity = new(pos)Ent();
+      Comp *component = new(memory)Comp(GetNewUUID());
 
       // Add it to the parent
+      return component;
+  }
+
+  template<entity Ent>
+  Ent *AddChild(Entity &parent) {
+      const TypeId &type_id = GetTypeId<Ent>();
+      
+      // Allocate the space for the entity
+      void *pos = AllocateForNew<Ent>();
+
+      //Find or make archetype
+      Archetype &a = GetArchetype(
+          Archetype({
+                        type_id,
+                        Id(parent.UUID.half[0], Relation::PARENT)
+                    }));
+
+      auto &row = a.AddRow().second;
+      row[a.getColumn(type_id)] = (Ent *) pos;
+
+      Id Uuid = GetNewUUID();
+
+      entity_archetype.insert({Uuid, ArchetypeRecord{&a, a.getColumn(type_id)}});
+
+      // Create it
+      Ent *entity = new(pos)Ent(Uuid);
+
       return entity;
   }
 
+  /*
+   * Add a fresh new entity
+   */
   template<entity Ent>
   Ent *Add() {
       // Allocate the space for the entity
-      SH::PoolAllocator &pool = GetPool<Ent>(getTypeId<Ent>());
-      void *pos = pool.allocate();
-
-      // Create it
-      Ent *entity = new(pos)Ent();
+      void *pos = AllocateForNew<Ent>();
 
       //Find or make archetype
-      Archetype &a = GetArchetype(Archetype({getTypeId<Ent>()}));
+      Archetype &a = GetArchetype(Archetype({GetTypeId<Ent>()}));
 
+      auto &row = a.AddRow().second;
+      row[0] = (Ent *) pos;
 
+      Id Uuid = GetNewUUID();
+
+      entity_archetype.insert({Uuid, ArchetypeRecord{&a, a.getColumn(GetTypeId<Ent>())}});
+
+      // Create it
+      Ent *entity = new(pos)Ent(Uuid);
 
       return entity;
   }
 
+  #pragma region DumpData
+  std::string GetTypeOrRelationName(Id type_id) {
+      std::string res = "";
+      if (type_id.half[1] > 0) {
+          switch (type_id.half[1]) {
+              case Relation::PARENT:res += "Parent: ";
+                  break;
+              default:break;
+          }
+      }
+      res += typeMap.at(type_id.half[0]);
+      return res;
+  }
+
+  void DumpData() {
+
+      {
+          std::printf("Pools: \n");
+          for (auto &pool : pools) {
+              fmt::print("{0:20} count:{1}\n", typeMap.at(pool.first), "??");
+          }
+          std::printf("\n");
+      }
+
+      {
+          std::printf("Archetypes: \n");
+          size_t max_len = 0;
+          for (auto &arch : archetypes) {
+              std::vector<std::string> target(arch.second.types.size());
+              for (int i = 0; i < arch.second.types.size(); ++i) {
+                  target[i] = GetTypeOrRelationName(arch.second.types[i]);
+              }
+              max_len = std::max(max_len, fmt::format("{}", fmt::join(target, " | ")).size());
+          }
+
+          for (auto &arch : archetypes) {
+              std::printf("%i :( ", arch.second.id);
+
+              std::vector<std::string> target(arch.second.types.size());
+              for (int i = 0; i < arch.second.types.size(); ++i) {
+                  target[i] = GetTypeOrRelationName(arch.second.types[i]);
+              }
+
+              fmt::print("{0:<{1}} )\t\t", fmt::format("{}", fmt::join(target, " | ")), max_len);
+              fmt::print("count: {}", arch.second.data.size());
+
+              fmt::print("\n");
+          }
+          fmt::print("\n");
+      }
+
+      std::printf("Entity map: \n");
+      for (auto &data : entity_archetype) {
+
+          fmt::print("ID: {0}, (row: {1}, arch: {2})", data.first.id, data.second.row, data.second.archetype->id);
+
+          fmt::println("");
+      }
+  }
+  #pragma endregion DumpData
+
 };
 
+template<component T>
+T *Entity::AddInternalChild() {
+    return EntityManager::entity_manager->AddChild<T>(*this);
+}
+
+EntityManager *EntityManager::entity_manager = nullptr;
+
 Archetype::Id Archetype::next_id = 0;
+
+

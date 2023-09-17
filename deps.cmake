@@ -2,6 +2,8 @@ Include(FetchContent)
 include(ExternalProject)
 
 
+add_subdirectory(projs/extern/fmt)
+
 # ###############################################
 # Fetch Catch2 for the file format tests
 # ###############################################
