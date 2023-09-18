@@ -386,7 +386,10 @@ public:
 
   size_t getColumn(TypeId column_type) {
       auto a = std::ranges::find(types, column_type);
-      size_t pos = std::distance(types.begin(), a);
+      if(a == types.end())
+          return -1;
+
+      size_t const pos = std::distance(types.begin(), a);
       return pos;
   }
 
@@ -452,6 +455,23 @@ class EntityManager {
       return pos;
   }
 
+  void MoveToArchetype(ArchetypeRecord &src, Archetype &dst){
+      auto dst_row = dst.AddRow();
+
+      for (size_t i = 0; i < src.archetype->types.size(); i++) {
+          auto column_type = src.archetype->types[i];
+          size_t dest_column = dst.getColumn(column_type);
+          if(dest_column == -1)
+              continue;
+          dst_row.second[dest_column] = src.archetype->data[src.row][i];
+      }
+
+      src.archetype->RemoveRow(src.row);
+
+      src.row = dst_row.first;
+      src.archetype = &dst;
+  }
+
 public:
   static EntityManager *entity_manager;
 
@@ -476,20 +496,9 @@ public:
 
       Archetype &new_arch = GetArchetype(Archetype(types));
 
-      auto new_row = new_arch.AddRow();
-      auto &row = new_row.second;
+      MoveToArchetype(record, new_arch);
 
-      for (size_t i = 0; i < old_arch.types.size(); i++) {
-          auto column_type = old_arch.types[i];
-          size_t pos = new_arch.getColumn(column_type);
-          row[pos] = old_arch.data[record.row][i];
-      }
-      row[new_arch.getColumn(comp_id)] = (Comp *) memory;
-
-      old_arch.RemoveRow(record.row);
-
-      record.row = new_row.first;
-      record.archetype = &new_arch;
+      record.archetype->data[record.row][new_arch.getColumn(comp_id)] = (Comp *) memory;
       // Create it
       Comp *component = new(memory)Comp(GetNewUUID());
 
