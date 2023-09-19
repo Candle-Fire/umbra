@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug-VS" ENABLED="false" GENERATION_DIR="bin/Debug/cmake-build/MSVC" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Visual Studio" GENERATION_OPTIONS="-DDX12=True" />
+      <configuration PROFILE_NAME="Debug-MinGW-brechtsanders" ENABLED="false" GENERATION_DIR="bin/Debug/cmake-build/MinGW-brechtsanders" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW-brechtsanders" />
+      <configuration PROFILE_NAME="Debug-MinGW" ENABLED="false" GENERATION_DIR="bin/Debug/cmake-build/MinGW" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW" />
+    </configurations>
+  </component>
+</project>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graph/graph.h"
+#include "shadow/entitiy/graph/graph.h"
 
 namespace test_game {
     

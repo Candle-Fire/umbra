@@ -1,5 +1,5 @@
-#include "core/CoreModule.h"
-#include "core/module-manager-v2.h"
+#include "shadow/core/CoreModule.h"
+#include "shadow/core/module-manager-v2.h"
 
 SHObject_Base_Impl(CoreModule)
 
