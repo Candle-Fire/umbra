@@ -32,8 +32,8 @@ namespace ShadowEngine::Entities {
 
         void Update(int frame) override;
 
-        void OverlayRender(SH::Events::EditorRender &overlay);
-
+        void OverlayRender(SH::Events::OverlayRender &overlay);
+        void Render(SH::Events::Render &render);
     };
 
 }

@@ -11,6 +11,16 @@ namespace SH::Events {
         SHObject_Base(PreRender)
     };
 
+    // Submit geometry to be rendered.
+    class Render : public Event {
+        SHObject_Base(Render)
+    public:
+        Render(const VkCommandBuffer &buffer, int frame) : buffer(buffer), frame(frame) {}
+
+        VkCommandBuffer buffer;
+        int frame;
+    };
+
     // Post processing, and other deferred effects.
     class PostRender : public Event {
         SHObject_Base(PostRender);

@@ -42,13 +42,13 @@ void TestScene::Build() {
     cube1->Add<Position>({-5, 0, 0});
     cube1->Add<MeshComponent>(component);
 
-    auto cube2 = this->Add<NullActor>({});
+    auto cube2 = this->Add<ShadowEngine::Entities::Builtin::NullActor>({});
     cube2->SetName("Cube 2");
     cube2->Add<Position>({5, 0, 0});
     cube2->Add<MeshComponent>(component);
 
     //Add a light to the center of the scene
-    auto light = this->Add<NullActor>({});
+    auto light = this->Add<ShadowEngine::Entities::Builtin::NullActor>({});
     light->SetName("Light");
     light->Add<Position>({0, 0, 0});
     light->Add<Light>({});
