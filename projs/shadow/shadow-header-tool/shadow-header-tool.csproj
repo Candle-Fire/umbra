@@ -29,8 +29,10 @@
         <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' AND '$(PackAsTool)' != 'true'">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <OutputPath>..\..\..\bin\Debug\MSBuild\</OutputPath>
-    </PropertyGroup>
+    <Target Name="PrintTargetPath"
+            DependsOnTargets="GetTargetPath">
+        <Message Text="$(TargetPath)" />
+
+    </Target>
     
 </Project>

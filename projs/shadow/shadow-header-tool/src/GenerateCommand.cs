@@ -15,6 +15,8 @@ public class GenerateCommand : Command
 {
     private static Option<string> _project = new (aliases: new []{"--project", "-p" }, description: "Name of the project to generate shadow headers for");
     private static Option<string> _output = new (aliases: new []{"--output", "-o"}, description:"Output file for the generated shadow headers");
+    
+    
     private static Option<string> _cmake = new (aliases: new []{"--cmake-folder"}, description:"The cmake build directory");
 
     public GenerateCommand() : base("generate", "Generate shadow headers")

@@ -21,6 +21,8 @@ if (WIN32)
 
 endif ()
 
+add_subdirectory(shadow-header-tool)
+
 # Core engine
 add_subdirectory(shadow-engine)
 

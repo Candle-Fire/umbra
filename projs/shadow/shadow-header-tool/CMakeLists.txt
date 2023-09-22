@@ -1,20 +1,17 @@
+find_package(Csharp REQUIRED)
 
-set(MSBuildPath "C:/Program Files/dotnet/sdk/7.0.203/MSBuild.dll")
 
 FILE(GLOB_RECURSE SOURCES src/*.cs)
 
-set(GENERATE_TOOL ${PROJECT_SOURCE_DIR}/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe)
+set(SHADOW_HEADER_TOOL_EXECUTABLE ${PROJECT_SOURCE_DIR}/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe)
 
-add_custom_target(shadow_header_tool
-        COMMAND dotnet build shadow-header-tool.sln
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS ${SOURCES}
-        BYPRODUCTS ${GENERATE_TOOL}
-        )
-
+add_csharp_target(shadow_header_tool
+        SOURCES ${SOURCES}
+        PROJECT_FILE shadow-header-tool
+)
 
 function(shadow_header_tool_gen target sources output)
-    set(GENERATE_COMMAND ${PROJECT_SOURCE_DIR}/bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe)
+    set(GENERATE_COMMAND ${SHADOW_HEADER_TOOL_EXECUTABLE})
 
     set(SH_GENERATED ${output})
 
