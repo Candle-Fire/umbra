@@ -7,7 +7,7 @@ SET(SPDLOG_BUILD_PIC true)
 add_subdirectory(extern/spdlog)
 add_subdirectory(extern/dylib)
 add_subdirectory(extern/vulkan_memory_allocator)
-add_subdirectory(extern/cathc2)
+add_subdirectory(extern/catch2)
 
 if (WIN32)
     # Fetch SDL for the runtime
