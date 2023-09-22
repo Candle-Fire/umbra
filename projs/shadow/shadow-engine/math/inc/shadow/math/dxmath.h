@@ -8,8 +8,8 @@
 #endif
 
 #ifndef WIN32
+#define PAL_STDCPP_COMPAT
 #include "sal.h"
-
 #endif
 
 #if !defined(_MSC_VER)
