@@ -25,6 +25,6 @@ void TestScene::Build() {
     light->Add<SH::Entities::Builtin::Position>({0, 0, 0});
     light->Add<SH::Entities::Builtin::Light>({});
 
-    auto player = this->Add<test_game::Player>({"Test player"});
+    auto p = this->Add<Player>({"test"});
 
 }

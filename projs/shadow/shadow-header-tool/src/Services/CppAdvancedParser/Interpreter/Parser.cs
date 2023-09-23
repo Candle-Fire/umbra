@@ -1,4 +1,4 @@
-﻿using shadow_header_tool.Services.CppSimpleParser.Lexer;
+using shadow_header_tool.Services.CppSimpleParser.Lexer;
 
 namespace shadow_header_tool.Services.CppAdvancedParser.Interpreter;
 
@@ -8,10 +8,17 @@ public class Parser
     public List<Token> tokens = new();
     
     public List<Token> rest => tokens.Skip(idx).ToList();
+
+    public List<TokenKind> skipTokens = new List<TokenKind>
+    {
+        TokenKind.SPACE,
+        TokenKind.EOL,
+        TokenKind.API_MACRO
+    };
     
     public Parser(Lexer l)
     {
-        tokens = l.tokens.Where(i=>i.kind != TokenKind.SPACE && i.kind != TokenKind.EOL).ToList();
+        tokens = l.tokens.Where(i=>!skipTokens.Contains(i.kind)).ToList();
     }
 
     public CompilationUnitNode ParseCompilationUnit()
@@ -325,6 +332,8 @@ public class Parser
         return null;
     }
 
+    bool AtEnd() => idx >= tokens.Count;
+    
     Token Peek(int n) => tokens[idx + n];
     Token Peek() => Peek(0);
 

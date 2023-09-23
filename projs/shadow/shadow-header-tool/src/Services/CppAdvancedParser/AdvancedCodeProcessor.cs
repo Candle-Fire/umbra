@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Serilog;
 using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.ReflectionModel;
@@ -12,18 +13,39 @@ namespace shadow_header_tool.Services.CppAdvancedParser;
 public class AdvancedCodeProcessor : ICodeProcessor
 {
     List<string> _paths = new();
-    List<string> _includes = new();
+    List<DirectoryInfo> _includes = new();
 
     //The list of files that are included in the source files
-    HashSet<string> _files = new(); 
-    
-    private FileCache _fileCache;
+    HashSet<string> _files = new();
 
     string includePattern = @"#include [<\""](?<path>[\w\/\\\.]+)[>\""]";
+    private HashSet<string> ignoreIncludes = new HashSet<string>
+    {
+        "string",
+        "chrono",
+        "glm",
+        "numeric",
+        "memory",
+        "limits",
+        "vector",
+        "SDL",
+        "map",
+        "spdlog/spdlog.h",
+        "imgui.h",
+        "fstream",
+        "algorithm",
+        "string.h",
+        "stdexcept",
+        "catch2/catch.hpp"
+    };
+    
+    private FileCache _fileCache;
+    private readonly ILogger _logger;
 
-    public AdvancedCodeProcessor(FileCache cache)
+    public AdvancedCodeProcessor(FileCache cache, Serilog.ILogger logger)
     {
         _fileCache = cache;
+        _logger = logger;
     }
     
     public List<FileInfo> GetFiles()
@@ -33,10 +55,8 @@ public class AdvancedCodeProcessor : ICodeProcessor
     
     public void AddSourceFiles(List<string> paths, List<string> includes)
     {
-        _paths = paths;
-        _includes = includes;
-        
-        var inc = includes.Select(i => new DirectoryInfo(i));
+        _files = new HashSet<string>(paths);
+        _includes = includes.Select(i => new DirectoryInfo(i)).ToList();
         
         foreach (var path in paths)
         {
@@ -56,7 +76,7 @@ public class AdvancedCodeProcessor : ICodeProcessor
             foreach (Match m in Regex.Matches(file.content, includePattern, RegexOptions.Multiline))
             {
             
-                var incFile = inc
+                var incFile = _includes
                     .Select(i => new FileInclude(
                         file: new FileInfo(i.FullName + "/" + m.Groups["path"].Value),
                         path: m.Groups["path"].Value
@@ -79,53 +99,28 @@ public class AdvancedCodeProcessor : ICodeProcessor
     public List<Clazz> Process()
     {
         List<Clazz> classes = new();
-        
-        foreach (var file in _files)
+
+        var queue = new Queue<FileInfo>(GetFiles());
+
+        while (queue.Count > 0)
         {
-
-
-            //var file = "P:\\_Projects\\umbra\\umbra\\projs\\shadow\\shadow-header-tool\\src\\Services\\CppAdvancedParser\\test_files\\test.cpp";
-
-            Console.WriteLine(file);
+            var file = queue.Dequeue();
             var lexer = new Lexer();
-            lexer.LoadFile(new FileInfo(file));
+            lexer.LoadFile(file);
 
             var parser = new Parser(lexer);
             var ast = parser.ParseCompilationUnit();
 
+            //Console.WriteLine($"Processing file: {file.FullName}");
+            
             Walk(NodeKind.CLASS_NODE,(list, node) =>
             {
                 Console.WriteLine(node.kind.Name);
                 
-                var clazz = ClazzFromNode((list, node), new FileInfo(file));
+                var clazz = ClazzFromNode((list, node), file);
                 
                 classes.Add(clazz);
             }, ast);
-            
-            
-            var new_classes = new []{(parents: new List<Node>() { }, node: ast)}
-                    //ast.children
-                    //.Select(i => (parents: new List<Node>() { ast }, node: i))
-                    .SelectMany(i => i.node.GetChildren().Select(a =>
-                        {
-                            var parents = new List<Node>();
-                            parents.AddRange(i.parents);
-                            parents.Add(i.node);
-                            return (parents: parents, node: a);
-                        }
-                    ))
-                    .SelectMany(i => i.node.GetChildren().Select(a =>
-                        {
-                            var parents = new List<Node>();
-                            parents.AddRange(i.parents);
-                            parents.Add(i.node);
-                            return (parents: parents, node: a);
-                        }
-                    ))
-                    .Where(a => a.node.kind == NodeKind.CLASS_NODE)
-                    .Select(a => ClazzFromNode(a, new FileInfo(file))).ToList();
-            
-            //classes.AddRange(new_classes);
         }
 
         return classes;

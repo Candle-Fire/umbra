@@ -37,6 +37,9 @@ public class TokenKind
     public static TokenKind COMMA = make("COMMA", ",");
     public static TokenKind SEMICOLON = make("SEMICOLON", ";");
     
+    public static TokenKind LESS_THAN = make("LESS_THAN", "<");
+    public static TokenKind GREATER_THAN = make("GREATER_THAN", ">");
+    
     public static TokenKind ATTRIBUTE_START = make("ATTRIBUTE_START");
     public static TokenKind ATTRIBUTE_END = make("ATTRIBUTE_END");
     
@@ -48,6 +51,8 @@ public class TokenKind
     public static TokenKind PRIVATE = make("PRIVATE");
     public static TokenKind PROTECTED = make("PROTECTED");
     public static TokenKind TEMPLATE = make("TEMPLATE");
+
+    public static TokenKind API_MACRO = make("API");
 
     public static TokenKind USING = make("USING", "using");
     
@@ -83,6 +88,12 @@ public struct Pos
         
     }
 
+    public Pos(int l, int c)
+    {
+        line = l;
+        column = c;
+    }
+    
     public override string ToString()
     {
         return "L" + line + ":C" + column;

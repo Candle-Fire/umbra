@@ -1,3 +1,3 @@
 #include "entities/TestCamera.h"
 
-SHObject_Base_Impl(test_game::TestCamera)
+SHObject_Base_Impl(TestCamera)

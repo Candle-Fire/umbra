@@ -1,7 +1,7 @@
 ﻿<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="shadow-header-tool test-game" type="DotNetProject" factoryName=".NET Project">
-    <option name="EXE_PATH" value="$PROJECT_DIR$/../../../bin/Debug/MSBuild/net7.0/win-x64/shadow-header-tool.exe" />
-    <option name="PROGRAM_PARAMETERS" value="generate -p test-game -o gen.cpp --cmake-folder P:\_Projects\umbra\umbra\bin\Debug\cmake-build\MinGW-brechtsanders" />
+    <option name="EXE_PATH" value="$PROJECT_DIR$/bin/Debug/net7.0/linux-x64/shadow-header-tool" />
+    <option name="PROGRAM_PARAMETERS" value="generate_v2 -l minimal -p test-game -o $PROJECT_DIR$/../../test-game/gen/generated.cpp -f:$PROJECT_DIR$/../../test-game/src/GameModule.cpp -f:$PROJECT_DIR$/../../test-game/src/TestModule.cpp -f:$PROJECT_DIR$/../../test-game/src/TestScene.cpp -f:$PROJECT_DIR$/../../test-game/src/entities/Health.cpp -f:$PROJECT_DIR$/../../test-game/src/entities/Player.cpp -f:$PROJECT_DIR$/../../test-game/src/entities/TestCamera.cpp -f:$PROJECT_DIR$/../../test-game/src/entry.cpp -i:$PROJECT_DIR$/../../test-game/inc" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../../" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />

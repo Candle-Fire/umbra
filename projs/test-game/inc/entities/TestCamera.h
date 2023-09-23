@@ -2,14 +2,10 @@
 
 #include "shadow/entitiy/graph/graph.h"
 
-namespace test_game {
-    
-    class [[SH::Reflect]] TestCamera : public ShadowEngine::Entities::Component {
-      SHReflect(TestCamera);
-      SHObject_Base(TestCamera);
-      public:
-        [[SH::Reflect]] float width;
-        [[SH::Reflect]] float height;
-    };
-
-}
+//Example of a 2d camera component with size
+class TestCamera : public SH::Entities::Component {
+  SHObject_Base(TestCamera);
+  public:
+    float width;
+    float height;
+};

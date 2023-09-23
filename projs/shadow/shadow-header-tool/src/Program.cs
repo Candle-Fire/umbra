@@ -1,14 +1,9 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Builder;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.CommandLine.Hosting;
-using System.CommandLine.NamingConventionBinder;
-using CppAst;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using shadow_header_tool;
 using shadow_header_tool.CmakeLib;
@@ -16,12 +11,12 @@ using shadow_header_tool.CppSimpleParser;
 using shadow_header_tool.FileCaching;
 using shadow_header_tool.OutputWriter;
 using shadow_header_tool.Services.CppAdvancedParser;
-using shadow_header_tool.Services.CppSimpleParser;
 
 class Program
 {
-    static string version = "0.1.2";
-    static string banner = @"
+    private const string Version = "0.1.3";
+
+    private const string Banner = @"
   (\
   .'.
   | |
@@ -31,22 +26,23 @@ class Program
       \_       v{0, -8}       |
         \______________________|
     ";
-    
-    
+
+
     static async Task<int> Main(string[] args)
     {
 
         FileCache fileCache = new FileCache();
         
-        var _rootCommand = new RootCommand("Sample app for System.CommandLine");
+        var rootCommand = new RootCommand("Sample app for System.CommandLine");
         var noBanner = new Option<bool>( new []{"--no-banner", "-nb"}, "");
-        _rootCommand.AddGlobalOption( noBanner);
-        _rootCommand.Add(new GenerateCommand());
-        _rootCommand.Add(new DepsCommand());
+        rootCommand.AddGlobalOption( noBanner);
+        rootCommand.Add(new GenerateCommand());
+        rootCommand.Add(new DepsCommand());
+        rootCommand.Add(new GenerateV2Command());
         
         
         
-        var builder = new CommandLineBuilder(_rootCommand);
+        var builder = new CommandLineBuilder(rootCommand);
 
         var app = builder
             .UseHelp()
@@ -58,12 +54,12 @@ class Program
                 {
                     return;
                 }
-                Console.WriteLine(string.Format(banner,version));
+                Console.WriteLine(Banner, Version);
                 Console.WriteLine(string.Join(",", args));
                 
             })
             .UseHost(_ => Host.CreateDefaultBuilder(args), configure => configure
-                .ConfigureServices((context, services) =>
+                .ConfigureServices((_, services) =>
                 {
                     services.AddSingleton(fileCache);
                     services.AddTransient<ICodeLoader, CmakeLoader>();
@@ -71,17 +67,18 @@ class Program
                     services.AddTransient<ICppReflectionDataWriter, CppReflectionDataWriter>();
                     services.AddSerilog();
                 })
-                .UseSerilog((context, provider, config) =>
+                .UseSerilog((_, _, config) =>
                 {
                     config.MinimumLevel.Debug();
                     config.WriteTo.Console();
                 })
-                .ConfigureLogging((context, loggingBuilder) =>
+                .ConfigureLogging((_, loggingBuilder) =>
                 {
                     //loggingBuilder.ClearProviders();
                     loggingBuilder.AddSerilog(dispose: true);
                 })
-                .UseCommandHandler<GenerateCommand, GenerateCommand.Handler>()
+                //.UseCommandHandler<GenerateCommand, GenerateCommand.Handler>()
+                .UseCommandHandler<GenerateV2Command, GenerateV2Command.Handler>()
                 .UseCommandHandler<DepsCommand, DepsCommand.Handler>()
             )
             .Build();

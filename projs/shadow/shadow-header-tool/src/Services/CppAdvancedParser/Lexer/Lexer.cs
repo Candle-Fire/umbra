@@ -62,6 +62,8 @@ public class Lexer
             case '}': return new Token(pos, TokenKind.CLOSE_BRACE);
             case '(': return new Token(pos, TokenKind.OPEN_PAREN);
             case ')': return new Token(pos, TokenKind.CLOSE_PAREN);
+            case '<': return new Token(pos, TokenKind.LESS_THAN);
+            case '>': return new Token(pos, TokenKind.GREATER_THAN);
             case ':': return new Token(pos, TokenKind.COLON);
             case '\"': return concat_string();
             default:

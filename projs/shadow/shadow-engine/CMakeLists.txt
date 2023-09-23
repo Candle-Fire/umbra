@@ -42,9 +42,13 @@ target_compile_definitions(shadow-engine
         PRIVATE
         EXPORTING_SH_ENGINE
 )
-shadow_header_tool_gen(shadow-engine
-        "${HEADERS}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/gen/generated.cpp")
+
+shadow_header_tool_gen(
+        shadow-engine
+        SOURCES "$<TARGET_PROPERTY:shadow-engine,SOURCES>"
+        INCLUDE_DIRS "$<TARGET_PROPERTY:shadow-engine,INCLUDE_DIRECTORIES>"
+        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/gen/generated.cpp"
+)
 
 if (TRUE)
 

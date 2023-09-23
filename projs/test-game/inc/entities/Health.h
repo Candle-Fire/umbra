@@ -2,13 +2,8 @@
 
 #include "shadow/entitiy/graph//graph.h"
 
-namespace test_game {
-
-    class [[SH::Reflect]] Health : public ShadowEngine::Entities::Component {
-      SHReflect(TestCamera);
-      SHObject_Base(Health);
-      public:
-        [[SH::Reflect]] int health;
-    };
-
-}
+class Health : public SH::Entities::Component {
+  SHObject_Base(Health);
+  public:
+    int health;
+};

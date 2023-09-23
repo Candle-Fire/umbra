@@ -285,4 +285,9 @@ public class MacroNode : Node
         this.hashToken = hashToken;
         this.tokens = rest;
     }
+
+    public override string ToString()
+    {
+        return tokens.Select(i => i.ToString()).Aggregate("", ((s, s1) => s + s1));
+    }
 }

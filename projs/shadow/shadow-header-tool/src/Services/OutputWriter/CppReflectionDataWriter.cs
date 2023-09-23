@@ -37,7 +37,7 @@ public class CppReflectionDataWriter : ICppReflectionDataWriter
 
         var w = new FormattedPrinter(writer);
         
-        w.WriteLine("#include <reflection.h>");
+        w.WriteLine("#include <shadow/reflection.h>");
         w.WriteLine("using namespace SH::Reflection;");
         w.WriteLine("");
 
@@ -47,8 +47,36 @@ public class CppReflectionDataWriter : ICppReflectionDataWriter
             if (reflectAttr is not null)
                 PrintClassReflection(w, clazz);
         }
+
+        PrintAssemblyClassList(w,classes);
         
         w.Close();
+    }
+
+    private void PrintAssemblyClassList(FormattedPrinter w, List<Clazz> classes)
+    {
+        w.WriteLine($"std::vector<Class const *> get_assembly_classes() {{");
+        using (w.AddLevel())
+        {
+            w.WriteLine($"return {{");
+
+            using (w.AddLevel())
+            {
+            
+                foreach (var clazz in classes)
+                {
+                    var reflectAttr = clazz.Attributes.Find(i => i.Name == "Reflect" && i.Namespace == "SH");
+                    if (reflectAttr is null)
+                        continue;
+                
+                    w.WriteLine($"GetClass(ClassTag<{clazz.Name}>()),");
+                }
+            }
+        
+            w.WriteLine("};");     
+        }
+        w.WriteLine("}");
+        
     }
 
     private static void PrintClassReflection(FormattedPrinter w, Clazz clazz)
