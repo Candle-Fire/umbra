@@ -1,5 +1,5 @@
 #include "../inc/EditorWindow.h"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
     SHObject_Base_Impl(EditorWindow)
 }

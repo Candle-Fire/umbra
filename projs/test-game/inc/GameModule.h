@@ -1,17 +1,17 @@
 #pragma once
 
 #include <SDL_events.h>
-#include "core/Module.h"
+#include "shadow/core/Module.h"
 
-class GameModule : public ShadowEngine::Module {
+class GameModule : public SH::Module {
 
-  SHObject_Base(GameModule)
+SHObject_Base(GameModule)
 
-    std::string test = "asdasd";
-  public:
-    GameModule() : Module() {}
+  std::string test = "asdasd";
+public:
+  GameModule() : Module() {}
 
-    void PreInit() override;
+  void PreInit() override;
 
-    void Init() override;
+  void Init() override;
 };

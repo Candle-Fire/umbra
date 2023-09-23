@@ -1,0 +1,21 @@
+[submodule "projs/shadow/extern/spdlog"]
+	path = projs/shadow/extern/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "projs/shadow/extern/imgui"]
+	path = projs/shadow/extern/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "projs/shadow/extern/dxmath"]
+	path = projs/shadow/extern/dxmath
+	url = https://github.com/microsoft/DirectXMath.git
+[submodule "projs/shadow/extern/catch2"]
+	path = projs/shadow/extern/catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "projs/shadow/extern/glm"]
+	path = projs/shadow/extern/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "projs/shadow/extern/dylib"]
+	path = projs/shadow/extern/dylib
+	url = https://github.com/martin-olivier/dylib
+[submodule "projs/shadow/extern/vulkan_memory_allocator"]
+	path = projs/shadow/extern/vulkan_memory_allocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git

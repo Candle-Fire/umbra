@@ -10,8 +10,14 @@ add_library(test-game SHARED ${SOURCES})
 target_include_directories(test-game PRIVATE PUBLIC inc)
 target_link_libraries(test-game PUBLIC shadow-engine)
 
+shadow_header_tool_gen(
+        test-game
+        SOURCES "$<TARGET_PROPERTY:test-game,SOURCES>"
+        INCLUDE_DIRS "$<TARGET_PROPERTY:test-game,INCLUDE_DIRECTORIES>"
+        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/gen/generated.cpp"
+)
 
 add_custom_command(TARGET test-game
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-        )
+)

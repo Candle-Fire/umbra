@@ -1,14 +1,15 @@
 #pragma once
 
-#include "graph/graph.h"
+#include "shadow/entitiy/graph/graph.h"
 
-class Player : public ShadowEngine::Entities::Actor {
-  SHObject_Base(Player);
+class [[SH::Reflect]] Player : public SH::Entities::Actor {
+SHObject_Base(Player);
+SHReflect(Player);
 
-  public:
-    Player(std::string name) : Actor() {
-        this->name = name;
-    }
+public:
+  Player(std::string name) : Actor() {
+      this->name = name;
+  }
 
-    void Build() override;
+  void Build() override;
 };

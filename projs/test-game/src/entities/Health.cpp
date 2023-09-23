@@ -1,3 +1,3 @@
-#include "../../inc/entities/Health.h"
+#include "entities/Health.h"
 
 SHObject_Base_Impl(Health)
