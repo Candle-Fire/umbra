@@ -1,6 +1,6 @@
 
 FILE(GLOB_RECURSE SOURCES
-        ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/**.cpp
 )
 
 target_shadow_module(shadow-engine
