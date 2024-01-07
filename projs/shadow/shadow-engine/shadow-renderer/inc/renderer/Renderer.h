@@ -10,6 +10,8 @@
 #include <entities/CameraComponent.h>
 #include <primitive/PrimitiveObjects.h>
 
+#define arraysize(a) (sizeof(a) / sizeof(a[0]))
+
 namespace rx {
 
     /**
@@ -380,6 +382,7 @@ namespace rx {
         static void CreateRTReflectionResources(RTReflectionResources& res, DirectX::XMUINT2 resolution);
         static void PostprocessRTReflection(const RTReflectionResources& res, const ShadowEngine::Entities::World& world, const Texture& output, ThreadCommands cmd, float range = 1000.0f, float roughnessCutoff = 0.5f, uint8_t instanceInclusionMask = 0xFF);
 
+        // ScreenSpace Reflection
         struct SSRResources {
             mutable int frame = 0;
             Texture roughnessHorizontal;
@@ -402,7 +405,271 @@ namespace rx {
         void CreateSSRResources(SSRResources& res, DirectX::XMUINT2 resolution);
         void PostprocessSSR(const SSRResources& res, const Texture& input, const Texture& output, ThreadCommands cmd, float cutoff = 0.6f);
 
+        struct RTShadowResources {
+            Texture temp;
+            Texture temporal[2]; // For Temporal anti-aliasing
+            Texture normals;
 
+            mutable int frame = 0;
+            GPUBuffer tiles;
+            GPUBuffer meta;
+            Texture scratch[4][2];
+            Texture moments[4][2];
+            Texture denoise;
+        };
+        void CreateRTShadowResources(RTShadowResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessRTShadow(const RTShadowResources& res, const ShadowEngine::Entities::Scene& scene, const GPUBuffer& opaqueTiles, const Texture& linearDepth, const Texture& outpit, ThreadCommands cmd, uint8_t instanceMask = 0xFF);
+
+        // ScreenSpace Shadow
+        struct SSSResources {
+            Texture lowres;
+        };
+        void CreateSSSResources(SSSResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessSSS(const SSSResources& res, const GPUBuffer& opaqueTiles, const Texture& linearDepth, const Texture& output, ThreadCommands cmd, float range = 1, uint32_t samples = 16);
+
+        void PostprocessLightShafts(const Texture& input, const Texture& output, ThreadCommands cmd, const DirectX::XMFLOAT2& center, float strength = 0.1f);
+
+        struct DOFResources {
+            Texture maxHorizontal;
+            Texture minHorizontal;
+            Texture max;
+            Texture min;
+            Texture maxNeighborhood;
+            Texture presort;
+            Texture prefilter;
+            Texture main;
+            Texture postfilter;
+            Texture alpha1;
+            Texture alpha2;
+            GPUBuffer bufferStatistics;
+            GPUBuffer bufferEarlyExit;
+            GPUBuffer bufferCheap;
+            GPUBuffer bufferExpensive;
+
+            bool isValid() const { return maxHorizontal.isValid(); }
+        };
+        void CreateDOFResources(DOFResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessDOF(const DOFResources& res, Texture& input, Texture& output, ThreadCommands cmd, float scale = 10, float max = 10);
+
+        void PostprocessOutline(const Texture& input, ThreadCommands cmd, float threshold = 0.1f, float thickness = 1.0f, const DirectX::XMFLOAT4& color = DirectX::XMFLOAT4(0, 0, 0, 1));
+
+        struct MotionBlurResources {
+            Texture maxHorizontal;
+            Texture minHorizontal;
+            Texture max;
+            Texture min;
+            Texture maxNeighborhood;
+            GPUBuffer bufferStatistics;
+            GPUBuffer bufferEarlyExit;
+            GPUBuffer bufferCheap;
+            GPUBuffer bufferExpensive;
+
+            bool isValid() const { return maxHorizontal.isValid(); }
+        };
+        void CreateMotionBlurResources(MotionBlurResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessMotionBlur(const MotionBlurResources& res, const Texture& input, const Texture& output, ThreadCommands cmd, float strength = 100.0f);
+
+        struct AerialPerspectiveResources {
+            Texture output;
+        };
+        void CreateAerialPerspectiveResources(AerialPerspectiveResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessAerialPerspective(const AerialPerspectiveResources& res, ThreadCommands cmd);
+
+        // Volumetric Clouds
+        struct VCResources {
+            mutable int frame = 0;
+            DirectX::XMUINT2 finalRes = {};
+            Texture cloudRender;
+            Texture cloudDepth;
+            Texture reprojection[2];
+            Texture reprojectionDepth[2];
+            Texture reprojectionAdditional[2];
+            Texture cloudMask;
+        };
+        void CreateVCResources(VCResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessVC(const VCResources& res, const ShadowEngine::Entities::Builtin::CameraComponent& camera, const ShadowEngine::Entities::Builtin::CameraComponent& camPrev, const ShadowEngine::Entities::Builtin::CameraComponent& camReflect, const bool jitter, ThreadCommands cmd, const Texture* weatherFirst = nullptr, const Texture* weatherSecond = nullptr);
+        void PostprocessVCUpsample(const VCResources& res, ThreadCommands cmd);
+
+        void PostprocessFXAA(const Texture& in, const Texture& out, ThreadCommands cmd);
+
+        struct TemporalAAResources {
+            mutable int frame = 0;
+            Texture temporal[2];
+
+            bool isValid() const { return temporal[0].isValid(); }
+            const Texture* getCurrent() const { return &temporal[frame % arraysize(temporal)]; }
+            const Texture* getHistory() const { return &temporal[(frame + 1) % arraysize(temporal) ]; }
+        };
+        void CreateTemporalAAResources(TemporalAAResources& res, DirectX::XMUINT2 resolution);
+        void PostprocessTemporalAA(const TemporalAAResources& res, const Texture& in, ThreadCommands cmd);
+
+        void PostprocessSharpen(const Texture& in, const Texture& out, ThreadCommands cmd, float amount = 1.0f);
+        void PostprocessTonemap(const Texture& in, const Texture& out, float exposure, float brightness, float contrast, float saturation, bool dither, ThreadCommands cmd, const Texture* gradingLUT = nullptr, const Texture* distortion = nullptr, const GPUBuffer* luminance = nullptr, const Texture* bloom = nullptr, ColorSpace cs = ColorSpace::SRGB);
+
+        void PostprocessFSR(const Texture& in, const Texture& temp, const Texture& out, ThreadCommands cmd, float sharpness = 1.0);
+
+        // Chromatic Aberration
+        void PostprocessCA(const Texture& in, const Texture& out, ThreadCommands cmd, float amount = 1.0);
+
+        void PostprocessUpsampleBilat(const Texture& in, const Texture& depth, const Texture& out, ThreadCommands cmd, bool pixel = false, float threshold = 1);
+        void PostprocessDownsample4x(const Texture& in, const Texture& out, ThreadCommands cmd);
+
+        void PostprocessNormalsDepth(const Texture& depth, const Texture& out, ThreadCommands cmd);
+
+        void PostprocessUnderwater(const Texture& in, const Texture& out, ThreadCommands cmd);
+
+        void PostprocessCustom(const Shader& compute, const Texture& in, const Texture& out, ThreadCommands cmd, const DirectX::XMFLOAT4& p0 = DirectX::XMFLOAT4(0, 0, 0, 0), const DirectX::XMFLOAT4& p1 = DirectX::XMFLOAT4(0, 0, 0, 0), const char* debugName = "Postprocess_Custom");
+
+        void ConvertVUYToRGB(const Texture& in, int subResourceLuminance, int subResourceChrominance, const Texture& out, ThreadCommands cmd);
+
+
+
+
+
+        void RaytraceScene(const ShadowEngine::Entities::Scene& scene, const Texture& out, int accumulation, ThreadCommands cmd, uint8_t instanceMask = 0xFF, const Texture* outAlbedo = nullptr, const Texture* outNormal = nullptr, const Texture* outDepth = nullptr, const Texture* outStencil = nullptr, const Texture* outDepthStencil = nullptr);
+
+        // Create Bounding Volume Hierarchy for the scene
+        void RaytraceSceneBVH(const ShadowEngine::Entities::Scene& scene, ThreadCommands cmd);
+
+        void OcclusionCullReset(const Visibility& vis, ThreadCommands cmd);
+        void OcclusionCullRender(const ShadowEngine::Entities::Builtin::CameraComponent& cam, const Visibility& vis, ThreadCommands cmd);
+        void OcclusionCullResolve(const Visibility& vis, ThreadCommands cmd);
+
+        enum MipFilter {
+            POINT,
+            LINEAR,
+            GAUSSIAN
+        };
+
+        struct MipOptions {
+            int arrayIndex;
+            const Texture* temp;
+            bool preserveCoverage;
+            bool wideGauss;
+        };
+        void GenerateMipchain(const Texture& tex, MipFilter filter, ThreadCommands cmd, const MipOptions& options = {});
+
+        void BlockCompress(const Texture& in, const Texture& out, ThreadCommands cmd, uint32_t offset = 0);
+
+        enum ExpandStyle {
+            NONE,
+            WRAP,
+            CLAMP
+        };
+
+        void CopyTexture(const Texture& dest, int dMIP, int dX, int dY, const Texture& src, int sMIP, int sX, int sY, ThreadCommands cmd, ExpandStyle expand = ExpandStyle::NONE, bool convertsRGB = false);
+
+        void DrawWaterRipples(const Visibility& vis, ThreadCommands cmd);
+
+        void DebugSetShadow2D(int maxRes);
+        void DebugSetShadowCube(int maxRes);
+
+#define DEBUG_FEATURE(x) \
+        void DebugSet##x(bool val); \
+        bool DebugGet##x();
+#define DEBUG_FLOAT_FEATURE(x) \
+        void DebugSet##x(float val); \
+        float DebugGet##x();
+#define DEBUG_INT_FEATURE(x) \
+        void DebugSet##x(uint32_t val); \
+        uint32_t DebugGet##x();
+
+        DEBUG_FEATURE(TransparentShadows);
+        DEBUG_FEATURE(WireRender);
+        DEBUG_FEATURE(DrawBoneLines);
+        DEBUG_FEATURE(DrawPartitions);
+        DEBUG_FEATURE(DrawEnvProbes);
+        DEBUG_FEATURE(DrawEmitters);
+        DEBUG_FEATURE(DrawForcefields);
+        DEBUG_FEATURE(DrawCameras);
+        DEBUG_FEATURE(DrawColliders);
+        DEBUG_FEATURE(DrawGridHelper);
+        DEBUG_FEATURE(DrawVoxelHelper);
+        DEBUG_FEATURE(LightCulling);
+        DEBUG_FEATURE(AdvancedLightCulling);
+        DEBUG_FEATURE(VRSClassification);
+        DEBUG_FEATURE(VRSClassificationDebug);
+        DEBUG_FEATURE(OcclusionCulling);
+        DEBUG_FEATURE(TemporalAA);
+        DEBUG_FEATURE(TemporalAADebug);
+        DEBUG_FEATURE(VXGI);
+        DEBUG_FEATURE(VXGIReflections);
+        DEBUG_FLOAT_FEATURE(GameSpeed);
+        DEBUG_INT_FEATURE(RTBounces);
+        DEBUG_FEATURE(RTBVHVisualizer);
+        DEBUG_FEATURE(RTShadows);
+        DEBUG_FEATURE(Tesselation);
+        DEBUG_FEATURE(Allbedo);
+        DEBUG_FEATURE(DiffuseLighting);
+        DEBUG_FEATURE(ScreenSpaceShadows);
+        DEBUG_FEATURE(SurfelGI);
+        DEBUG_FEATURE(DDGI);
+        DEBUG_INT_FEATURE(DDGIRays);
+        DEBUG_FLOAT_FEATURE(DDGIBlend);
+        DEBUG_FLOAT_FEATURE(GIBoost);
+
+        void WorkaroundBug(const size_t bug, ThreadCommands cmd);
+
+        void DebugDrawBox(const DirectX::XMFLOAT4& mat, const DirectX::XMFLOAT4& col = DirectX::XMFLOAT4(1, 1, 1, 1));
+        void DebugDrawSphere(const rx::Sphere& sphere, const DirectX::XMFLOAT4& color = DirectX::XMFLOAT4(1, 1, 1, 1));
+        void DebugDrawCapsule(const rx::Capsule& capsule, const DirectX::XMFLOAT4& color = DirectX::XMFLOAT4(1, 1, 1, 1));
+
+        struct LineRenderData {
+            DirectX::XMFLOAT3 start = DirectX::XMFLOAT3(0, 0, 0);
+            DirectX::XMFLOAT3 end = DirectX::XMFLOAT3(0, 0, 0);
+            DirectX::XMFLOAT4 colorStart = DirectX::XMFLOAT4(1, 1, 1, 1);
+            DirectX::XMFLOAT4 colorEnd = DirectX::XMFLOAT4(1, 1, 1, 1);
+        };
+
+        void DebugDrawLine3D(const LineRenderData& data);
+        void DebugDrawLine2D(const LineRenderData& data);
+
+        struct PointRenderData {
+            DirectX::XMFLOAT3 pos = DirectX::XMFLOAT3(0, 0, 0);
+            DirectX::XMFLOAT4 color = DirectX::XMFLOAT4(1, 1, 1, 1);
+            float size = 1;
+        };
+
+        void DebugDrawPoint(const PointRenderData& point);
+
+        struct TriangleRenderData {
+            DirectX::XMFLOAT3 p1Pos = DirectX::XMFLOAT3(0, 0, 0);
+            DirectX::XMFLOAT4 p1Col = DirectX::XMFLOAT4(1, 1, 1, 1);
+            DirectX::XMFLOAT3 p2Pos = DirectX::XMFLOAT3(0, 0, 0);
+            DirectX::XMFLOAT4 p2Col = DirectX::XMFLOAT4(1, 1, 1, 1);
+            DirectX::XMFLOAT3 p3Pos = DirectX::XMFLOAT3(0, 0, 0);
+            DirectX::XMFLOAT4 p3Col = DirectX::XMFLOAT4(1, 1, 1, 1);
+        };
+
+        void DebugRenderTriangle(const TriangleRenderData& tri);
+
+        struct TextRenderData {
+            DirectX::XMFLOAT3 pos = DirectX::XMFLOAT3(0, 0, 0);
+            int pixelHeight = 32;
+            float scale = 1;
+            DirectX::XMFLOAT4 color = DirectX::XMFLOAT4(1, 1, 1, 1);
+            enum Flags {
+                NONE = 0,
+                DEPTHTEST = 1<<0,
+                BILLBOARD = 1<<1,
+                ORTHO = 1<<2
+            };
+            uint32_t flags = Flags::NONE;
+        };
+
+        void DebugDrawText(const char* text, const TextRenderData& data);
+
+        void DeferMipGeneration(const Texture& tex, bool preserve = false);
+        void DeferCompression(const Texture& src, const Texture& dst);
+
+        struct CustomShader {
+            std::string name;
+            uint32_t filterMaskk = static_cast<uint32_t>(defs::Filter::OPAQUE);
+            PipelineState pso[static_cast<uint32_t>(defs::RenderPass::SIZE)];
+        };
+
+        int RegisterCustomShader(const CustomShader& shader);
+        const std::vector<CustomShader>& GetCustomShaders();
 
     };
 }

@@ -51,6 +51,7 @@ namespace rx {
             // TODO: this will make everything mega weird
             // TODO: seriously, fix this
             // TODO: i'm not kidding.
+            DirectX::XMMatrixOrthographicOffCenter()
             return glm::ortho(0.0f, (float) GetLogicalWidth(), (float) GetLogicalHeight(), 0.0f, -1.0f, 1.0f);
         }
     };

@@ -114,7 +114,7 @@ namespace rx::Image {
 
     void SetBackground(const Texture& tex);
 
-    void Draw(const Texture* tex, const RenderMode* param, ThreadCommands cmd);
+    void Draw(const Texture* tex, const RenderMode& param, ThreadCommands cmd);
 
     void Initialize();
 }

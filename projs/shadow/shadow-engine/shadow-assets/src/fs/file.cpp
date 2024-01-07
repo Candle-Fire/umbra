@@ -1,10 +1,10 @@
 #include <fs/file.h>
 #include <vector>
-#include "management/synchronization.h"
 #include <spdlog/spdlog.h>
 #include <filesystem>
 #include <fs/path.h>
 #include <map>
+#include <core/Syncronization.h>
 
 namespace ShadowEngine {
 
@@ -13,6 +13,7 @@ namespace ShadowEngine {
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include "core/Delegate.h"
 
     FileInput::FileInput() {
         handle = (void*) INVALID_HANDLE_VALUE;
@@ -250,7 +251,6 @@ namespace ShadowEngine {
 
                 if (!item.isCancelled())
                     item.callback.invoke(item.data.size(), (const uint8_t*) item.data.data(), !item.isFailed());
-
             }
         }
 

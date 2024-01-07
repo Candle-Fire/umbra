@@ -56,7 +56,7 @@ namespace rx {
             ENVMAPPING,
             SHADOW,
             VOXEL,
-            SIZe
+            SIZE
         };
 
         enum class StencilMask : uint32_t {

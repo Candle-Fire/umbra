@@ -5,6 +5,14 @@
 
 #define limit(x, y) std::numeric_limits<x>::y()
 namespace rx {
+
+    struct Sphere;
+    struct Ray;
+    struct Plane;
+    struct Capsule;
+    struct AABB;
+    struct Frustum;
+
     struct AABB {
         enum Intersect {
             OUTSIDE,
@@ -32,6 +40,9 @@ namespace rx {
         Intersect Intersects2D(const AABB& other) const;
         Intersect Intersects(const AABB& other) const;
         bool Intersects(const DirectX::XMFLOAT3& point) const;
+        bool Intersects(const Ray& ray) const;
+        bool Intersects(const Sphere& sphere) const;
+        bool Intersects(const Frustum& frustum) const;
 
         AABB operator* (float a);
 
@@ -58,6 +69,89 @@ namespace rx {
             if (min.x > max.x || min.y > max.y || min.z > max.z) return false;
             return true;
         }
+    };
+
+    struct Sphere {
+        DirectX::XMFLOAT3 center;
+        float radius;
+
+        Sphere() : center(DirectX::XMFLOAT3(0, 0, 0)), radius(0) {}
+        Sphere(const DirectX::XMFLOAT3& c, float r) : center(c), radius(r) {
+            assert(radius >= 0);
+        }
+
+#define INTERSECT_WITH(x) \
+        bool Intersects(const x& b) const; \
+        bool Intersects(const x& b, float& dist) const; \
+        bool Intersects(const x& b, float& dist, DirectX::XMFLOAT3& dir) const; \
+
+        bool Intersects(const AABB& b) const;
+        INTERSECT_WITH(Sphere);
+        INTERSECT_WITH(Capsule);
+        INTERSECT_WITH(Plane);
+        INTERSECT_WITH(Ray);
+
+        DirectX::XMFLOAT4X4 GetPlacementOrientation(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& norm) const;
+    };
+
+    struct Capsule {
+        DirectX::XMFLOAT3 base = DirectX::XMFLOAT3(0, 0, 0);
+        DirectX::XMFLOAT3 tip = DirectX::XMFLOAT3(0, 0, 0);
+        float radius = 0;
+
+        Capsule() = default;
+        Capsule(const DirectX::XMFLOAT3& base, const DirectX::XMFLOAT3& tip, float radius) : base(base), tip(tip), radius(radius) {
+            assert(radius >= 0);
+        }
+        Capsule(const Sphere& sphere, float height) : base(DirectX::XMFLOAT3(sphere.center.x, sphere.center.y - sphere.radius, sphere.center.z)), tip(DirectX::XMFLOAT3(base.x, base.y + height, base.z)), radius(sphere.radius) {
+            assert(radius >= 0);
+        }
+        inline AABB GetAABB() const {
+            DirectX::XMFLOAT3 halfWidth = DirectX::XMFLOAT3(radius, radius, radius);
+            AABB baseAABB;
+            baseAABB.CreateFromHalfWidth(base, halfWidth);
+            AABB tipAABB;
+            tipAABB.CreateFromHalfWidth(tip, halfWidth);
+            AABB result = AABB::Merge(baseAABB, tipAABB);
+            assert(result.IsValid());
+            return result;
+        }
+
+        bool Intersects(const Capsule& b, DirectX::XMFLOAT3& pos, DirectX::XMFLOAT3& norm, float& depth) const;
+        INTERSECT_WITH(Sphere);
+        INTERSECT_WITH(Plane);
+        INTERSECT_WITH(Ray);
+        bool Intersects(const DirectX::XMFLOAT3& point);
+
+        DirectX::XMFLOAT4X4 GetPlacementOrientation(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& normal) const;
+    };
+
+    struct Plane {
+        DirectX::XMFLOAT3 origin = {};
+        DirectX::XMFLOAT3 normal = {};
+        DirectX::XMFLOAT4X4 projection = DirectX::XMFLOAT4X4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+
+        bool Intersects(const Capsule& b, DirectX::XMFLOAT3& pos, DirectX::XMFLOAT3& norm, float& depth) const;
+        INTERSECT_WITH(Sphere);
+        INTERSECT_WITH(Capsule);
+        INTERSECT_WITH(Ray);
+    };
+
+    struct Ray {
+        DirectX::XMFLOAT3 origin;
+        DirectX::XMFLOAT3 direction;
+        DirectX::XMFLOAT3 reflect;
+        float tMin = 0;
+        float tMax = std::numeric_limits<float>::max();
+
+        bool Intersects(const AABB& b) const;
+        INTERSECT_WITH(Sphere);
+        INTERSECT_WITH(Capsule);
+        INTERSECT_WITH(Plane);
+
+        void CreateFromPoints(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b);
+
+        DirectX::XMFLOAT4X4 GetPlacementOrientation(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& norm) const;
     };
 
     struct Frustum {

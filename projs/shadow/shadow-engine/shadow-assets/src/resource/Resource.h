@@ -3,7 +3,7 @@
 #include "fs/hash.h"
 #include "fs/path.h"
 #include "fs/file.h"
-#include <management/delegate_list.h>
+#include <core/DelegateList.h>
 
 namespace ShadowEngine {
 

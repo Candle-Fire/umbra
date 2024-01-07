@@ -50,7 +50,7 @@ namespace rx {
         struct Renderable2D {
             enum class Type {
                 SPRITE,
-                ATLAS
+                ATLAS,
             } type = Type::SPRITE;
 
             union {

@@ -1,10 +1,8 @@
 #pragma once
 #include <fs/iostream.h>
 #include <fs/path.h>
-#include <management/delegate.h>
 #include <memory>
-
-template <class T> struct Delegate;
+#include "core/Delegate.h"
 
 namespace ShadowEngine {
 

@@ -353,7 +353,7 @@ namespace rx {
             const size_t freeSpace = allocator.buffer.meta.size - allocator.offset;
             if (size > freeSpace) {
                 GPUBufferMeta meta {
-                    .usage = BufferUsage::Staging,
+                    .usage = BufferUsage::STAGING,
                     .binding = BindFlag::CONSTANT_BUFFER | BindFlag::VERTEX_BUFFER | BindFlag::INDEX_BUFFER | BindFlag::SHADER_RESOURCE,
                     .flags = ResourceFlags::BUFFER_RAW,
                 };
