@@ -5,8 +5,8 @@
 #include "runtime/Runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
+#include "shadow/renderer/vlkx/vulkan/abstraction/Commands.h"
+#include "shadow/renderer/vlkx/vulkan/VulkanModule.h"
 
 #include "shadow/platform/console-setup.h"
 

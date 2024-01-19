@@ -1,14 +1,15 @@
 #pragma once
 
+#include <memory>
 #include "../EditorWindow.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
+#include "shadow/renderer/vlkx/vulkan/VulkanModule.h"
 
 namespace SH::Editor {
 
     class SceneView : public EditorWindow{
     SHObject_Base(SceneView)
 
-    VulkanModule* renderer;
+    std::shared_ptr<VulkanModule> renderer;
 
     public:
         SceneView();
