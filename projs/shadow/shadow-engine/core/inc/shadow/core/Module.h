@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "shadow/SHObject.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
+#include "shadow/renderer/vlkx/vulkan/abstraction/Commands.h"
 
 namespace SH {
 

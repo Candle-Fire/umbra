@@ -56,7 +56,7 @@ namespace SH {
 public: \
     static const std::string& Type();                 \
     static SH::TypeID TypeId();                         \
-    const std::string& GetType() const override        { return Type();  } \
+    const std::string& GetType() const        { return Type();  } \
     SH::TypeID GetTypeId() const override        { return  type::TypeId(); } \
 private:
 
