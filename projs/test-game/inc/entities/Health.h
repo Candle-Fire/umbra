@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graph/graph.h"
+#include "shadow/entitiy/graph//graph.h"
 
-class Health : public ShadowEngine::Entities::Component {
+class Health : public SH::Entities::Component {
   SHObject_Base(Health);
   public:
     int health;

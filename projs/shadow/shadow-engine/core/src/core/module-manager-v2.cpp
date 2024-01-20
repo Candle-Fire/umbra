@@ -1,198 +1,218 @@
 #pragma execution_character_set("utf-8")
 
-#include "core/module-manager-v2.h"
 #include <ranges>
 #include <algorithm>
 
-namespace ShadowEngine {
+#include "shadow/core/module-manager-v2.h"
+#include "runtime/Runtime.h"
 
-    void ModuleManager::LoadModule(ModuleHolder &holder) {
-        auto assembly = GetAssembly(holder.descriptor.assembly);
-        const std::string &symbolName = holder.descriptor.class_name + "_entry";
+namespace SH {
 
-        if (!assembly.lib->has_symbol(symbolName)) {
-            spdlog::error("❌ Could not find the entry for module \"{0}\"", holder.descriptor.id);
-            holder.enabled = false;
-            return;
-        }
-        try {
-            auto module_init = assembly.lib->get_function<std::shared_ptr<ShadowEngine::Module>()>(symbolName);
+  void ModuleManager::LoadModule(ModuleHolder &holder) {
+      auto assembly = Runtime::Runtime::Get().GetAssembly(holder.descriptor.assembly);
+      if (!assembly.has_value() || !assembly.value()->IsLoaded()) {
+          spdlog::error("❌ Assembly \"{0}\" for module:\"{1}\" is unknown or not loaded",
+                        holder.descriptor.assembly.get(),
+                        holder.descriptor.id);
+          holder.enabled = false;
+          return;
+      }
+      const Runtime::Assembly &assembly_value = *assembly.value();
 
-            holder.module = module_init();
-        }
-        catch (std::exception &e) {
-            spdlog::error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id,
-                          e.what());
-            holder.enabled = false;
-            return;
-        }
+      const std::string &symbolName = holder.descriptor.class_name + "_entry";
 
-        holder.enabled = true;
-    }
+      if (!assembly_value.HasSymbol(symbolName)) {
+          spdlog::error("❌ Could not find the entry for module \"{0}\"", holder.descriptor.id);
+          holder.enabled = false;
+          return;
+      }
+      try {
+          auto module_init = assembly_value.GetFunction<void(std::shared_ptr<SH::Module> *)>(symbolName);
 
-    void ModuleManager::Init() {
+          module_init(&holder.module);
+      }
+      catch (std::exception &e) {
+          spdlog::error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id,
+                        e.what());
+          holder.enabled = false;
+          return;
+      }
 
-        for (const auto &i: this->modules) {
-            spdlog::debug("\"{0}\" is registered", i.descriptor.id);
-        }
+      holder.enabled = true;
+  }
 
-        //Sort
-        this->SortModules();
+  void ModuleManager::Init() {
 
-        spdlog::debug("Sorted order:");
-        for (const auto &i: this->modules) {
-            spdlog::debug("\"{0}\" is registered", i.descriptor.id);
-        }
+      for (const auto &i : this->modules) {
+          spdlog::debug("\"{0}\" is registered", i.descriptor.id);
+      }
 
-        //Load
-        for (auto &i: this->modules) {
-            spdlog::info("Loading {0}", i.descriptor.id);
-            if (std::any_of(ITERATE(this->assemblies), [i](Assembly a) {
-                return a.id == i.descriptor.assembly && a.lib != nullptr;
-            })) {
-                spdlog::debug("✅ Assembly \"{0}\" is already loaded", i.descriptor.assembly);
-            } else {
-                spdlog::info("➕ Loading assembly \"{0}\"", i.descriptor.assembly);
-                this->LoadAssembly(i.descriptor.assembly);
-            }
+      //Sort
+      this->SortModules();
+      this->PrintModuleInfo();
 
-            this->LoadModule(i);
-            if (i.enabled)
-                spdlog::info("Module {0}({1}) created", i.module->GetName(), i.descriptor.id);
-        }
+      //Load
+      for (auto &i : this->modules) {
+          spdlog::trace("Loading {0}", i.descriptor.id);
+          auto a = Runtime::Runtime::Get().GetAssembly(i.descriptor.assembly);
+          if (!a.has_value()) {
+              spdlog::error("❌ Assembly \"{0}\" for module:\"{1}\" is not known",
+                            i.descriptor.assembly.get(),
+                            i.descriptor.id);
+              continue;
+          }
+          Runtime::Runtime::Get().LoadAssembly(i.descriptor.assembly);
 
-        this->SortModules();
+          this->LoadModule(i);
+          if (i.enabled)
+              spdlog::trace("Module {0}({1}) created", i.module->GetName(), i.descriptor.id);
+      }
 
-        //PreInit
-        spdlog::info("Running PreInit");
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                try{
-                    holder.module->PreInit();
-                }
-                catch (const std::exception& e) {
-                    spdlog::error("❌ Error while running PreInit for module \"{0}\" Error: {1}", holder.descriptor.id,
-                                  e.what());
-                }
-            }
-        }
+      this->SortModules();
+      this->PrintModuleInfo();
 
-        this->SortModules();
+      //PreInit
+      spdlog::info("Running PreInit");
+      for (auto &holder : this->modules) {
+          if (holder.enabled) {
+              try {
+                  holder.module->PreInit();
+              }
+              catch (const std::exception &e) {
+                  spdlog::error("❌ Error while running PreInit for module \"{0}\" Error: {1}", holder.descriptor.id,
+                                e.what());
+              }
+          }
+      }
 
-        spdlog::info("Running Init");
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                try {
-                    holder.module->Init();
-                }
-                catch (const std::exception& e) {
-                    spdlog::error("❌ Error while running Init for module \"{0}\" Error: {1}", holder.descriptor.id,
-                                  e.what());
-                }
-            }
-        }
+      this->SortModules();
+      this->PrintModuleInfo();
 
-        //Sort
+      spdlog::info("Running Init");
+      for (auto &holder : this->modules) {
+          if (holder.enabled) {
+              try {
+                  holder.module->Init();
+              }
+              catch (const std::exception &e) {
+                  spdlog::error("❌ Error while running Init for module \"{0}\" Error: {1}", holder.descriptor.id,
+                                e.what());
+              }
+          }
+      }
 
-        this->finalized = true;
-    }
+      //Sort
+      this->SortModules();
+      this->PrintModuleInfo();
 
-    void ModuleManager::LoadAssembly(const std::string &id) {
-        auto assembly = std::find_if(ITERATE(this->assemblies), [&](const auto &item) {
-            return item.id == id;
-        });
-        if (assembly == this->assemblies.end()) {
-            spdlog::error("No such assembly: {0}", id);
-            return;
-        }
+      this->finalized = true;
+  }
 
+  void ModuleManager::Dfs(ModuleHolder &module_holder, std::vector<ModuleHolder> &sorted) {
+      for (auto u : module_holder.descriptor.dependencies) {
+          if (!std::ranges::any_of(sorted, ModulePredicate(u)) && u != module_holder.descriptor.id) {
+              auto it = std::ranges::find_if(this->modules, ModulePredicate(u));
 
-        dylib *dllptr;
+              if (it != modules.end()) {
+                  if (!it->enabled) {
+                      spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
+                      module_holder.enabled = false;
+                  } else
+                      Dfs(*it, sorted);
+              } else
+                  spdlog::info("Module {0} is missing, required by {1}", u, module_holder.descriptor.id);
 
-        try {
-            dllptr = new dylib(
-                "./",
-                assembly->path,
-                assembly->type == AssemblyType::LIB ? dylib::add_filename_decorations : dylib::no_filename_decorations);
-        }
-        catch (std::exception &e) {
-            spdlog::error(e.what());
-            exit(1);
-        }
+          } else {
+              auto it = std::ranges::find_if(sorted, ModulePredicate(u));
+              if (it != sorted.end()) {
+                  if (!it->enabled) {
+                      spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
+                      module_holder.enabled = false;
+                  }
+              }
+          }
+      }
+      sorted.push_back(module_holder);
+  }
 
-        assembly->lib = dllptr;
-    }
+  void ModuleManager::SortModules() {
+      std::vector<ModuleHolder> sorted;
+      sorted.clear();
 
-    void ModuleManager::Dfs(ModuleHolder &module_holder, std::vector<ModuleHolder> &sorted) {
-        for (auto u: module_holder.descriptor.dependencies) {
-            if (!std::ranges::any_of(sorted, ModulePredicate(u)) && u != module_holder.descriptor.id) {
-                auto it = std::ranges::find_if(this->modules, ModulePredicate(u));
+      for (auto i : this->modules) {
+          if (!std::ranges::any_of(sorted, ModulePredicate(i.descriptor.id)))
+              Dfs(i, sorted);
+      }
 
-                if (it != modules.end()) {
-                    if(!it->enabled){
-                        spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
-                        module_holder.enabled = false;
-                    }
-                    else
-                        Dfs(*it, sorted);
-                }
-                else
-                    spdlog::info("Module {0} is missing, required by {1}", u, module_holder.descriptor.id);
+      this->modules = sorted;
 
-            }
-            else{
-                auto it = std::ranges::find_if(sorted, ModulePredicate(u));
-                if(it != sorted.end()){
-                    if(!it->enabled){
-                        spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
-                        module_holder.enabled = false;
-                    }
-                }
-            }
-        }
-        sorted.push_back(module_holder);
-    }
+  }
 
-    void ModuleManager::SortModules() {
-        std::vector<ModuleHolder> sorted;
-        sorted.clear();
+  void ModuleManager::LoadModulesFromAssembly(const SH::Path &id) {
+      Runtime::Runtime::Get().LoadAssembly(id);
 
-        for (auto i: this->modules) {
-            if (!std::ranges::any_of(sorted, ModulePredicate(i.descriptor.id)))
-                Dfs(i, sorted);
-        }
+      auto assembly_optional = Runtime::Runtime::Get().GetAssembly(id);
+      if (!assembly_optional.has_value() || !assembly_optional.value()->IsLoaded()) {
+          spdlog::error("❌ Assembly \"{0}\" is unknown or not loaded", id.get());
+          return;
+      }
+      const Runtime::Assembly &assembly = *assembly_optional.value();
 
-        this->modules = sorted;
+      const std::string &symbolName = "assembly_entry";
 
-    }
+      if (!assembly.HasSymbol(symbolName)) {
+          spdlog::error("❌ Could not find the entry for assembly \"{0}\"({1})", id.get(), assembly.GetID().get());
+          return;
+      }
+      try {
+          auto module_init = assembly.GetFunction<void(ModuleManager &)>(symbolName);
 
-    void ModuleManager::LoadModulesFromAssembly(const std::string &id) {
-        LoadAssembly(id);
+          module_init(*this);
+      }
+      catch (std::exception &e) {
+          spdlog::error("❌ Error while running the entry for assembly \"{0}\" Error: {1}", id.get(), e.what());
+          return;
+      }
+  }
 
-        auto assembly = GetAssembly(id);
-        const std::string &symbolName = "assembly_entry";
+  void ModuleManager::Update(int frame) {
+      for (auto &holder : this->modules) {
+          if (holder.enabled) {
+              holder.module->Update(frame);
+          }
+      }
+  }
 
-        if (!assembly.lib->has_symbol(symbolName)) {
-            spdlog::error("❌ Could not find the entry for assembly \"{0}\"({1})", id, assembly.path.c_str());
-            return;
-        }
-        try {
-            auto module_init = assembly.lib->get_function<void(ModuleManager &)>(symbolName);
+  void ModuleManager::DeactivateModule(Module *module_ptr, bool force) {
+      spdlog::info("Deactivating module {0}", module_ptr->GetType());
+      if (!this->finalized || force) {
+          auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder &item) {
+            return item.module.get() == module_ptr;
+          });
+          if (m != this->modules.end()) {
+              m->enabled = false;
+          }
+      }
+  }
 
-            module_init(*this);
-        }
-        catch (std::exception &e) {
-            spdlog::error("❌ Error while running the entry for assembly \"{0}\" Error: {1}", id, e.what());
-            return;
-        }
-    }
+  bool ModuleManager::IsModuleActive(const ID &id) {
+      auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
+      return m != this->modules.end() && m->enabled;
+  }
 
-    void ModuleManager::Update(int frame) {
-        for (auto &holder: this->modules) {
-            if (holder.enabled) {
-                holder.module->Update(frame);
-            }
-        }
-    }
+  void ModuleManager::IfModuleActive(const ID &id, const std::function<void()> &callback) {
+      if (IsModuleActive(id))
+          callback();
+  }
+
+  void ModuleManager::PrintModuleInfo() {
+      spdlog::info("Module info:");
+      for (const auto &i : this->modules) {
+          spdlog::info("Module {0}({1}) is {2}",
+                       i.descriptor.name,
+                       i.descriptor.id,
+                       i.enabled ? "enabled" : "disabled");
+      }
+  }
 
 }

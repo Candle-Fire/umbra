@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     std::cout << "argv[" << argc << "] == " << static_cast<void*>(argv[argc]) << '\n';
     /*...*/
 
-    ShadowEngine::ShadowApplication app(argc, argv);
+    SH::ShadowApplication app(argc, argv);
     app.Init();
     app.Start();
 

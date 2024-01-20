@@ -1,10 +1,10 @@
 #include "../../inc/windows/SceneView.h"
 #include "imgui.h"
-#include "core/ShadowApplication.h"
-#include "vlkx/vulkan/VulkanModule.h"
+#include "shadow/core/ShadowApplication.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 #include "glm/vec2.hpp"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     SHObject_Base_Impl(SceneView)
 

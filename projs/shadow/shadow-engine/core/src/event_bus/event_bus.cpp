@@ -1,5 +1,5 @@
-#include "event-bus/event_bus.h"
-#include "SHObject.h"
+#include "shadow/event-bus/event_bus.h"
+#include "shadow/SHObject.h"
 
 namespace SH::Events {
 

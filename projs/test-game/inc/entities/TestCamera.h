@@ -1,9 +1,9 @@
 #pragma once
 
-#include "graph/graph.h"
+#include "shadow/entitiy/graph/graph.h"
 
 //Example of a 2d camera component with size
-class TestCamera : public ShadowEngine::Entities::Component {
+class TestCamera : public SH::Entities::Component {
   SHObject_Base(TestCamera);
   public:
     float width;

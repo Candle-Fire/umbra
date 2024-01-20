@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include "SHObject.h"
+#include "shadow/SHObject.h"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
-    class EditorWindow : public ShadowEngine::SHObject{
+    class EditorWindow : public SH::SHObject{
     SHObject_Base(EditorWindow)
     public:
         virtual void Draw()= 0;

@@ -1,14 +1,14 @@
 #include "../../inc/windows/DebugWindows.h"
 #include "imgui.h"
-#include "core/ShadowApplication.h"
+#include "shadow/core/ShadowApplication.h"
 #include "../../inc/EditorModule.h"
 
-namespace ShadowEngine::Editor {
+namespace SH::Editor {
 
     SHObject_Base_Impl(DebugWindows)
 
     DebugWindows::DebugWindows() {
-        ShadowApplication &application = ShadowEngine::ShadowApplication::Get();
+        ShadowApplication &application = SH::ShadowApplication::Get();
 
         debugModule = application.GetModuleManager().GetById<Debug::DebugModule>("module:/debug");
 

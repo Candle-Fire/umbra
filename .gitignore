@@ -12,5 +12,3 @@ cmake-build-debug-msvc/
 cmake-build-debug-msvc-vs/
 out/
 .vs/
-/.idea/
-/cmake-build-debug-mingw/

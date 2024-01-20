@@ -2,9 +2,9 @@
 // Created by dpete on 2022-07-06.
 //
 
-#include "core/Module.h"
+#include "shadow/core/Module.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     SHObject_Base_Impl(Module)
 } // ShadowEngine
