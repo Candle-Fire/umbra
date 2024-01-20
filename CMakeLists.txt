@@ -5,7 +5,7 @@ set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
 #if (MSVC)
 #    add_compile_options(-Zc:externC /permissive- /Zc:__cplusplus /Zc:inline /Zc:preprocessor /Zc:lambda /Zc:templateScope)
 #endif ()
-if (MINGW OR LINUX)
+if (GNU)
     #add_compile_options(-fpermissive)
 endif ()
 

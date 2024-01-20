@@ -21,6 +21,7 @@ using ID = std::string;
 /// @brief This is a helper for creating module specific entry points. This is dodgy.
 /// Only change if you know what you are doing.
 /// This creates a C linkage exported function. The function gets a pointer to a shared_ptr and puts a new pointer to the module into it.
+/// It is used by the module manager to create modules.
 #define MODULE_ENTRY(name, shortname) extern "C" { void EXPORT shortname ## _entry(std::shared_ptr<name>* ptr){*ptr = std::make_shared<name>();} }
 
 /// @brief Helper macro for standard funcs iterate

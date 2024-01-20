@@ -8,18 +8,8 @@ add_subdirectory(extern/spdlog)
 add_subdirectory(extern/dylib)
 add_subdirectory(extern/vulkan_memory_allocator)
 add_subdirectory(extern/catch2)
+add_subdirectory(extern/SDL2)
 
-if (WIN32)
-    # Fetch SDL for the runtime
-    FetchContent_Declare(
-            SDL2
-            URL https://www.libsdl.org/release/SDL2-devel-2.26.0-VC.zip
-    )
-    FetchContent_MakeAvailable(SDL2)
-    set(SDL2_DIR ${sdl2_SOURCE_DIR})
-    list(PREPEND CMAKE_PREFIX_PATH "${sdl2_SOURCE_DIR}/cmake")
-
-endif ()
 
 # Core engine
 add_subdirectory(shadow-engine)
