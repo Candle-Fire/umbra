@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graph/graph.h"
+#include "shadow/entitiy/graph/graph.h"
 
-class Player : public ShadowEngine::Entities::Actor {
+class Player : public SH::Entities::Actor {
   SHObject_Base(Player);
 
   public:
