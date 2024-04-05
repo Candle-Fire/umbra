@@ -175,7 +175,7 @@ void VulkanDevice::createLogicalDevice(VkSurfaceKHR surface, bool validationRequ
 		device.enabledLayerCount = 0;
 	}
 
-	// Create the device
+	// Start the device
 
 	if (vkCreateDevice(physical, &device, nullptr, &logical) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create logical device");

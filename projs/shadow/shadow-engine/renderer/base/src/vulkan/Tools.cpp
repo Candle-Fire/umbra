@@ -83,7 +83,7 @@ VkTools::ManagedBuffer VkTools::createGPUBuffer(VkDeviceSize size, VkBufferUsage
     vmaInfo.usage = hostVisible ? VMA_MEMORY_USAGE_CPU_ONLY : VMA_MEMORY_USAGE_GPU_ONLY;
     vmaInfo.requiredFlags = properties;
 
-    // Create the buffer.
+    // Start the buffer.
     if (VkResult status = vmaCreateBuffer(allocator, &bufferInfo, &vmaInfo, &buffer.buffer, &buffer.allocation, nullptr); status != VK_SUCCESS)
         throw std::runtime_error("Unable to create GPU buffer: " + std::to_string(status));
 

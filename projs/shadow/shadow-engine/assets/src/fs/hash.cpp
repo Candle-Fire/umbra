@@ -15,7 +15,7 @@ namespace ShadowEngine {
       hash = XXHash64::hash(data, length, 0);
   }
 
-  HeapHash::HeapHash(std::string &str) {
+  HeapHash::HeapHash(const std::string& str) {
       hash = XXHash64::hash(str.data(), str.size(), 0);
   }
 

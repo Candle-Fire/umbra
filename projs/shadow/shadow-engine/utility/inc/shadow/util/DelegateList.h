@@ -16,13 +16,13 @@ namespace ShadowEngine {
     void bind(C *instance) {
         Delegate<R(Args...)> cb;
         cb.template bind<Function>(instance);
-        m_delegates.push(cb);
+        m_delegates.push_back(cb);
     }
 
     void bindRaw(void *obj, void (*f)(void *, Args...)) {
         Delegate<R(Args...)> cb;
         cb.bindRaw(obj, f);
-        m_delegates.push(cb);
+        m_delegates.push_back(cb);
     }
 
     void unbindRaw(void *obj, void (*f)(void *, Args...)) {
@@ -38,7 +38,7 @@ namespace ShadowEngine {
     void bind() {
         Delegate<R(Args...)> cb;
         cb.template bind<Function>();
-        m_delegates.push(cb);
+        m_delegates.push_back(cb);
     }
 
     template<R (*Function)(Args...)>

@@ -1,8 +1,8 @@
-#include "shadow/renderer/renderer/impls/2DRenderer.h"
-#include "shadow/renderer/renderer/Interface.h"
-#include "shadow/renderer/renderer/ImageRenderer.h"
-#include "shadow/renderer/renderer/interfaces/Sprite.h"
-#include "shadow/renderer/renderer/interfaces/FontAtlas.h"
+#include <renderer/impls/2DRenderer.h>
+#include <renderer/Interface.h>
+#include <renderer/ImageRenderer.h>
+#include <renderer/interfaces/Sprite.h>
+#include <renderer/interfaces/FontAtlas.h>
 
 namespace rx {
     void Renderer2D::ResizeBuffers() {
@@ -199,7 +199,7 @@ namespace rx {
                         break;
                     case Renderable2D::Type::ATLAS:
                         if (y.atlas != nullptr)
-                            ; //y.atlas->Draw(commands); TODO: This is not a function that i can find
+                            y.atlas->Draw(commands); TODO: This is not a function that i can find
                         break;
                 }
             }

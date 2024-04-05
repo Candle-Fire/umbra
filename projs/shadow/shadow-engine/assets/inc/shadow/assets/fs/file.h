@@ -68,10 +68,10 @@ namespace ShadowEngine {
       uint32_t value;
     };
 
-    // Create a Filesystem that interacts with files on disk.
-    static std::unique_ptr<FileSystem> createDiskFS(std::string& basePath);
-    // Create a Virtual Filesystem based on the given path.
-    static std::unique_ptr<FileSystem> createVFS(std::string& basePath);
+    // Start a Filesystem that interacts with files on disk.
+    static std::unique_ptr<FileSystem> createDiskFS(const std::string& basePath);
+    // Start a Virtual Filesystem based on the given path.
+    static std::unique_ptr<FileSystem> createVFS(const std::string& basePath);
 
     virtual ~FileSystem() = default;
 

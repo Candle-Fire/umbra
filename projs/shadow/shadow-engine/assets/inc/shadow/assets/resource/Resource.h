@@ -13,7 +13,7 @@ namespace ShadowEngine {
    */
   struct ResourceType {
     ResourceType() = default;
-    explicit ResourceType(std::string& name);
+    explicit ResourceType(const std::string& name);
     bool operator!=(const ResourceType& o) const { return o.hash != hash; }
     bool operator==(const ResourceType& o) const { return o.hash == hash; }
     bool operator< (const ResourceType& o) const { return o.hash.getHash() < hash.getHash(); }

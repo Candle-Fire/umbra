@@ -92,7 +92,7 @@ namespace ShadowEngine {
             if (constructor) {
                 EngineSystem* system = constructor();
                 if (!system) {
-                    spdlog::error("Create failed!");
+                    spdlog::error("Start failed!");
                     delete system;
                 } else {
                     addSystem(system, lib);

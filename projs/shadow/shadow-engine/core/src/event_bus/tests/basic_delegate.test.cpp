@@ -10,7 +10,7 @@
 
 TEST_CASE("EntitySystem", "[EntitySystem]") {
 
-// Create a new entity system
+// Start a new entity system
 auto entitySystem = new ShadowEngine::Entities::EntitySystem();
 // Add test scene
 auto scene = entitySystem->GetWorld().AddScene<ShadowEngine::Entities::Scene>({"Generated Scene"});

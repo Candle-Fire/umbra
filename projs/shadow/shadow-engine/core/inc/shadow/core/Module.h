@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "shadow/SHObject.h"
-#include "shadow/renderer/vlkx/vulkan/abstraction/Commands.h"
 
 namespace SH {
 
@@ -41,21 +40,6 @@ namespace SH {
     std::string GetName() {
         return this->GetType();
     };
-  };
-
-/**
- * A class especially for modules that are renderers.
- * Allows the engine to access state from the renderer independent of implementation.
- */
-  class RendererModule : public Module {
-  public:
-    // Begin the render pass using the given commands.
-    // Will call out through the regular modules to gather geometry to render.
-    virtual void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) = 0;
-
-    virtual void EnableEditor() = 0;
-
-    virtual VkExtent2D GetRenderExtent() = 0;
   };
 
 }

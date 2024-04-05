@@ -16,7 +16,7 @@ namespace ShadowEngine {
 
     HeapHash() = default;
     // Hash a string; for paths and such.
-    explicit HeapHash(std::string& str);
+    explicit HeapHash(const std::string& str);
     // Hash arbitrary data.
     HeapHash(const void* data, uint32_t length);
 

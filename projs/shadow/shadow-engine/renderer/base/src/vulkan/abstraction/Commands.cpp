@@ -14,7 +14,7 @@ VkCommandPool createPool(vlkx::Queue queue, bool shortLived) {
     poolCreateInfo.queueFamilyIndex = queue.queueIndex;
     poolCreateInfo.flags = shortLived ? VK_COMMAND_POOL_CREATE_TRANSIENT_BIT : VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    // Create the pool
+    // Start the pool
     if (vkCreateCommandPool(VulkanModule::getInstance()->getDevice()->logical, &poolCreateInfo, nullptr, &pool) != VK_SUCCESS)
         throw std::runtime_error("Unable to allocate a temporary command pool");
 
@@ -80,13 +80,13 @@ void vlkx::ImmediateCommand::run(const vlkx::CommandBuffer::Command &cmd) {
 vlkx::RenderCommand::RenderCommand(int frames) {
     VulkanDevice* dev = VulkanModule::getInstance()->getDevice();
 
-    // Create semaphores for render events
+    // Start semaphores for render events
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     vkCreateSemaphore(dev->logical, &semaphoreInfo, nullptr, &newImageSem);
     vkCreateSemaphore(dev->logical, &semaphoreInfo, nullptr, &renderDoneSem);
 
-    // Create fences for the frames
+    // Start fences for the frames
     inFlight.resize(frames);
     VkFenceCreateInfo fenceInfo = {};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

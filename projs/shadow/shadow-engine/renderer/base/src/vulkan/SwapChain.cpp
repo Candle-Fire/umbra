@@ -36,7 +36,7 @@ VkExtent2D SwapChain::chooseExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		return capabilities.currentExtent;
 	else {
-		// Create a new 1280x720 extent and use that
+		// Start a new 1280x720 extent and use that
 		VkExtent2D size = { 1280, 720 };
 		size.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, size.width));
 		size.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, size.height));
@@ -85,7 +85,7 @@ void SwapChain::create(VkSurfaceKHR surface) {
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	// Create the swap-chain
+	// Start the swap-chain
 	if (vkCreateSwapchainKHR(VulkanModule::getInstance()->getDevice()->logical, &createInfo, nullptr, &swapChain))
 		throw std::runtime_error("Failed to create swap-chain");
 

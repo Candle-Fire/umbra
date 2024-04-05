@@ -13,7 +13,7 @@ namespace ShadowEngine {
 
   #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include "core/Delegate.h"
+#include <shadow/util/Delegate.h>
 
     FileInput::FileInput() {
         handle = (void*) INVALID_HANDLE_VALUE;
@@ -254,7 +254,7 @@ namespace ShadowEngine {
         }
     }
 
-    // TODO: Task Management
+    // TODO: Run Management
     std::string basePath;
     std::vector<AsyncRead> queue;
     uint64_t workCounter;
@@ -312,11 +312,11 @@ namespace ShadowEngine {
     FileInput pack;
   };
 
-  std::unique_ptr<FileSystem> FileSystem::createDiskFS(std::string &basePath) {
+  std::unique_ptr<FileSystem> FileSystem::createDiskFS(const std::string& basePath) {
       return std::make_unique<DiskFS>(basePath);
   }
 
-  std::unique_ptr<FileSystem> FileSystem::createVFS(std::string& basePath) {
+  std::unique_ptr<FileSystem> FileSystem::createVFS(const std::string& basePath) {
       return std::make_unique<VFS>(basePath);
   }
 }

@@ -18,10 +18,6 @@ namespace SH::Events {
     SDL_Event event;
   };
 
-  class OverlayRender : public Event {
-  SHObject_Base(OverlayRender)
-  };
-
   class Recreate : public Event {
   SHObject_Base(Recreate)
   };

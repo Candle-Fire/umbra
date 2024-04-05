@@ -8,7 +8,7 @@
 namespace ShadowEngine {
   const uint32_t ResourceHeader::MAGIC = 'VXIP';
 
-  ResourceType::ResourceType(std::string& name) {
+  ResourceType::ResourceType(const std::string& name) {
       hash = HeapHash(name);
   }
 
@@ -179,8 +179,7 @@ namespace ShadowEngine {
       checkState();
   }
 
-  static std::string type("prefab");
-  const ResourceType PrefabResource::TYPE(type);
+  const ResourceType PrefabResource::TYPE("prefab");
 
   PrefabResource::PrefabResource(const ShadowEngine::Path &path,
                                  ShadowEngine::ResourceTypeManager &resource_manager) : Resource(path, resource_manager) {}
