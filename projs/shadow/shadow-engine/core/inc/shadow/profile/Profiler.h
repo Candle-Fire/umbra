@@ -21,20 +21,32 @@ namespace SH {
    *
    */
   struct Profiler {
+    // Stop the thread being profiled.
+    // Useful for scripting.
     static API void Pause(bool paused);
+    // Set a specific name for the current thread in the profiler.
     static API void SetThreadName(const char *name);
+    // Set whether the current thread will show in the profiler.
     static API void ShowInProfiler(bool show);
 
+    // Start a new block. Will separate the named results out from all others.
     static API void Begin(const char *name);
+    // Set a color for the current block.
     static API void BlockColor(DirectX::XMFLOAT3 c);
+    // End the current block.
     static API void End();
+    // End the current frame.
     static API void Frame();
-    static API void PushJob(int32_t signal);
+    // Tell the profiler that a new job is starting on the current thread. Will allow filtering by job type.
+    static API void PushJob(size_t signal);
+    // Send arbitrary data to the profiler log.
     static API void PushString(const char *value);
     static API void PushInt(const char *key, int value);
 
-    static API uint32_t MakeCounter(const char *key, float min);
-    static API void PushCounter(uint32_t ID, float value);
+    // Create a counter; increase at whim.
+    static API size_t MakeCounter(const char *key, float min);
+    // Send the counter data to the profiler log.
+    static API void PushCounter(size_t ID, float value);
 
     // Profiler: a handle to link the GPU process to a profiler thread. Obtain by calling CreateLink()
     static API void BeginGPU(const char *name, size_t time, size_t profiler);
@@ -46,6 +58,41 @@ namespace SH {
     static API void Link(size_t profiler);
     // Create a handle that can be used to profile GPU operations.
     static API size_t CreateLink();
+
+    // Data for a fiber thread (soft-switching, used for the job task system
+    struct FiberData {
+      uint32_t ID;
+      uint32_t blocks[16];
+      uint32_t count;
+      size_t signal;
+    };
+
+    // Preparing for a fiber switch
+    static API void PreFiberSwitch();
+    // Trigger a signal on a fiber thread
+    static API void Trigger(size_t signal);
+    // A fiber thread is about to start waiting
+    static API FiberData BeginFiberWait(size_t signal, bool isMutex);
+    // A fiber thread is about to come out of waiting
+    static API void EndFiberWait(const FiberData& data);
+
+    // How long did we spend in the last frame?
+    static API float GetLastFrameDuration();
+
+    // Can we context switch while profiling?
+    // Requires system agreement (ie. Windows must let us attach a profiler thread monitor.)
+    static API bool IsContextSwitchEnabled();
+
+    // Get the effective frequency of the process.
+    static API size_t GetFrequency();
+
+    // Used within the profiler to track when we get context switched out of profiling.
+    struct ContextSwitchRecord {
+      uint32_t oldThreadID;
+      uint32_t newThreadID;
+      size_t timestamp;
+      uint8_t cause;
+    };
 
     // Start the profiler directly.
     explicit Profiler(const char* name) {
@@ -77,6 +124,16 @@ namespace SH {
       int val;
     };
 
+    struct Job {
+      size_t signal;
+    };
+
+    struct FiberWait {
+      uint32_t ID;
+      size_t signal;
+      bool mutex;
+    };
+
     struct GPU {
       const char* name;
       size_t timestamp;
@@ -90,18 +147,23 @@ namespace SH {
       Frame,
       String,
       Int,
+      FiberWait,
+      FiberWake,
+      ContextSwitch,
+      Job,
       GPUBegin,
       GPUEnd,
       Link,
       Pause,
-      GPuStats,
+      GPUStats,
       Continue,
+      Signal,
       Counter
     };
 
     #pragma pack(1)
     struct Event {
-      char size;
+      uint8_t size;
       EventType type;
       size_t time;
     };
