@@ -1,5 +1,6 @@
-#include <fs/iostream.h>
+
 #include <cstring>
+#include "shadow/assets/fs/iostream.h"
 
 namespace ShadowEngine {
 

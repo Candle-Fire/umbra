@@ -1,6 +1,9 @@
-#include <fs/path.h>
-#include <string.h>
-#include <str/string.h>
+
+#include <string>
+#include <shadow/assets/fs/path.h>
+#include <shadow/assets/str/string.h>
+#include <shadow/assets/fs/hash.h>
+#include <cstring>
 
 namespace ShadowEngine {
 
@@ -37,7 +40,7 @@ namespace ShadowEngine {
         return path != rhs.path;
     }
 
-    std::string Path::normalise(std::string &str) {
+    std::string Path::normalise(const std::string &str) {
         bool prevSlash = false;
 
         std::string temp;
@@ -72,35 +75,35 @@ namespace ShadowEngine {
         return temp;
     }
 
-    std::string Path::getPrelude(std::string &path) {
+    std::string Path::getPrelude(const std::string &path) {
         return path.substr(0, path.find_first_of(":"));
     }
 
-    std::string Path::getDomain(std::string &path) {
+    std::string Path::getDomain(const std::string &path) {
         return path.substr(path.find_first_of(":"), path.find_first_of("/"));
     }
 
-    std::string Path::getDirectory(std::string &path) {
+    std::string Path::getDirectory(const std::string &path) {
         return path.substr(path.find_first_of(":"), path.find_last_of("/"));
     }
 
-    std::string Path::getFilename(std::string &path) {
+    std::string Path::getFilename(const std::string &path) {
         return path.substr(path.find_last_of("/"), path.find_last_of("."));
     }
 
-    std::string Path::getExtension(std::string &path) {
+    std::string Path::getExtension(const std::string &path) {
         return path.substr(path.find_last_of("."), path.length());
     }
 
-    std::string Path::replaceExtension(std::string &path, std::string &newExt) {
+    std::string Path::replaceExtension(const std::string &path, const std::string &newExt) {
         return path.substr(0, path.length() - newExt.length()).append(newExt);
     }
 
-    bool Path::hasExtension(std::string &path, std::string &ext) {
+    bool Path::hasExtension(const std::string &path, const std::string &ext) {
         return path.find_last_of(ext) == path.length() - ext.length();
     }
 
-    PathInfo::PathInfo(std::string &str) {
+    PathInfo::PathInfo(const std::string &str) {
         std::string normalised = Path::normalise(str);
 
         std::string preludeS = Path::getPrelude(normalised);

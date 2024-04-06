@@ -1,6 +1,8 @@
-#include "ResourceManager.h"
-#include "Resource.h"
+
 #include "spdlog/spdlog.h"
+#include "shadow/assets/resource/Resource.h"
+#include "shadow/assets/resource/ResourceManager.h"
+#include "shadow/assets/fs/path.h"
 
 namespace ShadowEngine {
 

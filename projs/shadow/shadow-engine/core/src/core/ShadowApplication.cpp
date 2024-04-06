@@ -9,6 +9,7 @@
 #include "shadow/core/convar.h"
 #include "shadow/log/LoggerModule.h"
 #include "shadow/platform/console-setup.h"
+#include "shadow/assets/fs/file.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -20,6 +21,8 @@ namespace SH {
   SHObject_Base_Impl(ShadowApplication)
 
   ShadowApplication *ShadowApplication::instance = nullptr;
+
+  std::unique_ptr<ShadowEngine::FileSystem> ShadowApplication::diskFS = ShadowEngine::FileSystem::createDiskFS("./");
 
   ShadowApplication::ShadowApplication(int argc, char *argv[]) {
       instance = this;
@@ -59,6 +62,8 @@ namespace SH {
       }
 
       moduleManager.Init();
+
+
   }
 
   void ShadowApplication::Start() {
@@ -74,7 +79,7 @@ namespace SH {
 
           eventBus.fire(SH::Events::PreRender());
 
-          Time::UpdateTime();
+          Timer::UpdateTime();
       }
 
       //moduleManager.Destroy();

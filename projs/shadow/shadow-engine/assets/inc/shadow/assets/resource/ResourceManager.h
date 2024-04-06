@@ -1,7 +1,5 @@
 #pragma once
 #include <map>
-#include <fs/hash.h>
-#include <fs/path.h>
 
 namespace ShadowEngine {
 

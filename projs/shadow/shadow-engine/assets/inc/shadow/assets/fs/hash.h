@@ -15,7 +15,7 @@ namespace ShadowEngine {
 
         HeapHash() = default;
         // Hash a string; for paths and such.
-        explicit HeapHash(std::string& str);
+        explicit HeapHash(const std::string& str);
         // Hash arbitrary data.
         HeapHash(const void* data, uint32_t length);
 
@@ -39,7 +39,7 @@ namespace ShadowEngine {
 
         HeapHash32() = default;
         // Hash a string; for paths and such.
-        explicit HeapHash32(std::string& str);
+        explicit HeapHash32(const std::string& str);
         // Hash arbitrary data.
         HeapHash32(const void* data, uint32_t length);
 
@@ -59,7 +59,7 @@ namespace ShadowEngine {
     struct StableHash {
         static StableHash fromLong(size_t data);
         StableHash() = default;
-        explicit StableHash(std::string& str);
+        explicit StableHash(const std::string& str);
         StableHash(const void* data, uint32_t length);
 
         bool operator!= (const StableHash& other) const { return hash != other.hash; }
@@ -80,7 +80,7 @@ namespace ShadowEngine {
     struct StableHash32 {
         static StableHash32 fromInt(uint32_t data);
         StableHash32() = default;
-        StableHash32(std::string& str);
+        StableHash32(const std::string& str);
         StableHash32(const void* data, uint32_t length);
 
         bool operator!= (StableHash32& other) const { return hash != other.hash; }
