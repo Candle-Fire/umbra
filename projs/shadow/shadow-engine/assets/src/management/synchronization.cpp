@@ -1,4 +1,3 @@
-#include <management/synchronization.h>
 
 // This doesn't work on Linux. Sucks to be you? dpeter won't let me do system-specific source files.
 #ifdef _WIN32
@@ -6,7 +5,7 @@
 #include <intrin.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
+#include "shadow/assets/management/synchronization.h"
 
 namespace ShadowEngine { struct NewPlaceholder {}; }
 inline void* operator new(size_t, ShadowEngine::NewPlaceholder, void* where) { return where; }

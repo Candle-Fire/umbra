@@ -5,10 +5,9 @@
 #include "runtime/Runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
 #include "shadow/platform/console-setup.h"
+#include "shadow/assets/fs/file.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -21,9 +20,7 @@ namespace SH {
 
   ShadowApplication *ShadowApplication::instance = nullptr;
 
-  std::unique_ptr<vlkx::RenderCommand> renderCommands;
-
-  std::weak_ptr<VulkanModule> renderer;
+  std::unique_ptr<ShadowEngine::FileSystem> ShadowApplication::diskFS = ShadowEngine::FileSystem::createDiskFS("./");
 
   ShadowApplication::ShadowApplication(int argc, char *argv[]) {
       instance = this;
@@ -64,9 +61,7 @@ namespace SH {
 
       moduleManager.Init();
 
-      renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
 
-      renderCommands = std::make_unique<vlkx::RenderCommand>(2);
   }
 
   void ShadowApplication::Start() {
@@ -79,16 +74,7 @@ namespace SH {
               if (event.type == SDL_QUIT)
                   running = false;
           }
-
-          eventBus.fire(SH::Events::PreRender());
-
-          if (!renderer.expired()) {
-              auto r = renderer.lock();
-              r->BeginRenderPass(renderCommands);
-          }
-
-          renderCommands->nextFrame();
-          Time::UpdateTime();
+          Timer::UpdateTime();
       }
 
       //moduleManager.Destroy();

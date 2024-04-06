@@ -1,8 +1,7 @@
 #pragma once
-#include <fs/iostream.h>
-#include <fs/path.h>
-#include <management/delegate.h>
 #include <memory>
+#include "iostream.h"
+#include "path.h"
 
 template <class T> struct Delegate;
 
@@ -13,7 +12,7 @@ namespace ShadowEngine {
         FileInput();
         ~FileInput() = default;
 
-        [[nodiscard]] bool open(std::string& path);
+        [[nodiscard]] bool open(const std::string& path);
         void close();
 
         using InputStream::read;
@@ -34,7 +33,7 @@ namespace ShadowEngine {
         FileOutput();
         ~FileOutput() = default;
 
-        [[nodiscard]] bool open(std::string& path);
+        [[nodiscard]] bool open(const std::string& path);
         void close();
         void flush();
         bool errored() const { return error; }
@@ -71,31 +70,31 @@ namespace ShadowEngine {
         };
 
         // Create a Filesystem that interacts with files on disk.
-        static std::unique_ptr<FileSystem> createDiskFS(std::string& basePath);
+        static std::unique_ptr<FileSystem> createDiskFS(const std::string& basePath);
         // Create a Virtual Filesystem based on the given path.
-        static std::unique_ptr<FileSystem> createVFS(std::string& basePath);
+        static std::unique_ptr<FileSystem> createVFS(const std::string& basePath);
 
         virtual ~FileSystem() = default;
 
         // Open a file for reading.
-        virtual bool open(std::string& path, FileInput& input) = 0;
+        virtual bool open(const std::string& path, FileInput& input) = 0;
         // Open a file for writing.
-        virtual bool open(std::string& path, FileOutput& output) = 0;
+        virtual bool open(const std::string& path, FileOutput& output) = 0;
         // Check whether a file exists at the given path.
-        virtual bool fileExists(std::string& path) = 0;
+        virtual bool fileExists(const std::string& path) = 0;
         // Get the time a file at the given path was last modified.
-        virtual size_t getLastModified(std::string& path) = 0;
+        virtual size_t getLastModified(const std::string& path) = 0;
         // Copy a file from one path to another.
-        virtual bool copyFile(std::string& from, std::string& to) = 0;
+        virtual bool copyFile(const std::string& from, const std::string& to) = 0;
         // Move a file from one path to another.
-        virtual bool moveFile(std::string& from, std::string& to) = 0;
+        virtual bool moveFile(const std::string& from, const std::string& to) = 0;
         // Disassociate any files at the given path (not an immediate delete)
-        virtual bool deleteFile(std::string& path) = 0;
+        virtual bool deleteFile(const std::string& path) = 0;
 
         // Get the path that this FileSystem originates at. The default is "/" for VFS, and whatever the Executable Path is for Disk FS.
         virtual std::string const& getBasePath() const = 0;
         // Set a new base path for the FileSystem. Any operations involving file paths will be relative to this new path.
-        virtual void setBasePath(std::string& path) = 0;
+        virtual void setBasePath(const std::string& path) = 0;
 
         // Process all the callbacks for async file operations.
         virtual void processCallbacks() = 0;
