@@ -88,7 +88,7 @@ namespace SH {
           }
 
           renderCommands->nextFrame();
-          Time::UpdateTime();
+          SH::Timer::UpdateTime();
       }
 
       //moduleManager.Destroy();

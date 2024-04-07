@@ -1,7 +1,7 @@
 #pragma once
 #include <shadow/exports.h>
 #include <cstddef>
-#include "shadow/util/Syncronization.h"
+#include "shadow/assets/management/synchronization.h"
 
 namespace SH {
 

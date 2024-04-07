@@ -4,8 +4,7 @@
 #include <filesystem>
 #include <map>
 #include "shadow/assets/fs/iostream.h"
-#include "shadow/assets/fs/path.h"
-#include "shadow/assets/fs/hash.h"
+#include "shadow/core/PathID.h"
 #include <shadow/assets/management/synchronization.h>
 #include <shadow/assets/management/delegate.h>
 
@@ -83,7 +82,7 @@ namespace ShadowEngine {
         assert(handle != INVALID_HANDLE_VALUE);
         size_t written = 0;
         WriteFile((HANDLE) handle, data, (DWORD) size, (LPDWORD) &written, nullptr);
-        error = error | size != written;
+        error = error || size != written;
         return !error;
     }
 
@@ -127,12 +126,12 @@ namespace ShadowEngine {
 
     std::string const& getBasePath() const override { return basePath; }
     void setBasePath(const std::string& path) final {
-        basePath = Path::normalise(path);
+        basePath = SH::Path::normalise(path);
         if (!basePath.ends_with('/') && !basePath.ends_with('\\'))
             basePath.append("/");
     }
 
-    bool saveSync(const Path& path, const uint8_t* data, const size_t size) override {
+    bool saveSync(const SH::Path& path, const uint8_t* data, const size_t size) override {
         FileOutput file;
         std::string fullPath(basePath.append(path.c_str()));
 
@@ -143,7 +142,7 @@ namespace ShadowEngine {
         return res;
     }
 
-    bool readSync(const Path& path, struct OutputMemoryStream& content) override {
+    bool readSync(const SH::Path& path, struct OutputMemoryStream& content) override {
         FileInput file;
         std::string fullPath(basePath.append(path.c_str()));
 
@@ -159,7 +158,7 @@ namespace ShadowEngine {
         return true;
     }
 
-    AsyncHandle readAsync(const Path& file, const ContentCallback& callback) override {
+    AsyncHandle readAsync(const SH::Path& file, const ContentCallback& callback) override {
         if (!file.isEmpty()) return AsyncHandle::invalid();
 
         ShadowEngine::MutexGuard lock(mutex);
@@ -177,7 +176,7 @@ namespace ShadowEngine {
     }
 
     void cancelAsync(AsyncHandle& handle) override {
-        MutexGuard lock(mutex);
+        ShadowEngine::MutexGuard lock(mutex);
 
         for (AsyncRead& read : queue) {
             if (read.id == handle.value) {
@@ -261,8 +260,8 @@ namespace ShadowEngine {
     std::vector<AsyncRead> queue;
     uint64_t workCounter;
     std::vector<AsyncRead> finished;
-    Mutex mutex;
-    Semaphore sem;
+    ShadowEngine::Mutex mutex;
+    ShadowEngine::Semaphore sem;
 
     uint32_t lastID;
 
@@ -277,7 +276,7 @@ namespace ShadowEngine {
 
         const auto count = pack.read<size_t>();
         for (size_t i = 0; i < count; i++) {
-            const auto hash = pack.read<PathHash>();
+            const auto hash = pack.read<SH::PathHash>();
             PackFile& file = packFiles[hash];
             file.offset = pack.read<size_t>();
             file.size = pack.read<size_t>();
@@ -286,15 +285,15 @@ namespace ShadowEngine {
 
     ~VFS() { pack.close(); }
 
-    bool readSync(const Path& path, OutputMemoryStream& content) override {
-        std::string basename = Path::getFilename(const_cast<std::string &>(path.get()));
-        PathHash hash = path.getHash();
+    bool readSync(const SH::Path& path, OutputMemoryStream& content) override {
+        std::string basename = SH::Path::getFilename(const_cast<std::string &>(path.get()));
+        SH::PathHash hash = path.getHash();
 
         auto i = packFiles.find(hash);
         if (i == packFiles.end()) return false;
 
         content.resize(i->second.size);
-        MutexGuard lock(mutex);
+        ShadowEngine::MutexGuard lock(mutex);
 
         const size_t headerSize = sizeof(uint32_t) + packFiles.size() * (3 * sizeof(size_t));
         if (pack.seek(i->second.offset + headerSize) || !pack.read(content.dataMut(), content.size())) {
@@ -310,7 +309,7 @@ namespace ShadowEngine {
       size_t size;
     };
 
-    std::map<PathHash, PackFile> packFiles;
+    std::map<SH::PathHash, PackFile> packFiles;
     FileInput pack;
   };
 

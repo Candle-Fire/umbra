@@ -1,9 +1,8 @@
 #pragma once
 #include <memory>
 #include "iostream.h"
-#include "path.h"
-
-template <class T> struct Delegate;
+#include <shadow/core/PathID.h>
+#include "shadow/assets/management/delegate.h"
 
 namespace ShadowEngine {
 
@@ -102,12 +101,12 @@ namespace ShadowEngine {
         virtual bool hasWork() = 0;
 
         // Write new content to a file synchronously. The thread will be blocked when doing this.
-        virtual bool saveSync(const Path& file, const uint8_t* content, size_t size) = 0;
+        virtual bool saveSync(const SH::Path& file, const uint8_t* content, size_t size) = 0;
         // Read content from a file synchronously. The thread will be blocked when doing this.
-        virtual bool readSync(const Path& file, struct OutputMemoryStream& content) = 0;
+        virtual bool readSync(const SH::Path& file, struct OutputMemoryStream& content) = 0;
 
         // Read a file asynchronously. The given callback will be called with the file content once it is available.
-        virtual AsyncHandle readAsync(const Path& file, const ContentCallback& callback) = 0;
+        virtual AsyncHandle readAsync(const SH::Path& file, const ContentCallback& callback) = 0;
         // Cancel an asynchronous operation, if it is not already complete. The associated callback will be called with a special flag.
         virtual void cancelAsync(AsyncHandle& handle) = 0;
     };
