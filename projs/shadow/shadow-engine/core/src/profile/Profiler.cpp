@@ -1,8 +1,8 @@
 #include <shadow/profile/Profiler.h>
 #include <vector>
 #include "shadow/assets/fs/iostream.h"
-#include "shadow/util/Syncronization.h"
 #include "shadow/core/Time.h"
+#include "shadow/assets/management/synchronization.h"
 #include <shadow/core/Thread.h>
 #include <shadow/platform/Common.h>
 

@@ -2,8 +2,7 @@
 #include <memory>
 #include "iostream.h"
 #include "path.h"
-
-template <class T> struct Delegate;
+#include "shadow/assets/management/delegate.h"
 
 namespace ShadowEngine {
 

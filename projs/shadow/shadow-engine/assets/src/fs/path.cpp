@@ -4,6 +4,7 @@
 #include <shadow/assets/str/string.h>
 #include <shadow/assets/fs/hash.h>
 #include <cstring>
+#include "shadow/util/string-helpers.h"
 
 namespace ShadowEngine {
 
@@ -15,7 +16,7 @@ namespace ShadowEngine {
 
     void Path::set(const std::string &str) {
 #ifdef _WIN32
-        std::string temp = Str::toLower((std::string&) str);
+        std::string temp = SH::Util::Str::toLower((std::string&) str);
         hash = PathHash(temp);
 #else
         hash = PathHash(str);

@@ -93,7 +93,7 @@ namespace SH {
   }
 
   void Thread::Notify() {
-      implementation->cv.wakeup();
+      implementation->cv.wake();
   }
 
   bool Thread::IsRunning() const {
