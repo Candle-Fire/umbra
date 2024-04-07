@@ -9,6 +9,7 @@
 #include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
 #include "shadow/platform/console-setup.h"
+#include "shadow/assets/fs/file.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -20,6 +21,8 @@ namespace SH {
   SHObject_Base_Impl(ShadowApplication)
 
   ShadowApplication *ShadowApplication::instance = nullptr;
+
+  std::unique_ptr<ShadowEngine::FileSystem> ShadowApplication::diskFS = ShadowEngine::FileSystem::createDiskFS("./");
 
   std::unique_ptr<vlkx::RenderCommand> renderCommands;
 
@@ -80,7 +83,7 @@ namespace SH {
                   running = false;
           }
 
-          eventBus.fire(SH::Events::PreRender());
+          //eventBus.fire(SH::Events::PreRender());
 
           if (!renderer.expired()) {
               auto r = renderer.lock();
@@ -88,7 +91,7 @@ namespace SH {
           }
 
           renderCommands->nextFrame();
-          Time::UpdateTime();
+          SH::Timer::UpdateTime();
       }
 
       //moduleManager.Destroy();

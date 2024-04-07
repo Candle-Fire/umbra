@@ -6,6 +6,7 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
 #include "shadow/event-bus/event_bus.h"
+#include "shadow/assets/fs/file.h"
 
 #include <string>
 
@@ -16,12 +17,15 @@ namespace SH {
     /// </summary>
     class API ShadowApplication : SH::SHObject {
       SHObject_Base(ShadowApplication)
-        /// <summary>
+    public:
+      static std::unique_ptr<ShadowEngine::FileSystem> diskFS;
+      /// <summary>
         /// This is the singleton instance
         /// </summary>
         static ShadowApplication *instance;
+    private:
 
-        /// <summary>
+      /// <summary>
         /// The module manager instance
         /// </summary>
         ModuleManager moduleManager;

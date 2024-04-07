@@ -18,8 +18,6 @@ namespace SH::Debug {
     bool w_modules = true;
     bool w_imguiDemo = true;
 
-    void DrawDirect(SH::Events::OverlayRender &);
-
     void DrawModuleWindow();
 
     void DrawTimeWindow();
