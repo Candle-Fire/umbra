@@ -13,11 +13,6 @@ namespace SH::Entities {
 
     MODULE_ENTRY(SH::Entities::EntitySystem, EntitySystem)
 
-    void EntitySystem::OverlayRender(SH::Events::OverlayRender &) {
-        SH::Entities::Debugger::AllocationDebugger::Draw();
-        SH::Entities::Editor::HierarchyWindow::Draw();
-    }
-
     EntitySystem::EntitySystem() {
         //AddChild a new scene to the world
         auto scene = world.AddScene<Scene>({"Generated Scene"});
@@ -39,9 +34,14 @@ namespace SH::Entities {
 
     }
 
+    //void Render(SH::Events::Render& r) {
+    //  SH::Entities::Debugger::AllocationDebugger::Draw();
+    //  SH::Entities::Editor::HierarchyWindow::Draw();
+    //}
+
     void EntitySystem::Init() {
-        SH::ShadowApplication::Get().GetEventBus()
-            .subscribe(this, &EntitySystem::OverlayRender);
+        //SH::ShadowApplication::Get().GetEventBus()
+        //    .subscribe(this, &Render);
     }
 
     void EntitySystem::Update(int frame) {

@@ -25,8 +25,6 @@ namespace SH::Editor {
 
     void RegisterMenu(std::string path, Menu m);
 
-    void OverlayRender(SH::Events::OverlayRender &);
-
     void DrawMenu();
 
   private:

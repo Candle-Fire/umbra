@@ -76,7 +76,7 @@ namespace SH {
                   running = false;
           }
 
-          eventBus.fire(SH::Events::PreRender());
+          //eventBus.fire(SH::Events::PreRender());
 
           Timer::UpdateTime();
       }

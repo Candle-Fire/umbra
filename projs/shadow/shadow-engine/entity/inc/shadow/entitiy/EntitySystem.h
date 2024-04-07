@@ -30,8 +30,6 @@ namespace SH::Entities {
         void Init() override;
 
         void Update(int frame) override;
-
-        void OverlayRender(SH::Events::OverlayRender &);
     };
 
 }

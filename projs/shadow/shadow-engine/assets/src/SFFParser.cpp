@@ -1,5 +1,6 @@
-#include "SFFParser.h"
-#include "string-helpers.h"
+#include "shadow/assets/sff/SFFElement.h"
+#include "shadow/util/string-helpers.h"
+#include <shadow/assets/sff/SFFParser.h>
 
 #include <fstream>
 
@@ -95,7 +96,7 @@ namespace Shadow::SFF {
 	SFFVersion SFFParser::ReadVersionFromHeader(std::istream& stream) {
 		std::string line;
 		std::getline(stream, line);
-		auto parts = explode(line, '_');
+		auto parts = SH::Util::Str::explode(line, '_');
 		if (parts[0] != "ShadowFileFormat") {
 			return SFFVersion(-1, -1, -1);
 		}

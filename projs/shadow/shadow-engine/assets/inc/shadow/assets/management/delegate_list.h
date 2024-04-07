@@ -1,5 +1,5 @@
 #pragma once
-#include <management/delegate.h>
+#include <shadow/assets/management/delegate.h>
 #include <vector>
 #include <cstdint>
 
@@ -42,7 +42,7 @@ namespace ShadowEngine {
             {
                 if (m_delegates[i] == cb)
                 {
-                    m_delegates.swapAndPop(i);
+                    //m_delegates.swapAndPop(i);
                     break;
                 }
             }

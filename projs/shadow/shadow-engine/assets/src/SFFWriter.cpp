@@ -1,5 +1,4 @@
-#include "SFFWriter.h"
-
+#include <shadow/assets/sff/SFFWriter.h>
 
 namespace Shadow::SFF {
 
