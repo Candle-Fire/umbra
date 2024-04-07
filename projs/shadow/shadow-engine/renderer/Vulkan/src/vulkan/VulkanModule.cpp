@@ -101,8 +101,8 @@ void VulkanModule::PreInit() {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -168,9 +168,9 @@ void VulkanModule::PreInit() {
     editorPass = std::make_unique<vlkx::ScreenRenderPassManager>(vlkx::RendererConfig{2, swapchain->images, true});
     editorPass->initializeRenderPass();
 
-    ImGui_ImplVulkan_Init(&init_info, **(editorEnabled ? editorPass : renderPass)->getPass());
+    ImGui_ImplVulkan_Init(&init_info);
 
-    VkTools::immediateExecute([](const VkCommandBuffer &commands) { ImGui_ImplVulkan_CreateFontsTexture(commands); },
+    VkTools::immediateExecute([](const VkCommandBuffer &commands) { ImGui_ImplVulkan_CreateFontsTexture(); },
                               getDevice());
 
     if (editorEnabled) {
@@ -232,11 +232,11 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
                                                         commands);
 
                                                     // Update and Render additional Platform Windows
-                                                    if (io.ConfigFlags
-                                                        & ImGuiConfigFlags_ViewportsEnable) {
-                                                        ImGui::UpdatePlatformWindows();
-                                                        ImGui::RenderPlatformWindowsDefault();
-                                                    }
+                                                    //if (io.ConfigFlags
+                                                    //    & ImGuiConfigFlags_ViewportsEnable) {
+                                                    //    ImGui::UpdatePlatformWindows();
+                                                    //    ImGui::RenderPlatformWindowsDefault();
+                                                    //}
                                                 }
                                             });
                           }

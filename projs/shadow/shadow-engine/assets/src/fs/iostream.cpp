@@ -7,6 +7,8 @@ namespace ShadowEngine {
     OutputMemoryStream::OutputMemoryStream(void *data, size_t size)
         : buffer(static_cast<uint8_t *>(data)), capacity(size), usage(0) {}
 
+    OutputMemoryStream::OutputMemoryStream() : buffer(), capacity(0), usage(0) {}
+
     OutputMemoryStream::OutputMemoryStream(ShadowEngine::OutputMemoryStream &&str) noexcept {
         capacity = str.capacity;
         buffer = str.buffer;
@@ -99,6 +101,18 @@ namespace ShadowEngine {
         std::string str = std::to_string(val);
         write(str.c_str(), str.length());
         return *this;
+    }
+
+    void OutputMemoryStream::resize(size_t size) {
+        if (size > 0) {
+            auto* newbuffer = (uint8_t*)malloc(size);
+            memcpy(newbuffer, buffer, usage);
+            capacity = size;
+            delete[] buffer;
+        } else {
+            delete[] buffer;
+            capacity = 0;
+        }
     }
 
     void OutputMemoryStream::write(std::string &str) {

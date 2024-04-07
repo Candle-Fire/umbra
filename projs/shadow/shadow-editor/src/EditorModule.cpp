@@ -16,13 +16,13 @@ namespace SH::Editor {
   void EditorModule::OverlayRender(SH::Events::OverlayRender &) {
       static bool dockspaceOpen = true;
 
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-      static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar; //| ImGuiWindowFlags_NoDocking;
+      //static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
       ImGuiViewport *viewport = ImGui::GetMainViewport();
       ImGui::SetNextWindowPos(viewport->Pos);
       ImGui::SetNextWindowSize(viewport->Size);
-      ImGui::SetNextWindowViewport(viewport->ID);
+      //ImGui::SetNextWindowViewport(viewport->ID);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
       window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
@@ -38,10 +38,10 @@ namespace SH::Editor {
       ImGuiStyle &style = ImGui::GetStyle();
       float minWinSizeX = style.WindowMinSize.x;
       style.WindowMinSize.x = 370.0f;
-      if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-          ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-          ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-      }
+      //if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+      //    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+      //    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+      //}
 
       if (ImGui::BeginMenuBar()) {
           DrawMenu();

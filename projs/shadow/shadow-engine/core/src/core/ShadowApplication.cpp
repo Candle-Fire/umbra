@@ -63,7 +63,6 @@ namespace SH {
 
       moduleManager.Init();
 
-
   }
 
   void ShadowApplication::Start() {
