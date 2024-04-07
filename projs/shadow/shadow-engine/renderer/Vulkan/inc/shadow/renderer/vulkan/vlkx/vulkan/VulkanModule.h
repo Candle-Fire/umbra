@@ -10,14 +10,15 @@
 #include "shadow/core/Module.h"
 #include "SwapChain.h"
 #include "shadow/event-bus/events.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
 
 namespace vlkx { class ScreenRenderPassManager; }
 
-class VulkanModule : public SH::RendererModule {
+class VulkanModule : public SH::Module {
 SHObject_Base(VulkanModule);
 public:
 
-  VulkanModule() : RendererModule() { instance = this; }
+  VulkanModule() : Module() { instance = this; }
 
   ~VulkanModule() override;
 
@@ -33,15 +34,14 @@ public:
 
   void Recreate();
 
-  void PreRender(SH::Events::PreRender);
 
   void Destroy() override;
 
-  void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) override;
+  void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands);
 
-  void EnableEditor() override;
+  void EnableEditor();
 
-  VkExtent2D GetRenderExtent() override;
+  VkExtent2D GetRenderExtent();
 
   // VulkanModule is a singleton class.
   static VulkanModule *instance;

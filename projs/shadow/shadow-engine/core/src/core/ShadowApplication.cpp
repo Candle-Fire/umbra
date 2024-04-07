@@ -83,7 +83,7 @@ namespace SH {
                   running = false;
           }
 
-          eventBus.fire(SH::Events::PreRender());
+          //eventBus.fire(SH::Events::PreRender());
 
           if (!renderer.expired()) {
               auto r = renderer.lock();

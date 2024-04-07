@@ -221,7 +221,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
                                                     ImGui_ImplSDL2_NewFrame();
                                                     ImGui::NewFrame();
 
-                                                    SH::ShadowApplication::Get().GetEventBus().fire(SH::Events::OverlayRender());
+                                                    //SH::ShadowApplication::Get().GetEventBus().fire(SH::Events::OverlayRender());
 
                                                     ImGui::Render();
                                                     ImGuiIO &io = ImGui::GetIO();
@@ -247,7 +247,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
     }
 }
 
-void VulkanModule::PreRender(SH::Events::PreRender) {
+/*void VulkanModule::PreRender(SH::Events::PreRender) {
     if (editorEnabled) {
         editorRenderCommands->executeSimple(editorRenderCommands->getFrame(),
                                             [](const int frame) {
@@ -267,7 +267,7 @@ void VulkanModule::PreRender(SH::Events::PreRender) {
         );
 
     }
-}
+}*/
 
 void VulkanModule::Destroy() {
     ImGui_ImplVulkan_Shutdown();
@@ -374,6 +374,6 @@ VkDescriptorSet VulkanModule::getEditorRenderPlanes() {
 }
 
 void VulkanModule::Init() {
-    SH::ShadowApplication::Get().GetEventBus()
-        .subscribe<SH::Events::PreRender>(std::bind(&VulkanModule::PreRender, this, std::placeholders::_1));
+    //SH::ShadowApplication::Get().GetEventBus()
+    //    .subscribe<SH::Events::PreRender>(std::bind(&VulkanModule::PreRender, this, std::placeholders::_1));
 }

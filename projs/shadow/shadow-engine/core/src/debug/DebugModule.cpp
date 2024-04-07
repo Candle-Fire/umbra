@@ -52,14 +52,4 @@ void SH::Debug::DebugModule::DrawImguiDemo() {
 }
 
 void SH::Debug::DebugModule::Init() {
-    SH::ShadowApplication::Get().GetEventBus().subscribe(
-        this,
-        &DebugModule::DrawDirect
-    );
-}
-
-void SH::Debug::DebugModule::DrawDirect(SH::Events::OverlayRender &) {
-    //this->DrawModuleWindow();
-    //this->DrawImguiDemo();
-    //this->DrawTimeWindow();
 }
