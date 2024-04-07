@@ -1,13 +1,8 @@
 cmake_minimum_required(VERSION 3.24)
 
-set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
+include(FetchContent)
 
-#if (MSVC)
-#    add_compile_options(-Zc:externC /permissive- /Zc:__cplusplus /Zc:inline /Zc:preprocessor /Zc:lambda /Zc:templateScope)
-#endif ()
-if (GNU)
-    #add_compile_options(-fpermissive)
-endif ()
+set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 0)
 
 # Import some find files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")

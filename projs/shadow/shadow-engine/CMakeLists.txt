@@ -1,7 +1,4 @@
-#find_package(Vulkan REQUIRED)
-#find_package(DirectXMath REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
-#find_package(glm REQUIRED)
 find_package(ImGui REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
