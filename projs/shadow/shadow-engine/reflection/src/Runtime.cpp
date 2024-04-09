@@ -1,6 +1,7 @@
 #include "runtime/Runtime.h"
 #include "spdlog/spdlog.h"
 #include "runtime/native_loading.h"
+#include <ranges>
 
 namespace Runtime {
 

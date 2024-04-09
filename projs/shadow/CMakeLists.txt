@@ -1,5 +1,7 @@
 project(shadow)
 
+include(FetchContent)
+
 # External code
 add_subdirectory(extern/dxmath)
 add_subdirectory(extern/glm)

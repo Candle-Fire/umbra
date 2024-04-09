@@ -47,7 +47,7 @@ namespace SH {
       return path != rhs.path;
   }
 
-  std::string Path::normalise(std::string &id) {
+  std::string Path::normalise(const std::string &id) {
       size_t atPos = id.find('@');
       size_t colonPos = id.rfind(':');
 
@@ -77,7 +77,7 @@ namespace SH {
       }
   }
 
-  std::string Path::getPrelude(std::string &path) {
+  std::string Path::getPrelude(const std::string &path) {
       return Util::Str::substr_range(path, 0, path.find_first_of('@'));
   }
 
@@ -103,19 +103,19 @@ namespace SH {
       return Util::Str::substr_range(path, path.find_first_of(':') + 1, path.find_last_of('/'));
   }
 
-  std::string Path::getFilename(std::string &path) {
+  std::string Path::getFilename(const std::string &path) {
       return path.substr(path.find_last_of('/') + 1);
   }
 
-  std::string Path::getExtension(std::string &path) {
+  std::string Path::getExtension(const std::string &path) {
       return Util::Str::substr_range(path, path.find_last_of('.') + 1, path.length());
   }
 
-  std::string Path::replaceExtension(std::string &path, std::string &newExt) {
+  std::string Path::replaceExtension(const std::string &path, const std::string &newExt) {
       return Util::Str::substr_range(path, 0, path.length() - newExt.length()).append(newExt);
   }
 
-  bool Path::hasExtension(std::string &path, std::string &ext) {
+  bool Path::hasExtension(const std::string &path, const std::string &ext) {
       return path.rfind(ext) == (path.length() - ext.length());
   }
   bool Path::operator<(const Path &rhs) const {

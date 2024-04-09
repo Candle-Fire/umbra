@@ -34,10 +34,10 @@ namespace SH {
     // Make sure the path is valid.
     // Always from the root.
     // One slash separating.
-    static std::string normalise(std::string &path);
+    static std::string normalise(const std::string &path);
 
     // Get the prelude of the given path.
-    static std::string getPrelude(std::string &path);
+    static std::string getPrelude(const std::string &path);
 
     // Get the domain of the given path.
     static std::string getDomain(const std::string &path);
@@ -46,16 +46,16 @@ namespace SH {
     static std::string getDirectory(const std::string &path);
 
     // Get the name of the file of the given path.
-    static std::string getFilename(std::string &path);
+    static std::string getFilename(const std::string &path);
 
     // Get the file extension of the given path.
-    static std::string getExtension(std::string &path);
+    static std::string getExtension(const std::string &path);
 
     // Check if the path has the given extension.
-    static bool hasExtension(std::string &path, std::string &ext);
+    static bool hasExtension(const std::string &path, const std::string &ext);
 
     // Replace the extension of the given path.
-    static std::string replaceExtension(std::string &path, std::string &newExt);
+    static std::string replaceExtension(const std::string &path, const std::string &newExt);
 
     Path();
 
