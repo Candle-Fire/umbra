@@ -6,7 +6,6 @@
 #include <shadow/core/Thread.h>
 #include <shadow/platform/Common.h>
 
-#ifdef _WIN32
 #define INITGUID
 #define NOGDI
 #define WIN32_LEAN_AND_MEAN
@@ -14,8 +13,6 @@
 #include <evntcons.h>
 #include <atomic>
 #include <cstring>
-
-#endif
 
 namespace SH {
 
@@ -40,8 +37,6 @@ namespace SH {
     size_t threadID;
   };
 
-  // This ifdef contains a bunch of the infrastructure necessary for performance monitoring under Windows.
-  #ifdef _WIN32
   #define SWITCH_OPCODE 36
   #pragma pack(1)
   struct TraceProperties {
@@ -73,15 +68,6 @@ namespace SH {
 
     TRACEHANDLE handle;
   };
-  #else
-
-  struct TraceTask {
-    TraceTask() {}
-    void Destroy() {}
-    int handle;
-  };
-  void CloseTrace(int) {}
-  #endif
 
   // The profiler instance.
   // Manages the profiler threads.
@@ -96,7 +82,6 @@ namespace SH {
     }
 
     void startTrace() {
-        #ifdef _WIN32
         static TRACEHANDLE handle;
         static TraceProperties properties = {
             .base = {
@@ -138,7 +123,6 @@ namespace SH {
 
         task.handle = OpenTrace(&trace);
         task.Start("Profiler Trace", true);
-        #endif
     }
 
     // Get the thread context for our thread.
@@ -147,7 +131,7 @@ namespace SH {
     ThreadContext* getNewThreadContext() {
         thread_local ThreadContext* ctx = [&]() {
           auto *newCtx = new ThreadContext(5 * 1024 * 1024);
-          newCtx->threadID = ifsystem(pthread_self(), reinterpret_cast<size_t>(::GetCurrentThread()), pthread_self());
+          newCtx->threadID = reinterpret_cast<size_t>(::GetCurrentThread());
           ShadowEngine::MutexGuard lock(mut);
           contexts.push_back((newCtx));
           return newCtx;
@@ -319,8 +303,6 @@ namespace SH {
       doCopy(data, size);
   };
 
-  #ifdef _WIN32
-
   TraceTask::TraceTask() : Thread() {}
 
   // The profiler's Thread code.
@@ -344,7 +326,6 @@ namespace SH {
 
       Write(gInstance.global, rec.timestamp, Profiler::EventType::ContextSwitch, rec);
   };
-  #endif
 
   size_t Profiler::MakeCounter(const char* key, float min) {
       Profiler::CounterData c {};
@@ -365,13 +346,13 @@ namespace SH {
   }
 
   void Profiler::PushInt(const char* key, int val) {
-    ThreadContext* ctx = gInstance.getNewThreadContext();
-    Int r = {
-        .key = key,
-        .val = val
-    };
+      ThreadContext* ctx = gInstance.getNewThreadContext();
+      Int r = {
+          .key = key,
+          .val = val
+      };
 
-    Write(*ctx, EventType::Int, (uint8_t*) &r, sizeof(r));
+      Write(*ctx, EventType::Int, (uint8_t*) &r, sizeof(r));
   };
 
   void Profiler::PushString(const char* value) {
@@ -508,13 +489,9 @@ namespace SH {
 
   size_t Profiler::GetFrequency() {
       static size_t frequency;
-      #ifdef _WIN32
       LARGE_INTEGER f;
       QueryPerformanceFrequency(&f);
       frequency = f.QuadPart;
-      #else
-      frequency = 1'000'000'000;
-      #endif
 
       return frequency;
   }
