@@ -46,7 +46,6 @@ namespace ShadowEngine {
   /**
    * Handles all of the ResourceTypeManagers, for every ResourceType with at least one applicable Resource
    */
-
   struct ResourceManager {
     using ResourceTypeManagers = std::map<ResourceType, ResourceTypeManager*>;
 
@@ -57,6 +56,7 @@ namespace ShadowEngine {
       void continueLoad(Resource& res);
     };
 
+    static ResourceManager& Get();
     ResourceManager();
     ~ResourceManager();
     ResourceManager(const ResourceManager& o) = delete;

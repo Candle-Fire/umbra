@@ -4,6 +4,8 @@
 
 namespace ShadowEngine {
 
+  ResourceManager* manager;
+
   void ResourceTypeManager::create(struct ResourceType type, struct ResourceManager &manager) {
       manager.add(type, this);
       owner = &manager;
@@ -108,7 +110,11 @@ namespace ShadowEngine {
       managers(),
       hook(nullptr),
       filesystem(nullptr) {
+      manager = this;
+  }
 
+  ResourceManager& ResourceManager::Get() {
+      return *manager;
   }
 
   ResourceManager::~ResourceManager() = default;

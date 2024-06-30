@@ -5,7 +5,7 @@
 
 namespace rx {
     class Sprite;
-    class SpriteAtlas;
+    class FontSprite;
 
     /**
      * A basic 2D renderer.
@@ -44,20 +44,20 @@ namespace rx {
         void ClearSprites();
         int GetSpriteOrder(Sprite* s);
 
-        void AddAtlas(rx::SpriteAtlas* atlas, const std::string& layer = "");
-        void RemoveAtlas(rx::SpriteAtlas* atlas);
+        void AddAtlas(rx::FontSprite* atlas, const std::string& layer = "");
+        void RemoveAtlas(rx::FontSprite* atlas);
         void ClearAtlases();
-        void GetAtlasOrder(rx::SpriteAtlas* atlas);
+        void GetAtlasOrder(rx::FontSprite* atlas);
 
         struct Renderable2D {
             enum class Type {
                 SPRITE,
-                ATLAS,
+                FONT,
             } type = Type::SPRITE;
 
             union {
                 Sprite* sprite = nullptr;
-                SpriteAtlas* atlas;
+                FontSprite* font;
             };
 
             int order = 0;
@@ -73,7 +73,7 @@ namespace rx {
         void AddLayer(const std::string& name);
         void SetLayerOrder(const std::string& name, int order);
         void SetSpriteOrder(Sprite* s, int order);
-        void SetAtlasOrder(SpriteAtlas* s, int order);
+        void SetAtlasOrder(FontSprite* s, int order);
         void SortLayers();
         void ClearLayers();
 

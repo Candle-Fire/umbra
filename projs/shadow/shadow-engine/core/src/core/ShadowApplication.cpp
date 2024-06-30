@@ -37,6 +37,8 @@ namespace SH {
           }
       }
 
+      resources.init(*diskFS);
+
       if (this->debug)
           spdlog::set_level(spdlog::level::debug);
 

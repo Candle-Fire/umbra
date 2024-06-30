@@ -2,7 +2,7 @@
 #include <renderer/Interface.h>
 #include <renderer/ImageRenderer.h>
 #include <renderer/interfaces/Sprite.h>
-#include <renderer/interfaces/FontAtlas.h>
+#include <renderer/interfaces/FontSprite.h>
 
 namespace rx {
     void Renderer2D::ResizeBuffers() {
@@ -64,9 +64,9 @@ namespace rx {
                         if (renderable.sprite != nullptr)
                             renderable.sprite->Update(dt);
                         break;
-                    case Renderable2D::Type::ATLAS:
-                        if (renderable.atlas != nullptr)
-                            ; // renderable.atlas->Update(dt); TODO: This is not a function that i can find
+                    case Renderable2D::Type::FONT:
+                        if (renderable.font != nullptr)
+                            renderable.font->Update(dt);
                         break;
                 }
             }
@@ -84,9 +84,9 @@ namespace rx {
                         if (renderable.sprite != nullptr)
                             renderable.sprite->FixedUpdate();
                         break;
-                    case Renderable2D::Type::ATLAS:
-                        if (renderable.atlas != nullptr)
-                            ; // renderable.atlas->FixedUpdate(); TODO: This is not a function that i can find
+                    case Renderable2D::Type::FONT:
+                        if (renderable.font != nullptr)
+                            renderable.font->FixedUpdate();
                         break;
                 }
             }
@@ -197,9 +197,9 @@ namespace rx {
                         if (y.sprite != nullptr && y.sprite->params.stencilCompare == rx::ComparisonFunc::NEVER)
                             y.sprite->Draw(commands);
                         break;
-                    case Renderable2D::Type::ATLAS:
-                        if (y.atlas != nullptr)
-                            y.atlas->Draw(commands); TODO: This is not a function that i can find
+                    case Renderable2D::Type::FONT:
+                        if (y.font != nullptr)
+                            y.font->Draw(commands);
                         break;
                 }
             }
@@ -329,7 +329,7 @@ namespace rx {
 
             std::vector<Renderable2D> toRetain;
             for (auto& y : x.renderables) {
-                if (y.sprite != nullptr || y.atlas != nullptr)
+                if (y.sprite != nullptr || y.font != nullptr)
                     toRetain.push_back(y);
             }
             x.renderables.clear();
