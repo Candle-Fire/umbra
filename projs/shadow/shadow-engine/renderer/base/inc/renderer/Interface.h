@@ -5,7 +5,6 @@
 #include "GraphicsDefine.h"
 #include <functional>
 #include <cassert>
-#include <string.h>
 #include <cstring>
 
 /**
@@ -15,6 +14,20 @@
  */
 
 namespace rx {
+
+    static constexpr uint32_t BIND_CONSTANTS = 14;
+    static constexpr uint32_t BIND_SHADERS = 16;
+    static constexpr uint32_t BIND_UNIFORMS = 16;
+    static constexpr uint32_t BIND_SAMPLERS = 8;
+    struct DescriptorBinds {
+      GPUBuffer constants[BIND_CONSTANTS];
+      size_t constantOffsets[BIND_CONSTANTS] = {};
+      GPUResource shaders[BIND_SHADERS];
+      int shaderIndex[BIND_SHADERS] = {};
+      GPUResource uniforms[BIND_UNIFORMS];
+      int uniformIndex[BIND_UNIFORMS];
+      Sampler samplers[BIND_SAMPLERS];
+    };
 
     /**
      * A command list owned by a single thread.
@@ -328,7 +341,7 @@ namespace rx {
             GPUBuffer buffer;
             size_t offset = 0;
             size_t alignment = 0;
-            void reset() {
+            void Reset() {
                 offset = 0;
             }
         };
@@ -341,7 +354,7 @@ namespace rx {
             GPUBuffer buffer;
             size_t offset = 0;
 
-            inline bool isValid() const { return data != nullptr && buffer.isValid(); }
+            inline bool IsValid() const { return data != nullptr && buffer.isValid(); }
         };
 
         // Start a staging buffer that will allow us to write to the GPU and copy it into a different buffer.
@@ -373,7 +386,7 @@ namespace rx {
             alloc.data = (void*)((size_t) allocator.buffer.mapped + allocator.offset);
             allocator.offset += AlignTo(size, allocator.alignment);
 
-            assert(alloc.isValid());
+            assert(alloc.IsValid());
             return alloc;
         }
 

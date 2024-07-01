@@ -268,7 +268,7 @@ namespace rx::Image {
             image.flags |= IMAGE_FLAG_COLORSPACE_HDR;
         if (mode.isLinear()) {
             image.flags |= IMAGE_FLAG_COLORSPACE_LINEAR;
-            image.hdrScaling = mode.HDRScaling
+            image.hdrScaling = mode.HDRScaling;
         }
         if (mode.isFullscreen())
             image.flags |= IMAGE_FLAG_FULLSCREEN;
@@ -362,7 +362,7 @@ namespace rx::Image {
 
         interface->BindStencil(stencil, cmd);
 
-        interface->BindPSO(&imagePSO[mode.stencilBlend][mode.stencilCompare][mode.isDepthTest()][strip], cmd);
+        interface->BindPSO(&imagePSO[static_cast<uint32_t>(mode.stencilBlend)][static_cast<uint32_t>(mode.stencilCompare)][static_cast<uint32_t>(mode.isDepthTest())][static_cast<uint32_t>(strip)], cmd);
 
         interface->BindDynamicConstants(image, BUFFER_IMAGE, cmd);
 
