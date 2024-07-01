@@ -1,3 +1,5 @@
+
+#include "renderer/Renderer.h"
 #include <renderer/interfaces/Font.h>
 #include <unordered_set>
 #include "imstb_truetype.h"
@@ -6,7 +8,6 @@
 #include "shadow/core/ShadowApplication.h"
 #include "renderer/interfaces/Sprite.h"
 #include "shadow/util/string-helpers.h"
-#include "renderer/Renderer.h"
 #include "shadow/core/Time.h"
 #include <shader/modules/Font.h>
 #include <renderer/assets/BuiltinFont.h>

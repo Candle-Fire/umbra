@@ -6,7 +6,6 @@
 #include <atomic>
 #include "Canvas.h"
 #include "Interface.h"
-#include "shadow/entity/graph/graph.h"
 #include "shadow/entity/primitive/PrimitiveObjects.h"
 #include "shadow/entity/entities/CameraComponent.h"
 #include <renderer/GraphicsDefine.h>
