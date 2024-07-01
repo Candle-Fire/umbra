@@ -2407,6 +2407,17 @@ namespace rx {
     }
 }
 
+
+#undef bitfield
+#undef bit
+
+#undef descriptor
+
+#undef graphicsItem
+#undef resource
+
+#undef metaHolder
+
 template<>
 struct enable_bitmask_operators<rx::BindFlag> {
     static const bool enable = true;

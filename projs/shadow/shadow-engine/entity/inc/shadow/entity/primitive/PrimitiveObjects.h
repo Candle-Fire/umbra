@@ -4,7 +4,7 @@
 #include <limits>
 #include "glm/glm.hpp"
 
-#define limit(x, y) std::numeric_limits<x>::y()
+#define rxlimit(x, y) std::numeric_limits<x>::y()
 namespace rx {
 
   struct Sphere;
@@ -26,7 +26,7 @@ namespace rx {
     uint32_t layerMask = ~0;
     uint32_t userData = 0;
 
-    AABB( const DirectX::XMFLOAT3& min = DirectX::XMFLOAT3(limit(float, max), limit(float, max), limit(float, max)), const DirectX::XMFLOAT3& max = DirectX::XMFLOAT3(limit(float, lowest), limit(float, lowest), limit(float, lowest)))
+    AABB( const DirectX::XMFLOAT3& min = DirectX::XMFLOAT3(rxlimit(float, max), rxlimit(float, max), rxlimit(float, max)), const DirectX::XMFLOAT3& max = DirectX::XMFLOAT3(rxlimit(float, lowest), rxlimit(float, lowest), rxlimit(float, lowest)))
         : min(min), max(max) {}
 
     void CreateFromHalfWidth(const DirectX::XMFLOAT3& center, const DirectX::XMFLOAT3& halfWidth);

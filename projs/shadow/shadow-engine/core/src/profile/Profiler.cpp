@@ -6,17 +6,17 @@
 #include <evntcons.h>
 #endif
 
-#include <shadow/profile/Profiler.h>
-#include <vector>
 #include "shadow/assets/fs/iostream.h"
-#include "shadow/util/Syncronization.h"
 #include "shadow/core/Time.h"
-#include <shadow/core/Thread.h>
-#include <shadow/platform/Common.h>
+#include "shadow/util/Syncronization.h"
+#include "shadow/core/Thread.h"
 #include <atomic>
+#include <cmath>
 #include <cstring>
 #include <limits>
-#include <cmath>
+#include <shadow/platform/Common.h>
+#include <shadow/profile/Profiler.h>
+#include <vector>
 
 namespace SH {
 

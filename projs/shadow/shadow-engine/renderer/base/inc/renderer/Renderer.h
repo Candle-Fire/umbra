@@ -9,6 +9,7 @@
 #include "shadow/entity/graph/graph.h"
 #include "shadow/entity/primitive/PrimitiveObjects.h"
 #include "shadow/entity/entities/CameraComponent.h"
+#include <renderer/GraphicsDefine.h>
 
 #define arraysize(a) (sizeof(a) / sizeof(a[0]))
 
@@ -663,8 +664,8 @@ namespace rx {
 
         struct CustomShader {
             std::string name;
-            uint32_t filterMaskk = static_cast<uint32_t>(defs::Filter::OPAQUE);
-            PipelineState pso[static_cast<uint32_t>(defs::RenderPass::SIZE)];
+            uint32_t filterMask = static_cast<uint32_t>(rx::defs::Filter::OPAQUE);
+            PipelineState pso[static_cast<uint32_t>(rx::defs::RenderPass::SIZE)];
         };
 
         int RegisterCustomShader(const CustomShader& shader);

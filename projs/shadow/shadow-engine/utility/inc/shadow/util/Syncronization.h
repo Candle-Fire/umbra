@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #ifdef __linux__
 #include <pthread.h>
 #endif

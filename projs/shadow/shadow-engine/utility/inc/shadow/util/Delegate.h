@@ -7,6 +7,9 @@ namespace ShadowEngine {
   template<typename T> struct Delegate;
 
   template<typename R, typename... Args>
+  bool operator==(const Delegate<R(Args...)> &lhs, const Delegate<R(Args...)> &rhs);
+
+  template<typename R, typename... Args>
   struct Delegate<R(Args...)> {
   private:
     using InstancePtr = void *;
@@ -70,7 +73,7 @@ namespace ShadowEngine {
         return m_stub.second(m_stub.first, args...);
     }
 
-    friend bool operator==(const Delegate<R(Args...)> &lhs, const Delegate<R(Args...)> &rhs);
+    friend bool operator== <>(const Delegate<R(Args...)> &lhs, const Delegate<R(Args...)> &rhs);
 
   private:
     Stub m_stub;
@@ -94,6 +97,6 @@ namespace ShadowEngine {
 
   template<typename R, typename... Args>
   bool operator==(const Delegate<R(Args...)> &lhs, const Delegate<R(Args...)> &rhs) {
-     return lhs.first == rhs.m_stub.first && lhs.second == rhs.m_stub.second;
+     return lhs.m_stub.first == rhs.m_stub.first && lhs.m_stub.second == rhs.m_stub.second;
   }
 }

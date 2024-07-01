@@ -1,8 +1,8 @@
 #pragma once
 
-#include "renderer/assets/RenderResource.h"
 #include "imstb_rectpack.h"
 #include "shadow/assets/resource/Resource.h"
+#include <renderer/ImageRenderer.h>
 
 namespace rx {
     class Sprite {
@@ -20,7 +20,7 @@ namespace rx {
         std::string textureName;
         std::string maskName;
 
-        Image::RenderMode params;
+        rx::Image::RenderMode params;
         rx::Texture& textureResource;
         rx::Texture&  maskResource;
 
