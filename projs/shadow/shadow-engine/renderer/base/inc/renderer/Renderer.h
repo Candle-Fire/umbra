@@ -58,7 +58,7 @@ namespace rx {
         static constexpr ImageFormat rendertargetEnvprobeFormat = ImageFormat::R11G11B10_FLOAT;
         static constexpr ImageFormat depthbufferEnvprobeFormat = ImageFormat::D16_UNORM;
 
-        constexpr uint32_t CombineStencilRefs(rx::defs::StencilReference engineRef, uint32_t userRef) {
+        static constexpr uint32_t CombineStencilRefs(rx::defs::StencilReference engineRef, uint32_t userRef) {
             return (userRef << 4) | static_cast<uint8_t>(engineRef);
         }
 

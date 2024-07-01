@@ -20,7 +20,8 @@ namespace rx::Image {
             BACKGROUND = 32,
             COLORSPACE_HDR = 64,
             COLORSPACE_LINEAR = 128,
-            ROUND_CORNERS = 256
+            ROUND_CORNERS = 256,
+            DEPTH_TEST = 512,
         };
 
         enum class Quality {
@@ -43,6 +44,7 @@ namespace rx::Image {
         float rotation = 0;
         float fade = 0;
         float opacity = 1;
+        float intensity = 1;
         float HDRScaling = 1;
         float maskLowerLimit = 0;
         float maskUpperLimit = 1;
@@ -51,13 +53,15 @@ namespace rx::Image {
                 XMFLOAT2(0, 0), XMFLOAT2(1, 0),
                 XMFLOAT2(0, 1), XMFLOAT2(1, 1)
         };
-        const glm::mat4* customRotate = nullptr;
-        const glm::mat4* customProjection = nullptr;
+        const DirectX::XMMATRIX* customRotate = nullptr;
+        const DirectX::XMMATRIX* customProjection = nullptr;
 
         struct RoundingMode {
             float radius = 0;
             int segments = 18;
         } cornerRounding[4];
+
+        float borderSoften = 0;
 
         uint8_t stencil = 0;
         rx::ComparisonFunc stencilCompare = ComparisonFunc::NEVER;
@@ -80,6 +84,7 @@ namespace rx::Image {
         constexpr bool isHDR() const { return flags & COLORSPACE_HDR; }
         constexpr bool isLinear() const { return flags & COLORSPACE_LINEAR; }
         constexpr bool isRounded() const { return flags & ROUND_CORNERS; }
+        constexpr bool isDepthTest() const { return flags & DEPTH_TEST; }
 
         constexpr void enableDrawRect(const XMFLOAT4& rect) { flags |= RECT; drawRect = rect; }
         constexpr void enableDrawRect2(const XMFLOAT4& rect) { flags |= RECT2; drawRect = rect; }
@@ -90,6 +95,7 @@ namespace rx::Image {
         constexpr void enableHDR() { flags |= COLORSPACE_HDR; }
         constexpr void enableLinear(float scaling = 1) { flags |= COLORSPACE_LINEAR; HDRScaling = scaling; }
         constexpr void enableRounding() { flags |= ROUND_CORNERS; }
+        constexpr void enableDepthTest() { flags |= DEPTH_TEST; }
 
         constexpr void disableDrawRect() { flags &= ~RECT; }
         constexpr void disableDrawRect2() { flags &= ~RECT2; }
@@ -100,6 +106,7 @@ namespace rx::Image {
         constexpr void disableHDR() { flags &= ~COLORSPACE_HDR; }
         constexpr void disableLinear() { flags &= ~COLORSPACE_LINEAR; }
         constexpr void disableRounding() { flags &= ~ROUND_CORNERS; }
+        constexpr void disableDepthTest() { flags &= ~DEPTH_TEST; }
 
         RenderMode() = default;
 

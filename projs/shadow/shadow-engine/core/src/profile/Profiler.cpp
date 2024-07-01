@@ -8,7 +8,7 @@
 
 #include "shadow/assets/fs/iostream.h"
 #include "shadow/core/Time.h"
-#include "shadow/util/Syncronization.h"
+#include "shadow/util/Synchronization.h"
 #include "shadow/core/Thread.h"
 #include <atomic>
 #include <cmath>

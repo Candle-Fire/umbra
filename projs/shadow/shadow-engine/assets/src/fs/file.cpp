@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <shadow/assets/fs/path.h>
 #include <map>
-#include <shadow/util/Syncronization.h>
+#include <shadow/util/Synchronization.h>
 
 namespace ShadowEngine {
 

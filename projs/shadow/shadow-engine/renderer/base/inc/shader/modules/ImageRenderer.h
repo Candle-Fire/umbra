@@ -17,9 +17,9 @@ static const uint IMAGE_FLAG_ROUNDED = 1u << 5u;
 struct ImageConstants {
     uint flags;
     float hdrScaling;
-    uint2 packedColor;
-    uint2 texMulAdd;
-    uint2 texMulAdd2;
+    DirectX::XMFLOAT2 packedColor;
+    DirectX::XMFLOAT4 texMulAdd;
+    DirectX::XMFLOAT4 texMulAdd2;
 
     int bufferIdx;
     uint bufferOffset;
@@ -32,10 +32,10 @@ struct ImageConstants {
     float soften;
     uint alphaMask;
 
-    uint b0;
-    uint b1;
-    uint b2;
-    uint b3;
+    DirectX::XMFLOAT2 b0;
+    DirectX::XMFLOAT2 b1;
+    DirectX::XMFLOAT2 b2;
+    DirectX::XMFLOAT2 b3;
 };
 
 CONSTANTBUFFER(image, ImageConstants, BUFFER_IMAGE);
