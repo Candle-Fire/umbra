@@ -1,3 +1,11 @@
+#ifdef _WIN32
+#define INITGUID
+#define NOGDI
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <evntcons.h>
+#endif
+
 #include <shadow/profile/Profiler.h>
 #include <vector>
 #include "shadow/assets/fs/iostream.h"
@@ -5,17 +13,10 @@
 #include "shadow/core/Time.h"
 #include <shadow/core/Thread.h>
 #include <shadow/platform/Common.h>
-
-#ifdef _WIN32
-#define INITGUID
-#define NOGDI
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <evntcons.h>
 #include <atomic>
 #include <cstring>
-
-#endif
+#include <limits>
+#include <cmath>
 
 namespace SH {
 
@@ -140,6 +141,10 @@ namespace SH {
         task.Start("Profiler Trace", true);
         #endif
     }
+
+    #ifdef WIN32
+    void pthread_self() {}
+    #endif
 
     // Get the thread context for our thread.
     // This is thread_local, so the initializer will run once per thread.
@@ -379,6 +384,8 @@ namespace SH {
       Write(*ctx, EventType::String, (uint8_t *) value, strlen(value) + 1);
   }
 
+  #undef max
+  #undef min
   static constexpr char ToChar(float x) {
       return (char) ((x) * std::numeric_limits<char>::max());
   }
@@ -474,7 +481,7 @@ namespace SH {
           .count = static_cast<uint32_t>(ctx->openBlocks.size()),
           .signal = signal
       };
-      std::memcpy(res.blocks, ctx->openBlocks.data(), std::min(res.count, 16u) * sizeof(res.blocks[0]));
+      std::memcpy(res.blocks, ctx->openBlocks.data(), (std::min)(res.count, 16u) * sizeof(res.blocks[0]));
       Write(*ctx, EventType::FiberWait, r);
       return res;
   }

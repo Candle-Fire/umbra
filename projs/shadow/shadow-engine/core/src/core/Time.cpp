@@ -1,15 +1,15 @@
 #include "shadow/core/Time.h"
 #include <chrono>
 
-API int Time::NOW = 0;//SDL_GetPerformanceCounter();
-API int Time::LAST = 0;
+API int SH::Timer::NOW = 0;//SDL_GetPerformanceCounter();
+API int SH::Timer::LAST = 0;
 API double lastFrame = 0;
-API double Time::deltaTime_ms = 0;
-API double Time::deltaTime = 0;
-API double Time::startTime = 0;
-API double Time::timeSinceStart = 0;
+API double SH::Timer::deltaTime_ms = 0;
+API double SH::Timer::deltaTime = 0;
+API double SH::Timer::startTime = 0;
+API double SH::Timer::timeSinceStart = 0;
 
-void Time::UpdateTime()
+void SH::Timer::UpdateTime()
 {
     using namespace std::chrono;
     auto now = system_clock::now();

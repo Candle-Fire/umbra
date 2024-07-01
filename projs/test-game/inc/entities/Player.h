@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shadow/entitiy/graph/graph.h"
+#include "shadow/entity/graph/graph.h"
 
 class Player : public SH::Entities::Actor {
   SHObject_Base(Player);

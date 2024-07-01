@@ -15,8 +15,8 @@ void SH::Debug::DebugModule::DrawTimeWindow() {
         return;
 
     if (ImGui::Begin("Time", &w_time, ImGuiWindowFlags_MenuBar)) {
-        ImGui::Text("Time since start: %lf", Time::deltaTime_ms);
-        ImGui::Text("Delta time in ms: %lf", Time::deltaTime);
+        ImGui::Text("Time since start: %lf", SH::Timer::deltaTime_ms);
+        ImGui::Text("Delta time in ms: %lf", SH::Timer::deltaTime);
     }
 
     ImGui::End();
@@ -52,14 +52,4 @@ void SH::Debug::DebugModule::DrawImguiDemo() {
 }
 
 void SH::Debug::DebugModule::Init() {
-    SH::ShadowApplication::Get().GetEventBus().subscribe(
-        this,
-        &DebugModule::DrawDirect
-    );
-}
-
-void SH::Debug::DebugModule::DrawDirect(SH::Events::OverlayRender &) {
-    //this->DrawModuleWindow();
-    //this->DrawImguiDemo();
-    //this->DrawTimeWindow();
 }

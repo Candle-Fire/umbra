@@ -1,4 +1,5 @@
-#include "shadow/entitiy/debug/AllocationDebugger.h"
+#include "shadow/entity/debug/AllocationDebugger.h"
+#include "shadow/entity/EntitySystem.h"
 
 namespace SH::Entities::Debugger {
 

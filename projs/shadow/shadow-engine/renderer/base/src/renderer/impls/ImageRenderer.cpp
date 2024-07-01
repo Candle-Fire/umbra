@@ -1,9 +1,9 @@
-#include "shadow/renderer/renderer/ImageRenderer.h"
-#include "shadow/renderer/renderer/Interface.h"
+#include "renderer/ImageRenderer.h"
+#include "renderer/Interface.h"
 #include "spdlog/spdlog.h"
 #include "shadow/core/Time.h"
-#include "shadow/renderer/renderer/Renderer.h"
-#include "shadow/renderer/shader/modules/ImageRenderer.h"
+#include "renderer/Renderer.h"
+#include "shader/modules/ImageRenderer.h"
 
 
 #define GET(x) static_cast<uint32_t>(x)
@@ -60,7 +60,7 @@ namespace rx::Image {
 
     void Initialize() {
         rx::Interface* interface = rx::GetInterface();
-        double time = Time::timeSinceStart;
+        double time = SH::Timer::timeSinceStart;
 
         RasterizerState s {
             .fillMode = rx::DrawMode::SOLID,
@@ -165,7 +165,7 @@ namespace rx::Image {
 
         LoadShaders();
 
-        spdlog::info("ImageRenderer initialized in " + std::to_string(Time::timeSinceStart - time) + "ms");
+        spdlog::info("ImageRenderer initialized in " + std::to_string(SH::Timer::timeSinceStart - time) + "ms");
     }
 
     void Draw(const Texture* tex, const RenderMode* mode, ThreadCommands cmd) {

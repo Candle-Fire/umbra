@@ -2,7 +2,6 @@
 #include "shadow/core/Libraries.h"
 #include "spdlog/spdlog.h"
 #include "dylib.hpp"
-#include "shadow/util/Delegate.h"
 #include <shadow/assets/fs/path.h>
 
 namespace ShadowEngine {
@@ -57,7 +56,7 @@ namespace ShadowEngine {
         return nullptr;
     }
 
-    Delegate<void (void *)> & onLibraryLoaded() override {
+    Delegate<void(void*)>& onLibraryLoaded() override {
         return libraryLoaded;
     }
 

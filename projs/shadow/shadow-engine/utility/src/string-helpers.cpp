@@ -1,3 +1,10 @@
+#ifdef _WIN32
+#define INITGUID
+#define NOGDI
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <evntcons.h>
+#endif
 
 #include <stringapiset.h>
 #include "shadow/util/string-helpers.h"
@@ -66,7 +73,7 @@ namespace SH::Util::Str {
         int num = MultiByteToWideChar(CP_UTF8, 0, from, -1, NULL, 0);
         if (num > 0) {
             if (dest_size_in_characters >= 0) {
-                num = std::min(num, dest_size_in_characters);
+                num = (std::min)(num, dest_size_in_characters);
             }
             MultiByteToWideChar(CP_UTF8, 0, from, -1, &to[0], num);
         }
@@ -88,7 +95,7 @@ namespace SH::Util::Str {
         int num = WideCharToMultiByte(CP_UTF8, 0, from, -1, NULL, 0, NULL, NULL);
         if (num > 0) {
             if (dest_size_in_characters >= 0) {
-                num = std::min(num, dest_size_in_characters);
+                num = (std::min)(num, dest_size_in_characters);
             }
             WideCharToMultiByte(CP_UTF8, 0, from, -1, &to[0], num, NULL, NULL);
         }

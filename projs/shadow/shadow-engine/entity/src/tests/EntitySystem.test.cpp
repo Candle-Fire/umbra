@@ -1,5 +1,5 @@
 
-#include "shadow/entitiy/EntitySystem.h"
+#include "shadow/entity/EntitySystem.h"
 /*
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch2/catch.hpp"

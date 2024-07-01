@@ -3,6 +3,7 @@
 #include <shadow/util/Delegate.h>
 #include <vector>
 #include <cstdint>
+#include <algorithm>
 
 namespace ShadowEngine {
 
@@ -59,7 +60,8 @@ namespace ShadowEngine {
         cb.template bind<Function>(instance);
         for (int i = 0; i < m_delegates.size(); ++i) {
             if (m_delegates[i] == cb) {
-                m_delegates.swapAndPop(i);
+                std::iter_swap(m_delegates.begin() + i, m_delegates.end() - 1);
+                m_delegates.pop_back();
                 break;
             }
         }

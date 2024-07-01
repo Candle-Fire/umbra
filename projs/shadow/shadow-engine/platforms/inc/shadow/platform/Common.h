@@ -2,7 +2,7 @@
 
 #ifdef __linux__
 #define ifsystem(linux,windows,apple) linux
-#elif __WIN32
+#elif WIN32
 #define ifsystem(linux,windows,apple) windows
 #elif __APPLE__
 #define ifsystem(linux,windows,apple) apple

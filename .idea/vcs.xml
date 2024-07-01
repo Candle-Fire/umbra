@@ -3,7 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/projs/shadow/extern/catch2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/projs/shadow/extern/cathc2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/projs/shadow/extern/dxmath" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/projs/shadow/extern/dylib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/projs/shadow/extern/glm" vcs="Git" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shadow/entitiy/graph/graph.h"
+#include "shadow/entity/graph/graph.h"
 
 //Example of a 2d camera component with size
 class TestCamera : public SH::Entities::Component {

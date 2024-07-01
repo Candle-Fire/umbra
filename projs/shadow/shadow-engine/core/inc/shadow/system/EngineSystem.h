@@ -2,8 +2,7 @@
 
 #include <memory>
 #include <vector>
-
-template <typename T> struct Delegate;
+#include "shadow/util/Delegate.h"
 
 namespace ShadowEngine {
 

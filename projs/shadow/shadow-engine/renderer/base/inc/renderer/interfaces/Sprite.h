@@ -2,6 +2,7 @@
 
 #include "renderer/assets/RenderResource.h"
 #include "imstb_rectpack.h"
+#include "shadow/assets/resource/Resource.h"
 
 namespace rx {
     class Sprite {
@@ -20,8 +21,8 @@ namespace rx {
         std::string maskName;
 
         Image::RenderMode params;
-        Resource textureResource;
-        Resource maskResource;
+        rx::Texture& textureResource;
+        rx::Texture&  maskResource;
 
         Sprite(const std::string& newTexture = "", const std::string& newMask = "");
         virtual ~Sprite() = default;
@@ -46,8 +47,8 @@ namespace rx {
         GET_SET_RENDER_MODE(Orthographic, RenderMode::ORTHO);
 
         const Texture* GetTexture() const {
-            if (textureResource.IsValid())
-                return &textureResource.GetTexture();
+            if (textureResource.isValid())
+                return &textureResource;
             return nullptr;
         }
 

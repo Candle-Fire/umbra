@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <assert.h>
 #include "shadow/traits/Bitmask.h"
 
 /**

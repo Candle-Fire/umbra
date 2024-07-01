@@ -6,9 +6,9 @@
 #include <atomic>
 #include "Canvas.h"
 #include "Interface.h"
-#include "shadow/entitiy/graph/graph.h"
-#include "shadow/entitiy/entities/CameraComponent.h"
-#include "shadow/entitiy/primitive/PrimitiveObjects.h"
+#include "shadow/entity/graph/graph.h"
+#include "shadow/entity/primitive/PrimitiveObjects.h"
+#include "shadow/entity/entities/CameraComponent.h"
 
 #define arraysize(a) (sizeof(a) / sizeof(a[0]))
 
@@ -93,7 +93,6 @@ namespace rx {
         struct Visibility {
             uint32_t layerMask = ~0u;
             const SH::Entities::World* world = nullptr;
-            const ShadowEngine::Entities::Builtin::CameraComponent* camera = nullptr;
 
             enum Flags {
                 EMPTY = 0,
@@ -172,9 +171,9 @@ namespace rx {
 
         static void BindCommonResources(ThreadCommands cmd);
 
-        static void BindCamera(const ShadowEngine::Entities::Builtin::CameraComponent& camera,
-                        const ShadowEngine::Entities::Builtin::CameraComponent& cameraLast,
-                        const ShadowEngine::Entities::Builtin::CameraComponent& cameraReflection,
+        static void BindCamera(const SH::Entities::Builtin::CameraComponent& camera,
+                        const SH::Entities::Builtin::CameraComponent& cameraLast,
+                        const SH::Entities::Builtin::CameraComponent& cameraReflection,
                         ThreadCommands cmd);
 
         enum DrawSceneFlags {
@@ -206,7 +205,7 @@ namespace rx {
 
         static void DrawShadowmaps(const Visibility& vis, ThreadCommands cmd);
 
-        static void DrawDebugScene(const SH::Entities::World& world, const ShadowEngine::Entities::Builtin::CameraComponent& cam, const Canvas& cnv, ThreadCommands cmd);
+        static void DrawDebugScene(const SH::Entities::World& world, const SH::Entities::Builtin::CameraComponent& cam, const Canvas& cnv, ThreadCommands cmd);
 
         static void DrawSoftbodyParticles(const Visibility& vis, const Texture& depth, bool distortion, ThreadCommands cmd);
 
@@ -314,7 +313,7 @@ namespace rx {
 
         static void CreateSSAOResources(SSAOResources& res, DirectX::XMUINT2 resolution);
         static void PostprocessSSAO(const SSAOResources& res, const Texture& output, const Texture& linearDepth, ThreadCommands cmd, float range = 1.0f, uint32_t samples = 16, float power = 1.0f);
-        static void PostprocessHBAO(const SSAOResources& res, const ShadowEngine::Entities::Builtin::CameraComponent& camera, const Texture& linearDepth, const Texture& output, ThreadCommands cmd, float power = 1.0f);
+        static void PostprocessHBAO(const SSAOResources& res, const SH::Entities::Builtin::CameraComponent& camera, const Texture& linearDepth, const Texture& output, ThreadCommands cmd, float power = 1.0f);
 
         struct MSAOResources {
             Texture depthDownsize1;
@@ -339,7 +338,7 @@ namespace rx {
         };
 
         static void CreateMSAOResources(MSAOResources& res, DirectX::XMUINT2 resolution);
-        static void PostprocessMSAO(const MSAOResources& res, const ShadowEngine::Entities::Builtin::CameraComponent& camera, const Texture& depth, const Texture& output, ThreadCommands cmd, float power = 1.0f);
+        static void PostprocessMSAO(const MSAOResources& res, const SH::Entities::Builtin::CameraComponent& camera, const Texture& depth, const Texture& output, ThreadCommands cmd, float power = 1.0f);
 
         struct RTAOResources {
             Texture normals;
@@ -487,7 +486,7 @@ namespace rx {
             Texture cloudMask;
         };
         void CreateVCResources(VCResources& res, DirectX::XMUINT2 resolution);
-        void PostprocessVC(const VCResources& res, const ShadowEngine::Entities::Builtin::CameraComponent& camera, const ShadowEngine::Entities::Builtin::CameraComponent& camPrev, const ShadowEngine::Entities::Builtin::CameraComponent& camReflect, const bool jitter, ThreadCommands cmd, const Texture* weatherFirst = nullptr, const Texture* weatherSecond = nullptr);
+        void PostprocessVC(const VCResources& res, const SH::Entities::Builtin::CameraComponent& camera, const SH::Entities::Builtin::CameraComponent& camPrev, const SH::Entities::Builtin::CameraComponent& camReflect, const bool jitter, ThreadCommands cmd, const Texture* weatherFirst = nullptr, const Texture* weatherSecond = nullptr);
         void PostprocessVCUpsample(const VCResources& res, ThreadCommands cmd);
 
         void PostprocessFXAA(const Texture& in, const Texture& out, ThreadCommands cmd);
@@ -532,7 +531,7 @@ namespace rx {
         void RaytraceSceneBVH(const SH::Entities::Scene& scene, ThreadCommands cmd);
 
         void OcclusionCullReset(const Visibility& vis, ThreadCommands cmd);
-        void OcclusionCullRender(const ShadowEngine::Entities::Builtin::CameraComponent& cam, const Visibility& vis, ThreadCommands cmd);
+        void OcclusionCullRender(const SH::Entities::Builtin::CameraComponent& cam, const Visibility& vis, ThreadCommands cmd);
         void OcclusionCullResolve(const Visibility& vis, ThreadCommands cmd);
 
         enum MipFilter {

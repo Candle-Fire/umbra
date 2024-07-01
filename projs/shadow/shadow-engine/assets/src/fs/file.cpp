@@ -1,3 +1,4 @@
+#include <memory>
 #include <shadow/assets/fs/file.h>
 #include <vector>
 #include <spdlog/spdlog.h>
@@ -115,8 +116,8 @@ namespace ShadowEngine {
 
   struct DiskFS : FileSystem {
 
-    explicit DiskFS(std::string& path) : sem(0, 0xffff) {
-        setBasePath(path);
+    explicit DiskFS(const std::string& path) : sem(0, 0xffff) {
+        setBasePath(const_cast<std::string &>(path));
     }
 
     bool hasWork() override {
@@ -267,8 +268,8 @@ namespace ShadowEngine {
   };
 
   struct VFS : DiskFS {
-    VFS(std::string& root_pack_path) : DiskFS((std::string &) "vfs:/") {
-        if (!pack.open(root_pack_path)) {
+    VFS(const std::string& root_pack_path) : DiskFS((std::string &) "vfs:/") {
+        if (!pack.open(const_cast<std::string &>(root_pack_path))) {
             spdlog::error("Unable to open " + root_pack_path + ", please check paths");
             return;
         }

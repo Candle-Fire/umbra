@@ -38,7 +38,7 @@ namespace ShadowEngine {
     }
 
     template<typename T>
-    Delegate(const T &obj) {
+    explicit Delegate(const T &obj) {
         m_stub.first = (InstancePtr) &obj;
         m_stub.second = [](InstancePtr inst, Args... args) -> R {
           const T &obj = *(const T *) inst;
@@ -70,9 +70,7 @@ namespace ShadowEngine {
         return m_stub.second(m_stub.first, args...);
     }
 
-    bool operator==(const Delegate<R(Args...)> &rhs) {
-        return m_stub.first == rhs.m_stub.first && m_stub.second == rhs.m_stub.second;
-    }
+    friend bool operator==(const Delegate<R(Args...)> &lhs, const Delegate<R(Args...)> &rhs);
 
   private:
     Stub m_stub;
@@ -93,4 +91,9 @@ namespace ShadowEngine {
       res.template bind<M, C>(inst);
       return res;
   };
+
+  template<typename R, typename... Args>
+  bool operator==(const Delegate<R(Args...)> &lhs, const Delegate<R(Args...)> &rhs) {
+     return lhs.first == rhs.m_stub.first && lhs.second == rhs.m_stub.second;
+  }
 }

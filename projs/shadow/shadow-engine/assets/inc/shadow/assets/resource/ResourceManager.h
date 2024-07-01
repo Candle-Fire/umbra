@@ -2,6 +2,7 @@
 #include <map>
 #include <shadow/assets/fs/hash.h>
 #include <shadow/assets/fs/path.h>
+#include <shadow/assets/resource/Resource.h>
 
 namespace ShadowEngine {
 

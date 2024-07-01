@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #ifdef __linux__
 #include <pthread.h>
 #endif
@@ -52,7 +53,8 @@ namespace ShadowEngine {
   };
 
 
-  struct ConditionVariable {
+  class ConditionVariable {
+  public:
     ConditionVariable();
 
     ConditionVariable(const ConditionVariable &) = delete;
@@ -65,7 +67,7 @@ namespace ShadowEngine {
 
   private:
 #ifdef _WIN32
-    uint8_t data[64];
+  std::array<uint8_t, 64> data;
 #else
     pthread_cond_t cv;
 #endif
