@@ -1260,7 +1260,7 @@ namespace rx {
      * The GPU uses this information to optimize where in memory it places things for rendering.
      * Proper usage of barriers can bring an astonishing performance boost.
      */
-    descriptor Barrier {
+    descriptor BarrierType {
         enum Type {
             MEMORY,
             IMAGE,
@@ -2426,4 +2426,9 @@ struct enable_bitmask_operators<rx::BindFlag> {
 template<>
 struct enable_bitmask_operators<rx::GraphicsDeviceCapability> {
     static const bool enable = true;
+};
+
+template<>
+struct enable_bitmask_operators<rx::ResourceFlags> {
+  static const bool enable = true;
 };

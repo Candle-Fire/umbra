@@ -81,11 +81,11 @@ namespace rx {
         virtual ~Interface() = default;
 
         // Supports re-creating a swapchain in-place with a changed meta. The window may be null if sc is not null.
-        virtual bool CreateSwapchain(const SwapchainMeta* meta, SDL_Window* window, SwapChain* sc) const = 0;
+        virtual bool CreateSwapchain(const SwapchainMeta* meta, void* window, SwapChain* sc) const = 0;
         // Start a buffer on the GPU. Do not read from dest.
-        virtual bool CreateBuffer(const GPUBufferMeta* meta, const std::function<void(void* dest)>& callback, GPUBuffer* buffer) const = 0;
+        virtual bool CreateBuffer(const GPUBufferMeta* meta, const std::function<void(void* dest)>& callback, GPUBuffer* buffer, const GPUResource* alias = nullptr, size_t aliasOffset = 0) const = 0;
         // Start a texture, with optional initial data.
-        virtual bool CreateTexture(const TextureMeta* meta, const SubresourceMeta* subresource, Texture* tex) const = 0;
+        virtual bool CreateTexture(const TextureMeta* meta, const SubresourceMeta* subresource, Texture* tex, const GPUResource* alias = nullptr, size_t aliasOffset = 0) const = 0;
         // Start a shader from bytecode. Does not accept source, in glsl or hlsl.
         virtual bool CreateShader(ShaderStage stage, const void* code, size_t size, Shader* shader) const = 0;
         // Start a sampler for a generic sample type.
@@ -293,7 +293,7 @@ namespace rx {
         virtual void QueryReset(const GPUQueryHeap* heap, uint32_t idx, uint32_t count, ThreadCommands cmd) {}
 
         // Barrier a state change for a buffer or texture.
-        virtual void Barrier(const Barrier* barriers, uint32_t num, ThreadCommands cmd) = 0;
+        virtual void Barrier(const BarrierType* barriers, uint32_t num, ThreadCommands cmd) = 0;
 
         // Update push constants
         virtual void PushConstants(const void* data, uint32_t size, ThreadCommands cmd, uint32_t offset = 0) = 0;
