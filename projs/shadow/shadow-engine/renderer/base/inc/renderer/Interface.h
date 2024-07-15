@@ -19,6 +19,11 @@ namespace rx {
     static constexpr uint32_t BIND_SHADERS = 16;
     static constexpr uint32_t BIND_UNIFORMS = 16;
     static constexpr uint32_t BIND_SAMPLERS = 8;
+
+    /**
+     * @brief The specific constants, shader resources, uniforms and samplers bound to a single DescriptorBinding.
+     * @note These are the actual items, see the implementations to see how these are tied to a pipeline state object.
+     */
     struct DescriptorBinds {
       GPUBuffer constants[BIND_CONSTANTS];
       size_t constantOffsets[BIND_CONSTANTS] = {};
@@ -48,14 +53,14 @@ namespace rx {
     enum QueueType {
         GRAPHICS,
         COMPUTE,
-        COPY,   // PRESENTATION, in Vulkan.
+        COPY,   // PRESENTATION, in Vulkan. Copies data to the screen.
         VIDEO_DECODE,
         COUNT
     };
 
     /**
      * The interface to the graphics device.
-     * The superclasses of this (GraphicsVulkan and GraphicsDX12) will implement all of these functions via their specific methods.
+     * The superclasses of this (VulkanInterface and DXInterface (and perhaps GLInterface)) will implement all of these functions via their specific methods.
      * Everything that will be needed in the engine is exposed through this interface.
      *
      * Implement (consume) the Interface in an instance of RenderImpl.

@@ -8,52 +8,64 @@
 #include <deque>
 
 namespace rx {
+
+  /**
+   * @brief A way to interact with the Vulkan API without touching any Vulkan includes or structs.
+   * Implements all of the (RenderDevice)Interface functions with reference to the Vulkan API.
+   * Handles all of the Vulkan best practices in a way that users of the Interface need not consider the finer details.
+   * @note All VulkanInterface functions with a ThreadCommands parameter are thread-safe, and can be called in any combination in any order.
+   * @note All structs with a mutex MUST be locked before any changes are made to other data - i.e. CommandQueue.
+   */
   class VulkanInterface : public Interface {
     friend struct CommandQueue;
 
   protected:
+    // Enhanced debug mode - force all validation layers, extra debug logging, enable debug-friendly rendering modes.
     bool debug = false;
-    VkInstance instance = VK_NULL_HANDLE;
-    VkDebugUtilsMessengerEXT debugUtilsMessenger = VK_NULL_HANDLE;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device = VK_NULL_HANDLE;
-    std::vector<VkQueueFamilyProperties2> queueFamilies;
-    std::vector<VkQueueFamilyVideoPropertiesKHR> queueFamiliesVideo;
-    size_t graphicsFamily = VK_QUEUE_FAMILY_IGNORED;
-    size_t computeFamily = VK_QUEUE_FAMILY_IGNORED;
-    size_t copyFamily = VK_QUEUE_FAMILY_IGNORED;
-    size_t videoFamily = VK_QUEUE_FAMILY_IGNORED;
-    std::vector<size_t> families;
-    VkQueue graphicsQueue = VK_NULL_HANDLE;
-    VkQueue computeQueue = VK_NULL_HANDLE;
-    VkQueue copyQueue = VK_NULL_HANDLE;
-    VkQueue videoQueue = VK_NULL_HANDLE;
-    VkPhysicalDeviceProperties2 deviceProps2 = {};
-    VkPhysicalDeviceVulkan11Properties deviceProps11 = {};
-    VkPhysicalDeviceVulkan12Properties deviceProps12 = {};
-    VkPhysicalDeviceVulkan13Properties deviceProps13 = {};
-    VkPhysicalDeviceSamplerFilterMinmaxProperties samplerMinmaxProps = {};
-    VkPhysicalDeviceAccelerationStructurePropertiesKHR accelerationStructureProps = {};
-    VkPhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingProps = {};
-    VkPhysicalDeviceFragmentShadingRatePropertiesKHR fragmentShadingRateProps = {};
-    VkPhysicalDeviceMeshShaderPropertiesEXT meshShaderProps = {};
-    VkPhysicalDeviceMemoryProperties2 memoryProps = {};
-    VkPhysicalDeviceDepthStencilResolveProperties depthStencilResolveProps = {};
-    VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
-    VkPhysicalDeviceVulkan11Features deviceFeatures11 = {};
-    VkPhysicalDeviceVulkan12Features deviceFeatures12 = {};
-    VkPhysicalDeviceVulkan13Features deviceFeatures13 = {};
-    VkPhysicalDeviceAccelerationStructurePropertiesKHR accelerationStructureFeatures = {};
-    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingFeatures = {};
-    VkPhysicalDeviceRayQueryFeaturesKHR rayTracingQueryFeatures = {};
-    VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragmentShadingRateFeatures = {};
-    VkPhysicalDeviceConditionalRenderingFeaturesEXT conditionalRenderingFeatures = {};
-    VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnableFeatures = {};
-    VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures = {};
+    VkInstance instance = VK_NULL_HANDLE;                                                   // The Vulkan process handler instance.
+    VkDebugUtilsMessengerEXT debugUtilsMessenger = VK_NULL_HANDLE;                          // A callback to allow us to wrap the messages coming from Vulkan itself.
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;                                       // A handle for the physical render device we're handling interface to.
+    VkDevice device = VK_NULL_HANDLE;                                                       // A handle to the logical device we're communicating with - effectively a driver handle.
+    std::vector<VkQueueFamilyProperties2> queueFamilies;                                    // The properties of all the queues - see QueueType for a list of these.
+    std::vector<VkQueueFamilyVideoPropertiesKHR> queueFamiliesVideo;                        // The properties of the specific video decoding queue.
+    size_t graphicsFamily = VK_QUEUE_FAMILY_IGNORED;                                        // The queue index of the graphics (render) queue.
+    size_t computeFamily = VK_QUEUE_FAMILY_IGNORED;                                         // The queue index of the compute shader queue.
+    size_t copyFamily = VK_QUEUE_FAMILY_IGNORED;                                            // The queue index of the presentation (draw to screen) queue.
+    size_t videoFamily = VK_QUEUE_FAMILY_IGNORED;                                           // The queue index of the video (h.264) decoder queue.
+    std::vector<size_t> families;                                                           // The indices of all queues supported.
+    VkQueue graphicsQueue = VK_NULL_HANDLE;                                                 // The handle of the graphics (render) queue.
+    VkQueue computeQueue = VK_NULL_HANDLE;                                                  // The handle of the compute shader queue.
+    VkQueue copyQueue = VK_NULL_HANDLE;                                                     // The handle of the presentation (draw to screen) queue.
+    VkQueue videoQueue = VK_NULL_HANDLE;                                                    // The handle of the video (h.264) decoder queue.
+    VkPhysicalDeviceProperties2 deviceProps2 = {};                                          // Properties of the physical device - the card name, driver version, limits of the hardware, etc.
+    VkPhysicalDeviceVulkan11Properties deviceProps11 = {};                                  // Properties of the physical device including Vulkan 1.1 extensions.
+    VkPhysicalDeviceVulkan12Properties deviceProps12 = {};                                  // Properties of the physical device including Vulkan 1.2 extensions.
+    VkPhysicalDeviceVulkan13Properties deviceProps13 = {};                                  // Properties of the physical device including Vulkan 1.3 extensions.
+    VkPhysicalDeviceSamplerFilterMinmaxProperties samplerMinmaxProps = {};                  // Properties of the physical device's sampler filtering capabilities.
+    VkPhysicalDeviceAccelerationStructurePropertiesKHR accelerationStructureProps = {};     // Properties of the physical device's ray tracing acceleration capabilities.
+    VkPhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingProps = {};                   // Properties of the physical device's ray tracing-specific pipelines.
+    VkPhysicalDeviceFragmentShadingRatePropertiesKHR fragmentShadingRateProps = {};         // Properties of the physical device's support for variable rate shading in fragment shaders.
+    VkPhysicalDeviceMeshShaderPropertiesEXT meshShaderProps = {};                           // Properties of the physical device's support for mesh shaders.
+    VkPhysicalDeviceMemoryProperties2 memoryProps = {};                                     // Properties of the physical device's graphics memory
+    VkPhysicalDeviceDepthStencilResolveProperties depthStencilResolveProps = {};            // Properties of the physical device's support for depth stenciling.
+    VkPhysicalDeviceFeatures2 deviceFeatures2 = {};                                         // Optional Vulkan features that the physical device supports.
+    VkPhysicalDeviceVulkan11Features deviceFeatures11 = {};                                 // Optional Vulkan 1.1 features that the physical device supports.
+    VkPhysicalDeviceVulkan12Features deviceFeatures12 = {};                                 // Optional Vulkan 1.2 features that the physical device supports.
+    VkPhysicalDeviceVulkan13Features deviceFeatures13 = {};                                 // Optional Vulkan 1.3 features that the physical device supports.
+    VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};    // Optional Vulkan ray tracing acceleration features that the physical device supports.
+    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingFeatures = {};                  // Optional Vulkan ray tracing-specific pipeline features that the physical device supports.
+    VkPhysicalDeviceRayQueryFeaturesKHR rayTracingQueryFeatures = {};                       // Optional Vulkan ray tracing shadow detection features that the physical device supports.
+    VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragmentShadingRateFeatures = {};        // Optional variable-rate shading features that the physical device supports.
+    VkPhysicalDeviceConditionalRenderingFeaturesEXT conditionalRenderingFeatures = {};      // Optional conditional rendering features that the physical device supports.
+    VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnableFeatures = {};                // Optional depth-clipping features that the physical device supports.
+    VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures = {};                          // Optional Mesh Shader features that the physical device supports.
 
-    VkVideoDecodeH264ProfileInfoKHR decodeH264Profile = {};
-    VkVideoDecodeH264CapabilitiesKHR devoceH264Capabilities = {};
+    VkVideoDecodeH264ProfileInfoKHR decodeH264Profile = {};                                 // H.264 video decoding profile data
+    VkVideoDecodeH264CapabilitiesKHR devoceH264Capabilities = {};                           // Capabilities of the physical device to decode H.264 videos.
 
+    /**
+     * @brief A wrapper struct to hold all the related Vulkan structs for video decoding capabilities, which aren't strictly related to H.264 like the two above.
+     */
     struct VideoCapability {
       VkVideoProfileInfoKHR profile = {};
       VkVideoDecodeCapabilitiesKHR decode = {};
@@ -61,28 +73,33 @@ namespace rx {
     };
     VideoCapability capabilityH264 = {};
 
-    std::vector<VkDynamicState> psoDynamicState;
-    VkPipelineDynamicStateCreateInfo dynamicStateCreate = {};
-    VkPipelineDynamicStateCreateInfo dynamicStateMeshCreate = {};
+    std::vector<VkDynamicState> psoDynamicState;                                            // The Vulkan dynamic state markers, per Pipeline State Object.
+    VkPipelineDynamicStateCreateInfo dynamicStateCreate = {};                               // The Vulkan dynamic state creation meta, for non-optional shaders
+    VkPipelineDynamicStateCreateInfo dynamicStateMeshCreate = {};                           // The Vulkan dynamic state creation meta, for the optional Mesh shader.
 
-    VkBuffer nullBuffer = VK_NULL_HANDLE;
-    VmaAllocation nullAllocation = VK_NULL_HANDLE;
-    VkBufferView nullBufferView = VK_NULL_HANDLE;
-    VkSampler nullSampler = VK_NULL_HANDLE;
-    VmaAllocation nullImageBuffer1 = VK_NULL_HANDLE;
-    VmaAllocation nullImageBuffer2 = VK_NULL_HANDLE;
-    VmaAllocation nullImageBuffer3 = VK_NULL_HANDLE;
-    VkImage nullImage1 = VK_NULL_HANDLE;
-    VkImage nullImage2 = VK_NULL_HANDLE;
-    VkImage nullImage3 = VK_NULL_HANDLE;
-    VkImageView nullImageView1 = VK_NULL_HANDLE;
-    VkImageView nullImageView1A = VK_NULL_HANDLE;
-    VkImageView nullImageView2 = VK_NULL_HANDLE;
-    VkImageView nullImageView2A = VK_NULL_HANDLE;
-    VkImageView nullImageViewC = VK_NULL_HANDLE;
-    VkImageView nullImageViewCA = VK_NULL_HANDLE;
-    VkImageView nullImageView3 = VK_NULL_HANDLE;
+    VkBuffer nullBuffer = VK_NULL_HANDLE;                                                   // A constant null buffer. Never valid.
+    VmaAllocation nullAllocation = VK_NULL_HANDLE;                                          // A constant null VMA allocation. Never valid.
+    VkBufferView nullBufferView = VK_NULL_HANDLE;                                           // A constant null buffer view. Never valid.
+    VkSampler nullSampler = VK_NULL_HANDLE;                                                 // A constant null sampler. Never valid.
+    VmaAllocation nullImageBuffer1 = VK_NULL_HANDLE;                                        // A constant null VMA allocation for a 1-dimensional image. Never valid.
+    VmaAllocation nullImageBuffer2 = VK_NULL_HANDLE;                                        // A constant null VMA allocation for a 2-dimensional image. Never valid.
+    VmaAllocation nullImageBuffer3 = VK_NULL_HANDLE;                                        // A constant null VMA allocation for a 3-dimensional image. Never valid.
+    VkImage nullImage1 = VK_NULL_HANDLE;                                                    // A constant null 1-dimensional image. Never valid.
+    VkImage nullImage2 = VK_NULL_HANDLE;                                                    // A constant null 2-dimensional image. Never valid.
+    VkImage nullImage3 = VK_NULL_HANDLE;                                                    // A constant null 3-dimensional image. Never valid.
+    VkImageView nullImageView1 = VK_NULL_HANDLE;                                            // A constant null 1-dimensional image view. Never valid.
+    VkImageView nullImageView1A = VK_NULL_HANDLE;                                           // A constant null 1-dimensional image view array. Never valid.
+    VkImageView nullImageView2 = VK_NULL_HANDLE;                                            // A constant null 2-dimensional image view. Never valid.
+    VkImageView nullImageView2A = VK_NULL_HANDLE;                                           // A constant null 2-dimensional image view array. Never valid.
+    VkImageView nullImageViewC = VK_NULL_HANDLE;                                            // A constant null cubemap image view. Never valid.
+    VkImageView nullImageViewCA = VK_NULL_HANDLE;                                           // A constant null cubemap image view array. Never valid.
+    VkImageView nullImageView3 = VK_NULL_HANDLE;                                            // A constant null 3-dimensional image view. Never valid.
 
+    /**
+     * @brief Handles the commands to submit for a specific queue.
+     * One per queue, across all threads.
+     * Fences are held and Semaphores are signalled automatically.
+     */
     struct CommandQueue {
       VkQueue queue = VK_NULL_HANDLE;
       std::vector<SwapChain> swapchainUpdates;
@@ -96,10 +113,20 @@ namespace rx {
       bool sparse = false;
       std::shared_ptr<std::mutex> locker;
 
-      void submit(VulkanInterface* iface, VkFence fence);
+      /**
+       * @brief Submit the held commandSubmit to the queue.
+       * @param iface the Vulkan Renderer Interface.
+       * @param fence the fence to raise when the submit is finished.
+       */
+      void Submit(VulkanInterface* iface, VkFence fence);
     } queues[QueueType::COUNT];
 
-    struct Allocator {
+    /**
+     * @brief A simple handler for uploading data via a staging buffer to the GPU memory.
+     * Works using two commands buffers, one for transferring to the GPU and one for transitioning the memory to a usable kind.
+     * @note Call Allocate, copy the data, then Submit.
+     */
+    struct Uploader {
       VulkanInterface* iface = nullptr;
       std::mutex locker;
 
@@ -117,15 +144,36 @@ namespace rx {
 
       std::vector<Copy> freeList;
 
+      /**
+       * @brief Initialize the Uploader struct using the given Interface's physical & logical device and instance.
+       */
       void Init(VulkanInterface* iface);
+      /**
+       * @brief Tear down the Uploader, in preparation for closing the whole Vulkan instance.
+       */
       void Destroy();
+      /**
+       * @brief Prepare a new upload operation.
+       * @param staging the size of the data that will be uploaded, in bytes.
+       * @return a Copy struct that can be used to send the desired data to the GPU
+       */
       Copy Allocate(size_t staging);
+      /**
+       * @brief Submit the given Copy operation to the GPU, uploading the staging buffer.
+       * @param cmd a filled-out Copy struct.
+       */
       void Submit(Copy cmd);
     };
-    mutable Allocator allocate;
 
-    VkFence frameFence[FRAMEBUFFERS][QueueType::COUNT] = {};
+    mutable Uploader upload;                                                                // An Uploader, to easily send data of arbitrary size to the GPU.
 
+    VkFence frameFence[FRAMEBUFFERS][QueueType::COUNT] = {};                                // The fences to be raised when each queue finishes working on a given framebuffer.
+
+    /**
+     * @brief The struct that binds constants, shader resources, uniforms and samplers to a pipeline state object.
+     * Works for graphics and compute shaders, and may have different descriptors for both with the same actual bound objects.
+     * @note Always set the Dirty Flags and then Flush() after updating any of the data contained within here.
+     */
     struct DescriptorBind {
         DescriptorBinds table;
         VulkanInterface* iface;
@@ -141,6 +189,9 @@ namespace rx {
         VkDescriptorSet graphics = VK_NULL_HANDLE;
         VkDescriptorSet compute = VK_NULL_HANDLE;
 
+        /**
+         * @brief The type of data that has been changed and must be updated (resynchronized with the device driver).
+         */
         enum class DirtyFlags : uint32_t {
           NONE = 0,
           DESCRIPTOR = 1,
@@ -149,56 +200,93 @@ namespace rx {
           ALL = DESCRIPTOR | OFFSET
         } dirty = DirtyFlags::NONE;
 
+        /**
+         * @brief Initialize the descriptor binding sets, uploading initial data.
+         * @param iface the physical & virtual device and instance to be used to bind
+         * @note Call flush after initializing and before first usage.
+         */
         void Init(VulkanInterface* iface);
+        /**
+         * @brief Reset the data in the Descriptor Binds to the state it was on Init, without doing any of the first-time things again.
+         * @note Will cause the binds to no longer be immediately valid, and will need to be reconfigured for the shader in use.
+         */
         void Reset();
+        /**
+         * @brief Upload the bind data to the hardware, preparing it for usage in a queue.
+         * @param graphics whether the binds are intended to be used in a graphics queue (if true) or a compute queue (if false).
+         * @param cmd the Thread Commands to perform the upload with.
+         */
         void Flush(bool graphics, ThreadCommands cmd);
     };
 
-    struct DescriptorBindPool {
+    /**
+     * @brief A thin wrapper around VkDescriptorPool that also tracks the maximum size of the pool as it is used.
+     */
+    struct DescriptorPool {
       VulkanInterface* iface;
       VkDescriptorPool pool = VK_NULL_HANDLE;
       uint32_t poolSize = 256;
 
+      /**
+       * @brief Prepare the Descriptor Pool for first time usage.
+       * @param iface the physical & virtual device and instance to use to create the descriptor pool.
+       */
       void Init(VulkanInterface* iface);
+      /**
+       * @brief Delete the data stored in the pool, preparing it for shutdown of the whole Vulkan interface.
+       */
       void Destroy();
+      /**
+       * @brief Reset the data in the pool to its initial state, without performing first-time actions again.
+       */
       void Reset();
     };
 
+    /**
+     * @brief The Vulkan implementation of ThreadCommands.
+     * @note This is the struct pointed to by ThreadCommands->internal when using VulkanInterface.
+     * Multiple of these may exist at the same time, but they MUST exist on different threads.
+     * All VulkanThreadCommands are submitted in sequence in batches.
+     */
     struct VulkanThreadCommands {
-      VkSemaphore semaphore = VK_NULL_HANDLE;
-      VkCommandPool pools[FRAMEBUFFERS][QueueType::COUNT] = {};
-      VkCommandBuffer buffers[FRAMEBUFFERS][QueueType::COUNT] = {};
-      uint32_t bufferIdx = 0;
+      VkSemaphore semaphore = VK_NULL_HANDLE;                                               // The semaphore to raise when the commands are ready to use.
+      VkCommandPool pools[FRAMEBUFFERS][QueueType::COUNT] = {};                             // The command pools per frame, per queue to use.
+      VkCommandBuffer buffers[FRAMEBUFFERS][QueueType::COUNT] = {};                         // The command buffers per frame, per queue to use.
+      uint32_t bufferIdx = 0;                                                               // The current framebuffer in use - index pools and buffers by bufferIdx to get the active frame.
+      QueueType queue = {};                                                                 // The current command queue in use - index pools and buffers by queue to get the specific buffer needed.
 
-      QueueType queue = {};
-      uint32_t id = 0;
-      std::vector<ThreadCommands> cmds;
-      std::atomic_bool paused { false };
+      uint32_t id = 0;                                                                      // The ID of the current thread.
+      std::vector<ThreadCommands> cmds;                                                     // The list of all active ThreadCommands for the current thread.
+      std::atomic_bool paused { false };                                                    // Whether the current thread is the dependency of another. True if another thread is waiting for this one.
 
-      DescriptorBind binds;
-      DescriptorBindPool bindPools[FRAMEBUFFERS];
-      GPULinearAllocator frameAllocators[FRAMEBUFFERS];
+      DescriptorBind binds;                                                                 // The shader resources bound to this thread, for each frame
+      DescriptorPool bindPools[FRAMEBUFFERS];                                               // The DescriptorBindPools for this thread, for each frame
+      GPULinearAllocator frameAllocators[FRAMEBUFFERS];                                     // The linear allocators for each frame
 
-      std::vector<std::pair<size_t, VkPipeline>> pipelines;
-      const PipelineState* activePSO = nullptr;
-      const Shader* activeShader = nullptr;
-      const RaytracingPipeline* activeRT = nullptr;
+      std::vector<std::pair<size_t, VkPipeline>> pipelines;                                 // A vectorized map of pipeline hash to PSO
+      const PipelineState* activePSO = nullptr;                                             // The active PSO
+      const Shader* activeShader = nullptr;                                                 // The active (bound) shader - render or compute.
+      const RaytracingPipeline* activeRT = nullptr;                                         // The active RayTracing acceleration structure (bounding volume hierarchy)
 
-      size_t prevPipelineHash = 0;
-      ShadingRate prevShadeRate = {};
-      std::vector<SwapChain> prevSwapchains;
-      bool PSODirty = false;
+      size_t prevPipelineHash = 0;                                                          // The hash of the pipeline that was previously bound to the current thread - for use with the vectorized map
+      ShadingRate prevShadeRate = {};                                                       // The Shading Rate that was previously bound to the current thread - for easy comparison
+      std::vector<SwapChain> prevSwapchains;                                                // All Swap-Chains that were previously bound to the current thread.
+      bool PSODirty = false;                                                                // Whether the Pipeline State Object has changed in a way that requires some form of re-initialization
 
-      std::vector<VkMemoryBarrier2> memoryBarrier;
-      std::vector<VkImageMemoryBarrier2> imageBarrier;
-      std::vector<VkBufferMemoryBarrier2> bufferBarrier;
-      std::vector<VkAccelerationStructureGeometryKHR> rtBuildGeo;
-      std::vector<VkAccelerationStructureBuildRangeInfoKHR> rtBuildRange;
+      std::vector<VkMemoryBarrier2> memoryBarrier;                                          // A list of barriers for changes to memory structure
+      std::vector<VkImageMemoryBarrier2> imageBarrier;                                      // A list of barriers for changes to image formats, aspects, and usages.
+      std::vector<VkBufferMemoryBarrier2> bufferBarrier;                                    // A list of barriers for changes to buffer alignment, usage, position, size, or coherency.
+      std::vector<VkAccelerationStructureGeometryKHR> rtBuildGeo;                           // A list of barriers for changes to ray-tracing acceleration geometry
+      std::vector<VkAccelerationStructureBuildRangeInfoKHR> rtBuildRange;                   // A list of barriers for changes to ray-tracing acceleration build-range
 
-      RenderPassMeta passMeta;
-      std::vector<VkImageMemoryBarrier2> renderPassStartBarriers;
-      std::vector<VkImageMemoryBarrier2> renderPassEndBarriers;
+      RenderPassMeta passMeta;                                                              // Metadata of the active thread's bound render pass (and PSO)
+      std::vector<VkImageMemoryBarrier2> renderPassStartBarriers;                           // Barriers to process before the start of a render pass.
+      std::vector<VkImageMemoryBarrier2> renderPassEndBarriers;                             // Barriers to process after the end of a render pass.
 
+      /**
+       * @brief Clear the state of the Thread Commands, undoing all unsubmitted changes to state that the current thread has made.
+       * @param bufIdx the framebuffer ID (0 or 1 for double-buffering)
+       */
       void Reset(uint32_t bufIdx) {
           bufferIdx = bufIdx;
           cmds.clear();
@@ -217,24 +305,37 @@ namespace rx {
           renderPassEndBarriers.clear();
       }
 
+      /**
+       * @brief Get the CommandPool that the current thread's commands is using.
+       */
       constexpr VkCommandPool GetCommandPool() const {
           return pools[bufferIdx][queue];
       }
 
+      /**
+       * @brief Get the CommandBuffer that the current thread's commands is using.
+       */
       constexpr VkCommandBuffer GetCommandBuffer() const {
           return buffers[bufferIdx][queue];
       }
     };
 
-    std::vector<std::unique_ptr<VulkanThreadCommands>> cmds;
-    uint32_t cmdCount = 0;
-    ShadowEngine::SpinLock cmdLock;
+    std::vector<std::unique_ptr<VulkanThreadCommands>> cmds;                                // A list of all active and inactive Thread Commands, for all threads managed by the engine.
+    uint32_t cmdCount = 0;                                                                  // The number of active Thread Commands. Should always be == cmds.size(), unless a thread is currently initializing one.
+    ShadowEngine::SpinLock cmdLock;                                                         // A lock to prevent more than one thread submitting the commands at a time.
 
+    /**
+     * @brief Convert the given ThreadCommands to the Vulkan-specific specialization
+     * @todo Move this and VulkanThreadCommands to ::structs
+     */
     constexpr VulkanThreadCommands& GetThreadCommands(ThreadCommands cmd) const {
         assert(cmd.isValid());
         return *(VulkanThreadCommands*)cmd.internal;
     }
 
+    /**
+     * @brief The layouts related to a PSO - pipeline, descriptor sets and bindless descriptors.
+     */
     struct PSOLayout {
         VkPipelineLayout layout = VK_NULL_HANDLE;
         VkDescriptorSetLayout descriptorLayout = VK_NULL_HANDLE;
@@ -242,18 +343,27 @@ namespace rx {
         uint32_t firstBindless = 0;
     };
 
-    mutable std::unordered_map<size_t, PSOLayout> PSOcache;
-    mutable std::mutex PSOcacheMutex;
+    mutable std::unordered_map<size_t, PSOLayout> PSOcache;                                 // A cache of all created Pipeline State Objects indexed by hash, for easy switching.
+    mutable std::mutex PSOcacheMutex;                                                       // A lock to prevent the PSO cache being modified during access.
 
-    VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-    std::unordered_map<size_t, VkPipeline> pipelines;
+    VkPipelineCache pipelineCache = VK_NULL_HANDLE;                                         // A Vulkan Pipeline Cache. Saves to disk for reuse, preventing long initialization times every startup.
+    std::unordered_map<size_t, VkPipeline> pipelines;                                       // A cache of VkPipeline objects (not Pipeline State Objects, see PSOcache for that)
 
+    /**
+     * @brief Verify that all PSOs in the cache are valid.
+     */
     void ValidatePSOs(ThreadCommands cmd);
+    /**
+     * @brief Run pre-render checks, ensure all memory barriers are processed, recreate dirty structs, reinitialize the swapchains if required.
+     */
     void Predraw(ThreadCommands cmd);
+    /**
+     * @brief Run pre-compute checks, ensure all memory barriers are processed, recreate dirty structs
+     */
     void Predispatch(ThreadCommands cmd);
 
-    static constexpr uint32_t immutableSamplerBegin = 100;
     std::vector<VkSampler> immutableSamplers;
+    static constexpr uint32_t immutableSamplerBegin = 100;
 
   public:
 
@@ -261,12 +371,17 @@ namespace rx {
     ~VulkanInterface() override;
 
 
+    /**
+     * @brief An integral memory manager. Handles bindless resources, but mostly the tracking and destruction of all objects that Vulkan creates, and may have presence on GPU.
+     * Prevents memory leaks on GPU when closing down.
+     * @note Access via shared_ptr.
+     */
     struct MemoryManager {
       VmaAllocator allocator = VK_NULL_HANDLE;
       VmaAllocator externalAllocator = VK_NULL_HANDLE;
       VkDevice device = VK_NULL_HANDLE;
       VkInstance instance;
-      size_t frames = 0;
+      size_t frames = 0;                                                                            // Total frame count.
       std::mutex destroyLock;
 
       struct BindlessHeap {
@@ -428,6 +543,12 @@ namespace rx {
           vkDestroyInstance(instance, nullptr);
       }
 
+      /**
+       * @brief Purge all Vulkan objects and structs that can be recreated (ie. that are not the Device or Instance).
+       * Defers the destruction, and only processes items that are not in use.
+       * @param frameCount the number of frames that have been processed thus far.
+       * @param buffers the number of framebuffers.
+       */
       void Update(size_t frameCount, size_t buffers) {
           const auto processAll = [&](auto&& list, auto&& callback) {
               while (!list.empty())

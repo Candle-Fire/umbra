@@ -2432,3 +2432,8 @@ template<>
 struct enable_bitmask_operators<rx::ResourceFlags> {
   static const bool enable = true;
 };
+
+template<>
+struct enable_bitmask_operators<rx::ResourceState> {
+  static const bool enable = true;
+};
