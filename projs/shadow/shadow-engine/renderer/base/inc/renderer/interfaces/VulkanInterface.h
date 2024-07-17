@@ -186,8 +186,8 @@ namespace rx {
 
         uint32_t uniformOffsets[BIND_CONSTANTS] = {};
 
-        VkDescriptorSet graphics = VK_NULL_HANDLE;
-        VkDescriptorSet compute = VK_NULL_HANDLE;
+        VkDescriptorSet graphicsSet = VK_NULL_HANDLE;
+        VkDescriptorSet computeSet = VK_NULL_HANDLE;
 
         /**
          * @brief The type of data that has been changed and must be updated (resynchronized with the device driver).
@@ -878,3 +878,9 @@ namespace rx {
 
   };
 }
+
+
+template<>
+struct enable_bitmask_operators<rx::VulkanInterface::DescriptorBind::DirtyFlags> {
+  static const bool enable = true;
+};

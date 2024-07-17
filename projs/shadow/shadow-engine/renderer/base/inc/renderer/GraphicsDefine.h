@@ -1293,15 +1293,15 @@ namespace rx {
             Buffer buffer;
         };
 
-        static Barrier Memory(const GPUResource* resource = nullptr) {
-            Barrier barrier;
+        static BarrierType Memory(const GPUResource* resource = nullptr) {
+            BarrierType barrier;
             barrier.type = Type::MEMORY;
             barrier.memory.resource = resource;
             return barrier;
         }
 
-        static Barrier Image(const Texture* texture, ResourceState before, ResourceState after, int mip = -1, int slice = -1, const ImageAspect* aspect = nullptr) {
-            Barrier barrier {
+        static BarrierType Image(const Texture* texture, ResourceState before, ResourceState after, int mip = -1, int slice = -1, const ImageAspect* aspect = nullptr) {
+            BarrierType barrier {
                 .type = Type::IMAGE,
                 .image = {
                     .texture = texture,
@@ -1316,8 +1316,8 @@ namespace rx {
             return barrier;
         }
 
-        static Barrier Buffer(const GPUBuffer* buffer, ResourceState before, ResourceState after) {
-            Barrier barrier {
+        static BarrierType Buffer(const GPUBuffer* buffer, ResourceState before, ResourceState after) {
+            BarrierType barrier {
                 .type = Type::BUFFER,
                 .buffer = {
                         .buffer = buffer,
@@ -1412,7 +1412,7 @@ namespace rx {
     descriptor GraphicsDeviceItem {
         std::shared_ptr<void> internal;
 
-        inline bool isValid() const { return internal != nullptr; }
+        inline bool IsValid() const { return internal != nullptr; }
 
         virtual ~GraphicsDeviceItem() = default;
     };
