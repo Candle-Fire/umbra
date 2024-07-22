@@ -2548,7 +2548,7 @@ namespace rx {
         // Load the pipeline cache from disk.
         ShadowEngine::FileInput cacheFile;
         std::vector<uint8_t> cacheData;
-        cacheFile.open(std::string("./cache/PipelineCache-Vulkan.cache")));
+        cacheFile.open(std::string("./cache/PipelineCache-Vulkan.cache"));
         cacheData.resize(cacheFile.size());
         cacheFile.read(cacheData.data(), cacheFile.size());
 
