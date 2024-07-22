@@ -58,10 +58,11 @@ namespace rx {
     VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragmentShadingRateFeatures = {};        // Optional variable-rate shading features that the physical device supports.
     VkPhysicalDeviceConditionalRenderingFeaturesEXT conditionalRenderingFeatures = {};      // Optional conditional rendering features that the physical device supports.
     VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnableFeatures = {};                // Optional depth-clipping features that the physical device supports.
+    VkPhysicalDeviceImageViewMinLodFeaturesEXT minLodFeatures = {};                         // Optional minimum LOD support for image views that the physical device.
     VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeatures = {};                          // Optional Mesh Shader features that the physical device supports.
 
     VkVideoDecodeH264ProfileInfoKHR decodeH264Profile = {};                                 // H.264 video decoding profile data
-    VkVideoDecodeH264CapabilitiesKHR devoceH264Capabilities = {};                           // Capabilities of the physical device to decode H.264 videos.
+    VkVideoDecodeH264CapabilitiesKHR decodeH264Capabilities = {};                           // Capabilities of the physical device to decode H.264 videos.
 
     /**
      * @brief A wrapper struct to hold all the related Vulkan structs for video decoding capabilities, which aren't strictly related to H.264 like the two above.
@@ -361,6 +362,14 @@ namespace rx {
      * @brief Run pre-compute checks, ensure all memory barriers are processed, recreate dirty structs
      */
     void Predispatch(ThreadCommands cmd);
+
+    /**
+     * Perform minimal checks on a physical device, to ensure it is compatible with the features the engine requires
+     * Will fill the Interface's physical properties, features and capabilities fields.
+     * @param dev the device to process
+     * @return A list of extensions that have been enabled for the device
+     */
+    std::vector<const char*> ProcessPhysicalDevice(VkPhysicalDevice dev);
 
     std::vector<VkSampler> immutableSamplers;
     static constexpr uint32_t immutableSamplerBegin = 100;
@@ -681,7 +690,7 @@ namespace rx {
     constexpr bool isDebugEnabled() const { return validation != Validation::DISABLED; }
 
     // Get the maximum size of a shader identifier.
-    constexpr size_t GetShaderIdentifierSize() const { return shaderNameSize; }
+    constexpr size_t GetShaderIdentifierSize() const { return shaderGroupHandleSize; }
     // Get the size of an instance of a Top Level Ray Tracing Acceleration structure.
     constexpr size_t GetTLRTAccelerationInstanceSize() const { return topLevelAccelerationInstanceSize; }
     // Get the tile size of the variable rate shading buffer.

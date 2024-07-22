@@ -981,7 +981,7 @@ namespace rx {
         SPARSE_TEXTURE2D = bit(14),             // Useful for storing a 2D buffer temporarily in the shader.
         SPARSE_TEXTURE3D = bit(15),             // Useful for storing a 3D buffer temporarily in the shader.
         SPARSE_NULL_MAPPING = bit(16),          // Map all uninitialized sparse buffers to null.
-        GENERIC_SPARSe = bit(17),               // Support render and non-render sparse buffers.
+        GENERIC_SPARSE = bit(17),               // Support render and non-render sparse buffers.
         DEPTH_RESOLVE_MIN_MAX = bit(18),
         STENCIL_RESOLVE_MIN_MAX = bit(19),
         CACHE_COHERENT_UMA = bit(20),           // Some DirectX thing. Seems useful.
@@ -1250,7 +1250,7 @@ namespace rx {
         const InputLayout* layout = nullptr;
         Topology topology = Topology::TRIANGLELIST;
         uint32_t patchPoints = 3;
-        uint32_t sampleMash = 0xFFFFFFFF;
+        uint32_t sampleMask = 0xFFFFFFFF;
     };
 
     /**

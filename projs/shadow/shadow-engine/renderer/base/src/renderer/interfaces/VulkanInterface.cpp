@@ -1,6 +1,12 @@
 #include <algorithm>
+#include <cfloat>
 #include <renderer/interfaces/VulkanInterface.h>
 #include <SDL.h>
+#include <SDL_vulkan.h>
+#include <unordered_set>
+#include <shadow/assets/fs/file.h>
+#include <shadow/core/Time.h>
+
 #include "spdlog/spdlog.h"
 
 namespace rx {
@@ -1668,5 +1674,1042 @@ namespace rx {
         dirty = DirtyFlags::NONE;
     }
 
+    void VulkanInterface::ValidatePSOs(ThreadCommands cmd) {
+        VulkanThreadCommands& command = GetThreadCommands(cmd);
+        if (!command.PSODirty) return;
+
+        const auto* pso = command.activePSO;
+        size_t hash = command.prevPipelineHash;
+        auto internal = vulkan::structs::ToInternal(pso);
+
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        // Find the pipeline in the hash if possible
+        auto iter = pipelines.find(hash);
+        // If not in the hash, it's either just been created, or is stale.
+        if (iter == pipelines.end()) {
+            // Look for the pipeline in the workers
+            for (auto& p : command.pipelines) {
+                if (hash == p.first) {
+                    pipeline = p.second; break;
+                }
+            }
+
+            // If we didn't just find it, then create the pipeline using the stored info
+            if (pipeline == VK_NULL_HANDLE) {
+                auto create = internal->pipelineCreate;
+
+                // Setup multisampling
+                VkPipelineMultisampleStateCreateInfo msCreate = {
+                    .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+                    .sampleShadingEnable = VK_FALSE,
+                    .rasterizationSamples = (pso->meta.rasterizer != nullptr && pso->meta.rasterizer->forcedSampleCount > 1) ?
+                        (VkSampleCountFlagBits) pso->meta.rasterizer->forcedSampleCount :
+                        (VkSampleCountFlagBits) command.passMeta.sampleCount,
+                    .minSampleShading = 1.f,
+                    .pSampleMask = &pso->meta.sampleMask,
+                    .alphaToCoverageEnable = pso->meta.blend != nullptr ?
+                        pso->meta.blend->alpha ? VK_TRUE : VK_FALSE :
+                        VK_FALSE,
+                    .alphaToOneEnable = VK_FALSE
+                };
+
+                create.pMultisampleState = &msCreate;
+
+                // Setup blending
+                uint32_t blendedAttachments = 0;
+                VkPipelineColorBlendAttachmentState blendAttach[8] = {};
+                for (size_t i = 0; i < command.passMeta.targetCount; i++) {
+                    size_t idx = 0;
+                    if (pso->meta.blend->independent) idx = i;
+
+                    const auto& target = pso->meta.blend->targets[idx];
+                    auto& attach = blendAttach[blendedAttachments++];
+                    attach.blendEnable = target.enable ? VK_TRUE : VK_FALSE;
+                    attach.colorWriteMask = 0;
+                    if (has_flag(target.writeMask, ColorWrite::ENABLE_RED)) attach.colorWriteMask |= VK_COLOR_COMPONENT_R_BIT;
+                    if (has_flag(target.writeMask, ColorWrite::ENABLE_GREEN)) attach.colorWriteMask |= VK_COLOR_COMPONENT_G_BIT;
+                    if (has_flag(target.writeMask, ColorWrite::ENABLE_BLUE)) attach.colorWriteMask |= VK_COLOR_COMPONENT_B_BIT;
+                    if (has_flag(target.writeMask, ColorWrite::ENABLE_ALPHA)) attach.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
+                    attach.srcColorBlendFactor = vulkan::convert::BlendSource(target.source);
+                    attach.dstColorBlendFactor = vulkan::convert::BlendSource(target.dest);
+                    attach.colorBlendOp = vulkan::convert::BlendOperation(target.op);
+                    attach.srcAlphaBlendFactor = vulkan::convert::BlendSource(target.sourceAlpha);
+                    attach.dstAlphaBlendFactor = vulkan::convert::BlendSource(target.destAlpha);
+                    attach.alphaBlendOp = vulkan::convert::BlendOperation(target.opAlpha);
+                }
+
+                VkPipelineColorBlendStateCreateInfo blend = {
+                    .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+                    .logicOpEnable = VK_FALSE,
+                    .logicOp = VK_LOGIC_OP_COPY,
+                    .attachmentCount = blendedAttachments,
+                    .pAttachments = blendAttach,
+                    .blendConstants = { 1, 1, 1, 1 }
+                };
+
+                create.pColorBlendState = &blend;
+
+                // Setup Vertex input
+                VkPipelineVertexInputStateCreateInfo vertexCreate = {
+                    .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+                };
+                std::vector<VkVertexInputBindingDescription> bind;
+                std::vector<VkVertexInputAttributeDescription> attr;
+
+                if (pso->meta.layout != nullptr) {
+                    uint32_t lastBind = ~0ull, lastAttr = ~0ull, idx = 0, off = 0;
+                    for (auto& element : pso->meta.layout->elements) {
+                        if (element.slot == lastBind) continue; // Skip duplicate bindings
+                        if (element.slot != lastAttr) {         // Process duplicate attributes
+                            lastAttr = element.slot;
+                            off = 0;
+                        }
+                        lastBind = element.slot;
+                        bind.emplace_back(VkVertexInputBindingDescription { element.slot, GetFormatStride(element.format), element.slotClass == InputClassification::VERTEX_DATA ? VK_VERTEX_INPUT_RATE_VERTEX : VK_VERTEX_INPUT_RATE_INSTANCE});
+                        attr.emplace_back(VkVertexInputAttributeDescription { idx, element.slot, vulkan::convert::Format(element.format), element.alignedOffset });
+                        // Process the aligned element
+                        if (attr.back().offset == InputLayout::ALIGNED_ELEMENT) {
+                            attr.back().offset = off;
+                            off += GetFormatStride(element.format);
+                        }
+                        idx++;
+                    }
+
+                    vertexCreate.vertexBindingDescriptionCount = static_cast<uint32_t>(bind.size());
+                    vertexCreate.pVertexBindingDescriptions = bind.data();
+                    vertexCreate.vertexAttributeDescriptionCount = static_cast<uint32_t>(attr.size());
+                    vertexCreate.pVertexAttributeDescriptions = attr.data();
+                }
+                create.pVertexInputState = &vertexCreate;
+
+                // Setup Rendering
+                create.renderPass = VK_NULL_HANDLE;
+                VkFormat formats[8] = {};
+                for (uint32_t i = 0; i < command.passMeta.targetCount; i++)
+                    formats[i] = vulkan::convert::Format(command.passMeta.targetFormats[i]);
+                VkPipelineRenderingCreateInfo rendering = {
+                    .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+                    .viewMask = 0,
+                    .colorAttachmentCount = command.passMeta.targetCount,
+                    .pColorAttachmentFormats = formats,
+                    .depthAttachmentFormat = vulkan::convert::Format(command.passMeta.depthStencilFormat),
+                    .stencilAttachmentFormat = IsFormatStencil(command.passMeta.depthStencilFormat) ? vulkan::convert::Format(command.passMeta.depthStencilFormat) : VK_FORMAT_UNDEFINED
+                };
+                create.pNext = &rendering;
+
+                VkResult res = vkCreateGraphicsPipelines(device, pipelineCache, 1, &create, nullptr, &pipeline);
+                assert(res == VK_SUCCESS);
+                command.pipelines.emplace_back(hash, pipeline);
+            }
+        // No pipeline in cache
+        } else {
+            pipeline = iter->second;
+        }
+
+        assert(pipeline != VK_NULL_HANDLE);
+
+        vkCmdBindPipeline(command.GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        command.PSODirty = false;
+    }
+
+    void VulkanInterface::Predraw(ThreadCommands cmd) {
+        ValidatePSOs(cmd);
+        GetThreadCommands(cmd).binds.Flush(true, cmd);
+    }
+
+    void VulkanInterface::Predispatch(ThreadCommands cmd) {
+        GetThreadCommands(cmd).binds.Flush(false, cmd);
+    }
+
+    std::vector<const char*> VulkanInterface::ProcessPhysicalDevice(VkPhysicalDevice dev) {
+        const std::vector<const char*> requiredExts = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+        std::vector<const char*> enabledExts;
+
+        uint32_t nExts;
+        VkResult res = vkEnumerateDeviceExtensionProperties(dev, nullptr, &nExts, nullptr);
+        assert(res == VK_SUCCESS);
+        std::vector<VkExtensionProperties> exts(nExts);
+        res = vkEnumerateDeviceExtensionProperties(dev, nullptr, &nExts, exts.data());
+        assert(res == VK_SUCCESS);
+
+        for (auto& ex : requiredExts)
+            if (!vulkan::CheckExtension(ex, exts))
+                return enabledExts;
+
+        deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        deviceFeatures11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+        deviceProps11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES;
+        deviceFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        deviceProps12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES;
+        deviceFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        deviceProps13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES;
+
+        deviceFeatures2.pNext = &deviceFeatures11;
+        deviceFeatures11.pNext = &deviceFeatures12;
+        deviceFeatures12.pNext = &deviceFeatures13;
+        void** features = &deviceFeatures13.pNext;
+        deviceProps2.pNext = &deviceProps11;
+        deviceProps11.pNext = &deviceProps12;
+        deviceProps12.pNext = &deviceProps13;
+        void** props = &deviceProps13.pNext;
+
+        rayTracingFeatures = {};
+        rayTracingProps = {};
+        accelerationStructureFeatures = {};
+        accelerationStructureProps = {};
+        rayTracingQueryFeatures = {};
+        fragmentShadingRateFeatures = {};
+        fragmentShadingRateProps = {};
+        meshShaderFeatures = {};
+        meshShaderProps = {};
+        conditionalRenderingFeatures = {};
+        depthClipEnableFeatures = {};
+        samplerMinmaxProps = {};
+
+        #define APPEND_PROPERTIES_CHAIN(x, y)   \
+        x##.sType = y;                          \
+        *props = &x;                            \
+        props = &x##.pNext
+
+
+        #define APPEND_FEATURES_CHAIN(x, y)     \
+        x##.sType = y;                          \
+        *features = &x;                         \
+        features = &x##.pNext
+
+
+        APPEND_PROPERTIES_CHAIN(samplerMinmaxProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES);
+        APPEND_PROPERTIES_CHAIN(depthStencilResolveProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES);
+
+        enabledExts = requiredExts;
+
+        #define ENABLE_IF_AVAILABLE(ext, code)      \
+        if (vulkan::CheckExtension(ext, exts)) {    \
+            enabledExts.push_back(ext);             \
+            code                                    \
+        }
+
+        ENABLE_IF_AVAILABLE(VK_EXT_IMAGE_VIEW_MIN_LOD_EXTENSION_NAME,
+            APPEND_FEATURES_CHAIN(minLodFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT);
+        )
+
+        ENABLE_IF_AVAILABLE(VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
+            APPEND_FEATURES_CHAIN(depthClipEnableFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT);
+        )
+
+        ENABLE_IF_AVAILABLE(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+            // We use deferred-host operations to implement bounding volume hierarchies, so that's a hard requirement
+            assert(vulkan::CheckExtension(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, exts));
+            enabledExts.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+            APPEND_FEATURES_CHAIN(accelerationStructureFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR);
+            APPEND_PROPERTIES_CHAIN(accelerationStructureProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR);
+
+            // BVH support implies two optional extensions, enable them if available.
+            ENABLE_IF_AVAILABLE(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                // If the pipeline is support, the pipeline library is by default.
+                enabledExts.push_back(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME);
+                APPEND_FEATURES_CHAIN(rayTracingFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR);
+                APPEND_PROPERTIES_CHAIN(rayTracingProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR);
+            )
+
+            ENABLE_IF_AVAILABLE(VK_KHR_RAY_QUERY_EXTENSION_NAME,
+                APPEND_FEATURES_CHAIN(rayTracingQueryFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR);
+            )
+        )
+
+        ENABLE_IF_AVAILABLE(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+            APPEND_FEATURES_CHAIN(fragmentShadingRateFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR);
+            APPEND_PROPERTIES_CHAIN(fragmentShadingRateProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR);
+        )
+
+        ENABLE_IF_AVAILABLE(VK_EXT_MESH_SHADER_EXTENSION_NAME,
+            APPEND_FEATURES_CHAIN(meshShaderFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT);
+            APPEND_PROPERTIES_CHAIN(meshShaderProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT);
+        )
+
+        ENABLE_IF_AVAILABLE(VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
+            APPEND_FEATURES_CHAIN(conditionalRenderingFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT);
+        )
+
+        if (vulkan::CheckExtension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, exts) && vulkan::CheckExtension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, exts) && vulkan::CheckExtension(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME, exts)) {
+            enabledExts.push_back(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+            enabledExts.push_back(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME);
+            enabledExts.push_back(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME);
+        }
+
+#if defined(__linux__)
+        if (vulkan::CheckExtension(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, exts) && vulkan::CheckExtension(VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME, exts)) {
+            enabledExts.push_back(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+            enabledExts.push_back(VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+        }
+#endif
+
+        *props = nullptr;
+        *features = nullptr;
+        vkGetPhysicalDeviceProperties2(dev, &deviceProps2);
+        return enabledExts;
+    }
+
+    VulkanInterface::VulkanInterface(void* window, Validation val, RenderDeviceTypePreference pref) {
+        SH::Timer timer;
+
+        VkResult res;
+
+        // Vulkan supports resource aliasing by default
+        capabilities |= GraphicsDeviceCapability::GENERIC_SPARSE;
+        // Set the RT context
+        topLevelAccelerationInstanceSize = sizeof(VkAccelerationStructureInstanceKHR);
+        // Save validation mode parameter
+        validation = val;
+        // Set queue locks
+        std::unordered_map<uint32_t, std::shared_ptr<std::mutex>> queueLocks;
+
+        VkApplicationInfo app = {
+            .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+            .pApplicationName = "Shadow Engine",
+            .applicationVersion = VK_MAKE_VERSION(1,0,0),
+            .pEngineName = "Umbra",
+            .engineVersion = VK_MAKE_VERSION(2,2,5),
+            .apiVersion = VK_API_VERSION_1_3
+        };
+
+        uint32_t nLayers;
+        res = vkEnumerateInstanceLayerProperties(&nLayers, nullptr);
+        assert(res == VK_SUCCESS);
+        std::vector<VkLayerProperties> layers(nLayers);
+        res = vkEnumerateInstanceLayerProperties(&nLayers, layers.data());
+        assert(res == VK_SUCCESS);
+
+        uint32_t nExtensions;
+        res = vkEnumerateInstanceExtensionProperties(nullptr, &nExtensions, nullptr);
+        assert(res == VK_SUCCESS);
+        std::vector<VkExtensionProperties> extensions(nExtensions);
+        res = vkEnumerateInstanceExtensionProperties(nullptr, &nExtensions, extensions.data());
+        assert(res == VK_SUCCESS);
+
+        std::vector<const char*> instanceLayers;
+        std::vector<const char*> instanceExtensions;
+
+        // We need the KHR Surface extension
+        instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+        for (auto& ext : extensions) {
+            // If debug utils is available, we take that
+            if (strcmp(ext.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0) {
+                debug = true;
+                instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            }
+            // If Swapchain Color space extensions are available, we take that too
+            if (strcmp(ext.extensionName, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME) == 0)
+                instanceExtensions.push_back(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
+        }
+
+        // TODO: Decouple this from linking against SDL, or force the renderer to include SDL.
+        uint32_t nSDL;
+        SDL_Vulkan_GetInstanceExtensions((SDL_Window*)window, &nSDL, nullptr);
+        std::vector<const char*> sdlExts(nSDL);
+        SDL_Vulkan_GetInstanceExtensions((SDL_Window*)window, &nSDL, sdlExts.data());
+
+        // Pre-allocate so it doesn't spam reallocations
+        instanceExtensions.reserve(instanceExtensions.size() + nSDL);
+        for (auto& i : sdlExts)
+            instanceExtensions.push_back(i);
+
+        // Add the validation layers if we ask for them
+        if (validation != Validation::DISABLED) {
+            // In priority order: Khronos validation, follwoed by LunarG standard, followed by LunarG standard components, followed by LunarG core.
+            static const std::vector<const char*> validationLayers[] = {
+                { "VK_LAYER_KHRONOS_validation" },
+                { "VK_LAYER_LUNARG_standard_validation" },
+                { "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects" },
+                { "VK_LAYER_LUNARG_core_validation" }
+            };
+
+            for (auto& layer : validationLayers)
+                if (vulkan::ValidateLayers(layer, layers)) {
+                    for (auto& x : layer)
+                        instanceLayers.push_back(x);
+                    break;
+                }
+        }
+
+        // Create the vulkan instance
+        VkDebugUtilsMessengerCreateInfoEXT debugCreate = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+
+        if (validation != Validation::DISABLED && debug) {
+            debugCreate.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+            debugCreate.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+            if (validation == Validation::VERBOSE)
+                debugCreate.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+            debugCreate.pfnUserCallback = vulkan::DebugCallback;
+        }
+
+        VkInstanceCreateInfo instanceCreate = {
+            .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            .pApplicationInfo = &app,
+            .enabledLayerCount = static_cast<uint32_t>(instanceLayers.size()),
+            .ppEnabledLayerNames = instanceLayers.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size()),
+            .ppEnabledExtensionNames = instanceExtensions.data(),
+            .pNext = &debugCreate
+        };
+
+        res = vkCreateInstance(&instanceCreate, nullptr, &instance);
+        assert(res == VK_SUCCESS);
+
+        if (validation != Validation::DISABLED && debug) {
+            res = vkCreateDebugUtilsMessengerEXT(instance, &debugCreate, nullptr, &debugUtilsMessenger);
+            assert(res == VK_SUCCESS);
+        }
+
+        // Enumerate devices, create logical device
+        uint32_t nDevices;
+        res = vkEnumeratePhysicalDevices(instance, &nDevices, nullptr);
+        assert(res == VK_SUCCESS);
+
+        if (nDevices == 0) {
+            spdlog::error("No Vulkan devices were found. Engine cannot continue loading.");
+            exit(1);
+        }
+
+        std::vector<VkPhysicalDevice> devices(nDevices);
+        res = vkEnumeratePhysicalDevices(instance, &nDevices, devices.data());
+        assert(res == VK_SUCCESS);
+
+        std::vector<const char*> enabledExts;
+
+        bool deviceIsPreferred = false;
+        for (const auto& dev : devices) {
+            deviceIsPreferred = false;
+            enabledExts = ProcessPhysicalDevice(dev);
+            if (enabledExts.empty())
+                continue;
+
+            bool isPriority =
+                pref == RenderDeviceTypePreference::INTEGRATED ?
+                    deviceProps2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU :
+                    deviceProps2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+
+            // Accept devices if they're better than what we have, especially if we have nothing already.
+            if (isPriority || physicalDevice == VK_NULL_HANDLE) {
+                physicalDevice = dev;
+                deviceIsPreferred = true;
+                // Don't look for another if we reached priority.
+                if (isPriority)
+                    break;
+            }
+        }
+
+        if (physicalDevice == VK_NULL_HANDLE) {
+            spdlog::error("Unable to find a Vulkan device that supports the required extensions.");
+            exit(1);
+        }
+
+        // If we have 2 integrated devices, but the preference is discrete, then we'll have saved the first but have the properties of the second, so resynchronise to the saved device.
+        if (!deviceIsPreferred)
+            enabledExts = ProcessPhysicalDevice(physicalDevice);
+
+        vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures2);
+        decodeH264Profile = {
+            .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+            .stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH,
+            .pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_INTERLACED_INTERLEAVED_LINES_BIT_KHR
+        };
+        decodeH264Capabilities = { VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR };
+        capabilityH264 = {
+            .profile = {
+                .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+                .videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR,
+                .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+                .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+                .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+                .pNext = &decodeH264Profile
+            },
+            .decode = {
+                .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
+                .pNext = &decodeH264Capabilities
+            },
+            .capabilities = {
+                .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+                .pNext = &capabilityH264.decode
+            }
+        };
+        res = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &capabilityH264.profile, &capabilityH264.capabilities);
+        assert(res == VK_SUCCESS);
+
+        VkFormatProperties r11g11b10Props = {};
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, vulkan::convert::Format(ImageFormat::R11G11B10_FLOAT), &r11g11b10Props);
+
+        memoryProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
+        vkGetPhysicalDeviceMemoryProperties2(physicalDevice, &memoryProps);
+
+        // Assert the features we require in the engine
+        assert(deviceProps2.properties.limits.timestampComputeAndGraphics == VK_TRUE);
+        assert(deviceFeatures2.features.imageCubeArray == VK_TRUE);
+        assert(deviceFeatures2.features.independentBlend == VK_TRUE);
+        assert(deviceFeatures2.features.geometryShader == VK_TRUE);
+        assert(deviceFeatures2.features.samplerAnisotropy == VK_TRUE);
+        assert(deviceFeatures2.features.shaderClipDistance == VK_TRUE);
+        assert(deviceFeatures2.features.textureCompressionBC == VK_TRUE);
+        assert(deviceFeatures2.features.occlusionQueryPrecise == VK_TRUE);
+        assert(deviceFeatures12.descriptorIndexing == VK_TRUE);
+        assert(deviceFeatures13.dynamicRendering == VK_TRUE);
+
+        // Update the capabilities we set
+        vendorID = deviceProps2.properties.vendorID;
+        deviceID = deviceProps2.properties.deviceID;
+        deviceName = deviceProps2.properties.deviceName;
+        driverDescription = deviceProps12.driverName;
+
+        if (deviceProps12.driverInfo[0] != '\0')
+            driverDescription += std::string(": ") + deviceProps12.driverInfo;
+
+        type =
+            deviceProps2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? RenderDeviceType::INTEGRATED :
+            deviceProps2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? RenderDeviceType::DISCRETE :
+            deviceProps2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU ? RenderDeviceType::VIRTUAL :
+            deviceProps2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU ? RenderDeviceType::SOFTWARE :
+            RenderDeviceType::OTHER;
+
+        if (deviceFeatures2.features.tessellationShader == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::TESSELLATION;
+        if (deviceFeatures2.features.shaderStorageImageExtendedFormats == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::UAV_LOAD_FORMAT_COMMON;
+        if (deviceFeatures12.shaderOutputLayer == VK_TRUE && deviceFeatures12.shaderOutputViewportIndex)
+            capabilities |= GraphicsDeviceCapability::RT_VIEWPORT_WITHOUT_GEOMETRY_SHADER;
+        if (rayTracingFeatures.rayTracingPipeline == VK_TRUE && rayTracingQueryFeatures.rayQuery == VK_TRUE && accelerationStructureFeatures.accelerationStructure == VK_TRUE && deviceFeatures12.bufferDeviceAddress == VK_TRUE) {
+            capabilities |= GraphicsDeviceCapability::RAY_TRACING;
+            shaderGroupHandleSize = rayTracingProps.shaderGroupHandleSize;
+        }
+        if (meshShaderFeatures.meshShader == VK_TRUE && meshShaderFeatures.taskShader == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::SUPPORTS_MESH_SHADER;
+        if (fragmentShadingRateFeatures.pipelineFragmentShadingRate == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::VARIABLE_RATE_SHADING;
+        if (fragmentShadingRateFeatures.attachmentFragmentShadingRate == VK_TRUE) {
+            capabilities |= GraphicsDeviceCapability::VARIABLE_RATE_SHADING_TIER2;
+            variableRateShadingTileSize = std::min(fragmentShadingRateProps.maxFragmentShadingRateAttachmentTexelSize.width, fragmentShadingRateProps.maxFragmentShadingRateAttachmentTexelSize.height);
+        }
+        if (conditionalRenderingFeatures.conditionalRendering == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::PREDICATION;
+        if (deviceFeatures12.samplerFilterMinmax == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::SAMPLER_MINMAX;
+        if (deviceFeatures2.features.depthBounds == VK_TRUE)
+            capabilities |= GraphicsDeviceCapability::DEPTH_BOUNDS_TEST;
+        if (deviceFeatures2.features.sparseBinding == VK_TRUE && deviceFeatures2.features.sparseResidencyAliased == VK_TRUE) {
+            if (deviceProps2.properties.sparseProperties.residencyNonResidentStrict == VK_TRUE)
+                capabilities |= GraphicsDeviceCapability::SPARSE_NULL_MAPPING;
+            if (deviceFeatures2.features.sparseResidencyBuffer == VK_TRUE)
+                capabilities |= GraphicsDeviceCapability::SPARSE_BUFFER;
+            if (deviceFeatures2.features.sparseResidencyImage2D == VK_TRUE)
+                capabilities |= GraphicsDeviceCapability::SPARSE_TEXTURE2D;
+            if (deviceFeatures2.features.sparseResidencyImage3D == VK_TRUE)
+                capabilities |= GraphicsDeviceCapability::SPARSE_TEXTURE3D;
+        }
+        if ((depthStencilResolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_MIN_BIT) && (depthStencilResolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_MAX_BIT))
+            capabilities |= GraphicsDeviceCapability::DEPTH_RESOLVE_MIN_MAX;
+        if ((depthStencilResolveProps.supportedStencilResolveModes & VK_RESOLVE_MODE_MIN_BIT) && (depthStencilResolveProps.supportedStencilResolveModes & VK_RESOLVE_MODE_MAX_BIT))
+            capabilities |= GraphicsDeviceCapability::STENCIL_RESOLVE_MIN_MAX;
+        if (capabilityH264.capabilities.flags) {
+            capabilities |= GraphicsDeviceCapability::VIDEO_DECODE_H264;
+            videoDecodeBitstreamAlignment = std::max(std::max(videoDecodeBitstreamAlignment, capabilityH264.capabilities.minBitstreamBufferSizeAlignment), capabilityH264.capabilities.minBitstreamBufferOffsetAlignment);
+        }
+        if (r11g11b10Props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)
+            capabilities |= GraphicsDeviceCapability::UAV_LOAD_FORMAT_R11G11B10_FLOAT;
+        if (memoryProps.memoryProperties.memoryHeapCount == 1 && memoryProps.memoryProperties.memoryHeaps[0].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+            capabilities |= GraphicsDeviceCapability::CACHE_COHERENT_UMA;
+
+        // Setup queue families
+        uint32_t nFamilies = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &nFamilies, 0);
+        queueFamilies.resize(nFamilies);
+        queueFamiliesVideo.resize(nFamilies);
+        // Link the family to the video family
+        for (uint32_t i = 0; i < nFamilies; i++) {
+            queueFamilies[i].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
+            queueFamilies[i].pNext = &queueFamiliesVideo[i];
+            queueFamiliesVideo[i].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR;
+        }
+        vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &nFamilies, queueFamilies.data());
+
+        // Figure out what these queues can do
+        for (uint32_t queue = 0; queue < nFamilies; queue++) {
+            auto& family = queueFamilies[queue];
+            auto& video = queueFamiliesVideo[queue];
+
+            // Find the first render-capable queue
+            if (graphicsFamily == VK_QUEUE_FAMILY_IGNORED && family.queueFamilyProperties.queueCount > 0 && family.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                graphicsFamily = queue;
+                // Check whether this queue supports sparse binding.
+                if (family.queueFamilyProperties.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT)
+                    queues[QueueType::GRAPHICS].sparse = true;
+            }
+
+            // Find the first copy capable queue
+            if (copyFamily == VK_QUEUE_FAMILY_IGNORED && family.queueFamilyProperties.queueCount > 0 && family.queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT)
+                copyFamily = queue;
+
+            // Find the first compute capable queue
+            if (computeFamily == VK_QUEUE_FAMILY_IGNORED && family.queueFamilyProperties.queueCount > 0 && family.queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT)
+                computeFamily = queue;
+
+            // Find a dedicated video queue if possible
+            if (videoFamily == VK_QUEUE_FAMILY_IGNORED && family.queueFamilyProperties.queueCount > 0 && (family.queueFamilyProperties.queueFlags & VK_QUEUE_VIDEO_DECODE_BIT_KHR) && (video.videoCodecOperations & VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR))
+                videoFamily = queue;
+
+            // Find a dedicated copy queue
+            if (family.queueFamilyProperties.queueCount > 0 && family.queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT && !(family.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) && !(family.queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT)) {
+                copyFamily = queue;
+                if (family.queueFamilyProperties.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT)
+                    queues[QueueType::COPY].sparse = true;
+            }
+
+            // Find a dedicated compute bit
+            if (family.queueFamilyProperties.queueCount > 0 && family.queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT && !(family.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+                computeFamily = queue;
+                if (family.queueFamilyProperties.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT)
+                    queues[QueueType::COMPUTE].sparse = true;
+            }
+        }
+
+        // Iterate again so this doesn't get overwritten by "Find a dedicated copy queue" above.
+        for (uint32_t queue = 0; queue < nFamilies; queue++) {
+            if (queueFamilies[queue].queueFamilyProperties.queueCount > 0 && queueFamilies[queue].queueFamilyProperties.queueFlags == (VK_QUEUE_TRANSFER_BIT | VK_QUEUE_SPARSE_BINDING_BIT)) {
+                copyFamily = queue;
+                queues[QueueType::COPY].sparse = true;
+            }
+        }
+
+        // Prepare creation of the queues
+        std::vector<VkDeviceQueueCreateInfo> queueCreate;
+        std::unordered_set<uint32_t> uniqueFamilies = { static_cast<uint32_t>(graphicsFamily), static_cast<uint32_t>(copyFamily), static_cast<uint32_t>(computeFamily) };
+        if (videoFamily != VK_QUEUE_FAMILY_IGNORED)
+            uniqueFamilies.insert(videoFamily);
+
+        float priority = 1.0;
+        for (uint32_t queue : uniqueFamilies) {
+            queueLocks.emplace(queue, std::make_shared<std::mutex>());
+            queueCreate.emplace_back(VkDeviceQueueCreateInfo { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, nullptr, 0, queue, 1, &priority });
+            families.push_back(queue);
+        }
+
+        // Create logical device
+        VkDeviceCreateInfo deviceCreate = {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+            .queueCreateInfoCount = static_cast<uint32_t>(queueCreate.size()),
+            .pQueueCreateInfos = queueCreate.data(),
+            .pEnabledFeatures = nullptr,
+            .pNext = &deviceFeatures2,
+            .enabledExtensionCount = static_cast<uint32_t>(enabledExts.size()),
+            .ppEnabledExtensionNames = enabledExts.data()
+        };
+
+        res = vkCreateDevice(physicalDevice, &deviceCreate, nullptr, &device);
+        assert(res == VK_SUCCESS);
+
+        // Fetch queues from the device
+        vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
+        vkGetDeviceQueue(device, computeFamily, 0, &computeQueue);
+        vkGetDeviceQueue(device, copyFamily, 0, &copyQueue);
+        if (videoFamily != VK_QUEUE_FAMILY_IGNORED)
+            vkGetDeviceQueue(device, videoFamily, 0, &videoQueue);
+
+        queues[QueueType::GRAPHICS].queue = graphicsQueue;
+        queues[QueueType::GRAPHICS].locker = queueLocks[graphicsFamily];
+        queues[QueueType::COMPUTE].queue = computeQueue;
+        queues[QueueType::COMPUTE].locker = queueLocks[computeFamily];
+        queues[QueueType::COPY].queue = copyQueue;
+        queues[QueueType::COPY].locker = queueLocks[copyFamily];
+        if (videoFamily != VK_QUEUE_FAMILY_IGNORED) {
+            queues[QueueType::VIDEO_DECODE].queue = videoQueue;
+            queues[QueueType::VIDEO_DECODE].locker = queueLocks[videoFamily];
+        }
+
+        // Prepare the memory manager
+        memoryManager = std::make_shared<MemoryManager>();
+        memoryManager->device = device;
+        memoryManager->instance = instance;
+
+        // Initialize VMA
+        VmaAllocatorCreateInfo allocatorCreate = {
+            .physicalDevice = physicalDevice,
+            .device = device,
+            .instance = instance,
+            .flags = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT | VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT
+        };
+        if (deviceFeatures12.bufferDeviceAddress)
+            allocatorCreate.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+
+        res = vmaCreateAllocator(&allocatorCreate, &memoryManager->allocator);
+        assert(res == VK_SUCCESS);
+
+#if defined(__linux__)
+        std::vector<VkExternalMemoryHandleTypeFlags> externalMemory;
+        externalMemory.resize(memoryProps2.memoryProperties.memoryTypeCount, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+        allocatorCreate.pTypeExternalMemoryHandleTypes = externalMemory.data();
+#endif
+
+        res = vmaCreateAllocator(&allocatorCreate, &memoryManager->externalAllocator);
+        assert(res == VK_SUCCESS);
+
+        // Initialize the uploader
+        upload.Init(this);
+
+        // Create fences
+        for (uint32_t frame = 0; frame < frameCount; frameCount++) {
+            for (int queue = 0; queue < QueueType::COUNT; queue++) {
+                if (queues[queue].queue == VK_NULL_HANDLE) continue;
+                VkFenceCreateInfo fenceCreate = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+                res = vkCreateFence(device, &fenceCreate, nullptr, &frameFence[frame][queue]);
+                assert(res == VK_SUCCESS);
+            }
+        }
+
+        // Create the null resources
+        VkBufferCreateInfo bufferInfo = {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .size = 4,
+            .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            .flags = 0
+        };
+
+        VmaAllocationCreateInfo allocationInfo = {
+            .preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        };
+
+        res = vmaCreateBuffer(memoryManager->allocator, &bufferInfo, &allocationInfo, &nullBuffer, &nullAllocation, nullptr);
+        assert(res == VK_SUCCESS);
+
+        VkBufferViewCreateInfo bufferViewInfo = {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO,
+            .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+            .range = VK_WHOLE_SIZE,
+            .buffer = nullBuffer
+        };
+        res = vkCreateBufferView(device, &bufferViewInfo, nullptr, &nullBufferView);
+
+        VkImageCreateInfo imageInfo = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .extent = { 1, 1, 1 },
+            .format = VK_FORMAT_R8G8B8A8_UNORM,
+            .arrayLayers = 1,
+            .mipLevels = 1,
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+            .flags = 0
+        };
+
+        allocationInfo = { .usage = VMA_MEMORY_USAGE_GPU_ONLY };
+
+        imageInfo.imageType = VK_IMAGE_TYPE_1D;
+        res = vmaCreateImage(memoryManager->allocator, &imageInfo, &allocationInfo, &nullImage1, &nullAllocation, nullptr);
+        assert(res == VK_SUCCESS);
+
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+        imageInfo.arrayLayers = 6;
+        res = vmaCreateImage(memoryManager->allocator, &imageInfo, &allocationInfo, &nullImage2,  &nullAllocation, nullptr);
+        assert(res == VK_SUCCESS);
+
+        imageInfo.imageType = VK_IMAGE_TYPE_3D;
+        imageInfo.flags = 0;
+        imageInfo.arrayLayers = 1;
+        res = vmaCreateImage(memoryManager->allocator, &imageInfo, &allocationInfo, &nullImage3, &nullAllocation, nullptr);
+        assert(res == VK_SUCCESS);
+
+        // Transition the images and buffers so that the driver doesn't immediately error when we try to use them
+        // (the null resources are meant to be USABLE but not VALID.)
+        Uploader::Copy command = upload.Allocate(0);
+        VkImageMemoryBarrier2 barrier = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+            .oldLayout = imageInfo.initialLayout,
+            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+            .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            .srcAccessMask = 0,
+            .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+            .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
+            .subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseArrayLayer = 0,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1
+            },
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = nullImage1
+        };
+        VkDependencyInfo dependency = {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .imageMemoryBarrierCount = 1,
+            .pImageMemoryBarriers = &barrier
+        };
+
+        vkCmdPipelineBarrier2(command.transitionBuffer, &dependency);
+        barrier.image = nullImage3;
+        vkCmdPipelineBarrier2(command.transitionBuffer, &dependency);
+        barrier.image = nullImage2;
+        barrier.subresourceRange.layerCount = 6;
+        vkCmdPipelineBarrier2(command.transitionBuffer, &dependency);
+
+        // Submit the transition bufffer immediately
+        upload.Submit(command);
+
+        // Create image views
+        VkImageViewCreateInfo view = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+                .baseMipLevel = 0,
+                .levelCount = 1
+            },
+            .format = VK_FORMAT_R8G8B8A8_UNORM,
+            .image = nullImage1,
+            .viewType = VK_IMAGE_VIEW_TYPE_1D
+        };
+
+        res = vkCreateImageView(device, &view, nullptr, &nullImageView1);
+        assert(res == VK_SUCCESS);
+        view.viewType = VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+        res = vkCreateImageView(device, &view, nullptr, &nullImageView1A);
+        assert(res == VK_SUCCESS);
+
+        view.image = nullImage2;
+        view.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        res = vkCreateImageView(device, &view, nullptr, &nullImageView2);
+        assert(res == VK_SUCCESS);
+        view.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+        res = vkCreateImageView(device, &view, nullptr, &nullImageView2A);
+        assert(res == VK_SUCCESS);
+        view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+        view.subresourceRange.layerCount = 6;
+        res = vkCreateImageView(device, &view, nullptr, &nullImageViewC);
+        assert(res == VK_SUCCESS);
+        view.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+        res = vkCreateImageView(device, &view, nullptr, &nullImageViewCA);
+        assert(res == VK_SUCCESS);
+
+        view.image = nullImage3;
+        view.subresourceRange.layerCount = 1;
+        view.viewType = VK_IMAGE_VIEW_TYPE_3D;
+        res = vkCreateImageView(device, &view, nullptr, &nullImageView3);
+        assert(res == VK_SUCCESS);
+
+        VkSamplerCreateInfo sampler = { VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+        res = vkCreateSampler(device, &sampler, nullptr, &nullSampler);
+
+        // Finished creating null resources, set some engine state now.
+        timestampFrequency = size_t(1 / double(deviceProps2.properties.limits.timestampPeriod) * 1000'000'000);
+
+        psoDynamicState.push_back(VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT);
+        psoDynamicState.push_back(VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT);
+        psoDynamicState.push_back(VK_DYNAMIC_STATE_STENCIL_REFERENCE);
+        psoDynamicState.push_back(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
+        if (CheckCapability(GraphicsDeviceCapability::DEPTH_BOUNDS_TEST))
+            psoDynamicState.push_back(VK_DYNAMIC_STATE_DEPTH_BOUNDS);
+        if (CheckCapability(GraphicsDeviceCapability::VARIABLE_RATE_SHADING))
+            psoDynamicState.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
+        // Vertex input binding state last so we can exclude it later
+        psoDynamicState.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE);
+
+        dynamicStateCreate = VkPipelineDynamicStateCreateInfo {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+            .dynamicStateCount = static_cast<uint32_t>(psoDynamicState.size()),
+            .pDynamicStates = psoDynamicState.data()
+        };
+
+        dynamicStateMeshCreate = VkPipelineDynamicStateCreateInfo {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+            .dynamicStateCount = static_cast<uint32_t>(psoDynamicState.size() - 1), // No vertex input bindings in mesh shaders.
+            .pDynamicStates = psoDynamicState.data()
+        };
+
+        // Initialize bindless descriptors
+        const uint32_t maxBindless = 100'000;
+
+        if (deviceFeatures12.descriptorBindingSampledImageUpdateAfterBind == VK_TRUE) {
+            memoryManager->bindlessSamplers.Init(device, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256);
+            memoryManager->bindlessImages.Init(device, VK_DESCRIPTOR_TYPE_SAMPLER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindSampledImages / 4));
+        }
+        if (deviceFeatures12.descriptorBindingUniformTexelBufferUpdateAfterBind == VK_TRUE)
+            memoryManager->bindlessUniformTBuffers.Init(device, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindSampledImages / 4));
+        if (deviceFeatures12.descriptorBindingStorageBufferUpdateAfterBind == VK_TRUE)
+            memoryManager->bindlessStorageBuffers.Init(device, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageBuffers / 4));
+        if (deviceFeatures12.descriptorBindingStorageImageUpdateAfterBind == VK_TRUE)
+            memoryManager->bindlessStorageImages.Init(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageImages / 4));
+        if (deviceFeatures12.descriptorBindingStorageTexelBufferUpdateAfterBind == VK_TRUE)
+            memoryManager->bindlessStorageTBuffers.Init(device, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageImages / 4));
+        if (CheckCapability(GraphicsDeviceCapability::RAY_TRACING))
+            memoryManager->bindlessRT.Init(device, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 32);
+
+        // Load the pipeline cache from disk.
+        ShadowEngine::FileInput cacheFile;
+        std::vector<uint8_t> cacheData;
+        cacheFile.open(std::string("./cache/PipelineCache-Vulkan.cache")));
+        cacheData.resize(cacheFile.size());
+        cacheFile.read(cacheData.data(), cacheFile.size());
+
+        // Verify cache file integrity if it contains data
+        if (!cacheData.empty()) {
+            uint32_t headerLength = 0, cacheHeaderVersion = 0, vendorID = 0, deviceID = 0;
+            uint8_t cacheUUID[VK_UUID_SIZE] = {};
+
+            std::memcpy(&headerLength, cacheData.data(), 4);
+            std::memcpy(&cacheHeaderVersion, cacheData.data() + 4, 4);
+            std::memcpy(&vendorID, cacheData.data() + 8, 4);
+            std::memcpy(&deviceID, cacheData.data() + 12, 4);
+            std::memcpy(cacheUUID, cacheData.data() + 16, VK_UUID_SIZE);
+
+            bool bad = false;
+            if (headerLength <= 0) bad = true;
+            if (cacheHeaderVersion != VK_PIPELINE_CACHE_HEADER_VERSION_ONE) bad = true;
+            if (vendorID != deviceProps2.properties.vendorID) bad = true;
+            if (deviceID != deviceProps2.properties.deviceID) bad = true;
+            if (memcmp(cacheUUID, deviceProps2.properties.pipelineCacheUUID, sizeof(cacheUUID)) != 0) bad = true;
+
+            // Don't bother continuing with bad data
+            if (bad)
+                cacheData.clear();
+        }
+
+        VkPipelineCacheCreateInfo cacheCreate = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+            .initialDataSize = cacheData.size(),
+            .pInitialData = cacheData.data()
+        };
+
+        res = vkCreatePipelineCache(device, &cacheCreate, nullptr, &pipelineCache);
+        assert(res == VK_SUCCESS);
+
+        // Create static samplers
+        VkSamplerCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.compareEnable = false;
+        createInfo.compareOp = VK_COMPARE_OP_NEVER;
+        createInfo.minLod = 0;
+        createInfo.maxLod = FLT_MAX;
+        createInfo.mipLodBias = 0;
+        createInfo.anisotropyEnable = false;
+        createInfo.maxAnisotropy = 0;
+
+        // sampler_linear_clamp:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_linear_wrap:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        //sampler_linear_mirror:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_point_clamp:
+        createInfo.minFilter = VK_FILTER_NEAREST;
+        createInfo.magFilter = VK_FILTER_NEAREST;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_point_wrap:
+        createInfo.minFilter = VK_FILTER_NEAREST;
+        createInfo.magFilter = VK_FILTER_NEAREST;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_point_mirror:
+        createInfo.minFilter = VK_FILTER_NEAREST;
+        createInfo.magFilter = VK_FILTER_NEAREST;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_aniso_clamp:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.anisotropyEnable = true;
+        createInfo.maxAnisotropy = 16;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_aniso_wrap:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        createInfo.anisotropyEnable = true;
+        createInfo.maxAnisotropy = 16;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_aniso_mirror:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        createInfo.anisotropyEnable = true;
+        createInfo.maxAnisotropy = 16;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        // sampler_cmp_depth:
+        createInfo.minFilter = VK_FILTER_LINEAR;
+        createInfo.magFilter = VK_FILTER_LINEAR;
+        createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        createInfo.anisotropyEnable = false;
+        createInfo.maxAnisotropy = 0;
+        createInfo.compareEnable = true;
+        createInfo.compareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+        createInfo.minLod = 0;
+        createInfo.maxLod = 0;
+        res = vkCreateSampler(device, &createInfo, nullptr, &immutableSamplers.emplace_back());
+        assert(res == VK_SUCCESS);
+
+        spdlog::info("Initialized rx::vulkan in " + std::to_string(std::round(timer.elapsedMillis())) + "ms");
+    }
 
 }

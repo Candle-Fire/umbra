@@ -71,7 +71,7 @@ namespace rx {
         size_t frameCount = 0; // Increments by 1 every time a game frame is rendered.
         Validation validation = Validation::DISABLED; // Get debug errors from the GPU and CPU
         GraphicsDeviceCapability capabilities = GraphicsDeviceCapability::NONE; // See what the GPU is capable of.
-        size_t shaderNameSize = 0;
+        size_t shaderGroupHandleSize = 0;
         size_t topLevelAccelerationInstanceSize = 0;
         uint32_t variableRateShadingTileSize = 0;
         size_t timestampFrequency = 0; // How often to ask the GPU "how long has this task been running", in number per second.
@@ -160,7 +160,7 @@ namespace rx {
         constexpr bool isDebugEnabled() const { return validation != Validation::DISABLED; }
 
         // Get the maximum size of a shader identifier.
-        constexpr size_t GetShaderIdentifierSize() const { return shaderNameSize; }
+        constexpr size_t GetShaderIdentifierSize() const { return shaderGroupHandleSize; }
         // Get the size of an instance of a Top Level Ray Tracing Acceleration structure.
         constexpr size_t GetTLRTAccelerationInstanceSize() const { return topLevelAccelerationInstanceSize; }
         // Get the tile size of the variable rate shading buffer.

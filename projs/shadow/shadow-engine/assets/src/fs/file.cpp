@@ -30,7 +30,7 @@ namespace ShadowEngine {
         return INVALID_HANDLE_VALUE != handle;
     }
 
-    bool FileInput::open(std::string& path) {
+    bool FileInput::open(const std::string path) {
         handle = (HANDLE) CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
         return INVALID_HANDLE_VALUE != handle;
     }

@@ -11,7 +11,7 @@ namespace ShadowEngine {
     FileInput();
     ~FileInput() = default;
 
-    [[nodiscard]] bool open(std::string& path);
+    [[nodiscard]] bool open(const std::string path);
     void close();
 
     using InputStream::read;
