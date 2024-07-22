@@ -10,6 +10,8 @@
 #include "shadow/entity/entities/CameraComponent.h"
 #include <renderer/GraphicsDefine.h>
 
+#include "interfaces/Sprite.h"
+
 #define arraysize(a) (sizeof(a) / sizeof(a[0]))
 
 namespace rx {
@@ -104,6 +106,7 @@ namespace rx {
                 ALLOW_HAIRS = 32,
                 ALLOW_REQUEST_REFLECTIONS = 64,
                 ALLOW_OCCLUSION_CULLING = 128,
+                ALLOW_PACKED_SHADOW = 256,
 
                 ALLOW_EVERYTHING = ~0
             };
@@ -116,6 +119,8 @@ namespace rx {
             std::vector<uint32_t> visibleEmitters;
             std::vector<uint32_t> visibleHairs;
             std::vector<uint32_t> visibleLights;
+            rx::Sprite::Packer shadowPacker;
+            std::vector<rx::Sprite::Packer::Rect> visibleLightShadowRects;
 
             std::atomic<uint32_t> objectCounter;
             std::atomic<uint32_t> lightCounter;
@@ -184,7 +189,9 @@ namespace rx {
             DRAW_HAIR = 16,
             DRAW_BILLBOARD = 32,
             DRAW_OCEAN = 64,
-            DRAW_SKIP_PLANAR_REFLECTIONS = 128
+            DRAW_SKIP_PLANAR_REFLECTIONS = 128,
+            DRAW_FOREGROUND_ONLY = 256,
+            DRAW_MAIN_CAMERA = 512,
         };
 
         static void DrawScene(const Visibility& vis, rx::defs::RenderPass renderPass, ThreadCommands cmd, uint32_t flags = DRAW_OPAQUE);
@@ -296,7 +303,7 @@ namespace rx {
             Texture specular[2];
             mutable bool preClear = true;
 
-            bool isValid() const { return diffuse[0].isValid(); }
+            bool isValid() const { return diffuse[0].IsValid(); }
         };
 
         static void CreateVXGIResources(VXGIResources& res, DirectX::XMUINT2 resolution);
@@ -445,7 +452,7 @@ namespace rx {
             GPUBuffer bufferCheap;
             GPUBuffer bufferExpensive;
 
-            bool isValid() const { return maxHorizontal.isValid(); }
+            bool isValid() const { return maxHorizontal.IsValid(); }
         };
         void CreateDOFResources(DOFResources& res, DirectX::XMUINT2 resolution);
         void PostprocessDOF(const DOFResources& res, Texture& input, Texture& output, ThreadCommands cmd, float scale = 10, float max = 10);
@@ -463,7 +470,7 @@ namespace rx {
             GPUBuffer bufferCheap;
             GPUBuffer bufferExpensive;
 
-            bool isValid() const { return maxHorizontal.isValid(); }
+            bool isValid() const { return maxHorizontal.IsValid(); }
         };
         void CreateMotionBlurResources(MotionBlurResources& res, DirectX::XMUINT2 resolution);
         void PostprocessMotionBlur(const MotionBlurResources& res, const Texture& input, const Texture& output, ThreadCommands cmd, float strength = 100.0f);
@@ -495,7 +502,7 @@ namespace rx {
             mutable int frame = 0;
             Texture temporal[2];
 
-            bool isValid() const { return temporal[0].isValid(); }
+            bool isValid() const { return temporal[0].IsValid(); }
             const Texture* getCurrent() const { return &temporal[frame % arraysize(temporal)]; }
             const Texture* getHistory() const { return &temporal[(frame + 1) % arraysize(temporal) ]; }
         };
@@ -520,10 +527,6 @@ namespace rx {
         void PostprocessCustom(const Shader& compute, const Texture& in, const Texture& out, ThreadCommands cmd, const DirectX::XMFLOAT4& p0 = DirectX::XMFLOAT4(0, 0, 0, 0), const DirectX::XMFLOAT4& p1 = DirectX::XMFLOAT4(0, 0, 0, 0), const char* debugName = "Postprocess_Custom");
 
         void ConvertVUYToRGB(const Texture& in, int subResourceLuminance, int subResourceChrominance, const Texture& out, ThreadCommands cmd);
-
-
-
-
 
         void RaytraceScene(const SH::Entities::Scene& scene, const Texture& out, int accumulation, ThreadCommands cmd, uint8_t instanceMask = 0xFF, const Texture* outAlbedo = nullptr, const Texture* outNormal = nullptr, const Texture* outDepth = nullptr, const Texture* outStencil = nullptr, const Texture* outDepthStencil = nullptr);
 
@@ -607,7 +610,7 @@ namespace rx {
         DEBUG_FLOAT_FEATURE(DDGIBlend);
         DEBUG_FLOAT_FEATURE(GIBoost);
 
-        void WorkaroundBug(const size_t bug, ThreadCommands cmd);
+        void WorkaroundBug(size_t bug, ThreadCommands cmd);
 
         void DebugDrawBox(const DirectX::XMFLOAT4& mat, const DirectX::XMFLOAT4& col = DirectX::XMFLOAT4(1, 1, 1, 1));
         void DebugDrawSphere(const rx::Sphere& sphere, const DirectX::XMFLOAT4& color = DirectX::XMFLOAT4(1, 1, 1, 1));

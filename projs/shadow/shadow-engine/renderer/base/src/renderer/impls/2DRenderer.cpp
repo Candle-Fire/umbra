@@ -98,12 +98,14 @@ namespace rx {
     void Renderer2D::Render() const {
         Interface* interface = GetInterface();
         ThreadCommands commands = interface->BeginCommands();
+        rx::Image::SetCanvas(*this);
+        rx::Font::SetRenderPlate(*this);
 
         Renderer::ProcessDeferredRequests(commands);
 
         const Texture* dsv = GetDepthStencil();
 
-        if (targetStenciled.isValid()) {
+        if (targetStenciled.IsValid()) {
             if (targetStenciled.getMeta().sampleCount > 1) {
                 RenderPassImage img[] = {
                         RenderPassImage::RenderTarget(&targetStenciled, RenderPassImage::LoadOp::CLEAR),
@@ -147,10 +149,10 @@ namespace rx {
 
             interface->EndRenderPass(commands);
         }
-        if (dsv != nullptr && !targetStenciled.isValid()) {
+        if (dsv != nullptr && !targetStenciled.IsValid()) {
             RenderPassImage imgs[] = {
                     RenderPassImage::RenderTarget(&target, RenderPassImage::LoadOp::CLEAR),
-                    RenderPassImage::DepthStencil(dsv, RenderPassImage::LoadOp::LOAD, RenderPassImage::StoreOp::STORE, ResourceState::DEPTH_STENCIL_RO, ResourceState::DEPTH_STENCIL_RO, ResourceState::DEPTH_STENCIL_RO)
+                    RenderPassImage::DepthStencil(dsv, RenderPassImage::LoadOp::LOAD, RenderPassImage::StoreOp::STORE, ResourceState::DEPTH_STENCIL_RO, ResourceState::DEPTH_STENCIL_RO, ResourceState::DEPTH_STENCIL_RO),
             };
 
             interface->BeginRenderPass(imgs, 2, commands);
@@ -167,7 +169,7 @@ namespace rx {
         interface->BindViewports(&port, 1, commands);
 
         if (GetDepthStencil() != nullptr) {
-            if (targetStenciled.isValid()) {
+            if (targetStenciled.IsValid()) {
                 interface->EventBegin("Copy stenciled sprite layers", commands);
                 rx::Image::RenderMode fx;
                 fx.enableFullscreen();

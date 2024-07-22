@@ -47,7 +47,7 @@ namespace rx {
         GET_SET_RENDER_MODE(Orthographic, RenderMode::ORTHO);
 
         const Texture* GetTexture() const {
-            if (textureResource.isValid())
+            if (textureResource.IsValid())
                 return &textureResource;
             return nullptr;
         }
