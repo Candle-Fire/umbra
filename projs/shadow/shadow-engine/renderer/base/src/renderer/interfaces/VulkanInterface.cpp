@@ -313,11 +313,9 @@ namespace rx {
                     case ResourceState::SHADER_RESOURCE_COMPUTE:
                         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     case ResourceState::UNORDERED_ACCESS:
-                        return VK_IMAGE_LAYOUT_GENERAL;
                     case ResourceState::COPY_SOURCE:
-                        return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                     case ResourceState::COPY_DESTINATION:
-                        return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                        return VK_IMAGE_LAYOUT_GENERAL;
                     case ResourceState::SHADING_RATE_SOURCE:
                         return VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
                     case ResourceState::VIDEO_DECODE_SOURCE:
@@ -1176,6 +1174,26 @@ namespace rx {
         signalSemaphores.clear();
         signalSemaphoreSubmit.clear();
         commandSubmit.clear();
+    }
+
+    void VulkanInterface::CommandQueue::Signal(VkSemaphore sem) {
+        if (queue == VK_NULL_HANDLE) return;
+        signalSemaphoreSubmit.emplace_back(VkSemaphoreSubmitInfo {
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+            .semaphore = sem,
+            .value = 0,
+            .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT
+        });
+    }
+
+    void VulkanInterface::CommandQueue::Wait(VkSemaphore sem) {
+        if (queue == VK_NULL_HANDLE) return;
+        waitSemaphoreSubmit.emplace_back(VkSemaphoreSubmitInfo {
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+            .semaphore = sem,
+            .value = 0,
+            .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT
+        });
     }
 
     void VulkanInterface::Uploader::Init(rx::VulkanInterface *iface) {
@@ -2575,6 +2593,8 @@ namespace rx {
                 cacheData.clear();
         }
 
+        cacheFile.close();
+
         VkPipelineCacheCreateInfo cacheCreate = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
             .initialDataSize = cacheData.size(),
@@ -2710,6 +2730,73 @@ namespace rx {
         assert(res == VK_SUCCESS);
 
         spdlog::info("Initialized rx::vulkan in " + std::to_string(std::round(timer.elapsedMillis())) + "ms");
+    }
+
+    VulkanInterface::~VulkanInterface() {
+        VkResult res = vkDeviceWaitIdle(device);
+        assert(res == VK_SUCCESS);
+
+        for (uint32_t frame = 0; frame < frameCount; frame++)
+            for (int queue = 0; queue < QueueType::COUNT; queue++)
+                vkDestroyFence(device, frameFence[frame][queue], nullptr);
+        upload.Destroy();
+
+        for (auto& x : PSOcache) {
+            vkDestroyPipelineLayout(device, x.second.layout, nullptr);
+            vkDestroyDescriptorSetLayout(device, x.second.descriptorLayout, nullptr);
+        }
+
+        for (auto& command : cmds) {
+            for (int frame = 0; frame < frameCount; frame++)
+                for (int queue = 0; queue < QueueType::COUNT; queue++)
+                    vkDestroyCommandPool(device, command->pools[frame][queue], nullptr);
+            for (auto& x : command->pipelines)
+                vkDestroyPipeline(device, x.second, nullptr);
+            for (auto& x : command->bindPools)
+                x.Destroy();
+        }
+
+        for (auto& x : pipelines)
+            vkDestroyPipeline(device, x.second, nullptr);
+
+        for (auto& x : signalPool)
+            vkDestroySemaphore(device, x, nullptr);
+
+        vmaDestroyBuffer(memoryManager->allocator, nullBuffer, nullAllocation);
+        vkDestroyBufferView(device, nullBufferView, nullptr);
+        vmaDestroyImage(memoryManager->allocator, nullImage1, nullAllocation);
+        vmaDestroyImage(memoryManager->allocator, nullImage2, nullAllocation);
+        vmaDestroyImage(memoryManager->allocator, nullImage3, nullAllocation);
+        vkDestroyImageView(device, nullImageView1, nullptr);
+        vkDestroyImageView(device, nullImageView1A, nullptr);
+        vkDestroyImageView(device, nullImageView2, nullptr);
+        vkDestroyImageView(device, nullImageView2A, nullptr);
+        vkDestroyImageView(device, nullImageView3, nullptr);
+        vkDestroyImageView(device, nullImageViewC, nullptr);
+        vkDestroyImageView(device, nullImageViewCA, nullptr);
+        vkDestroySampler(device, nullSampler, nullptr);
+
+        for (VkSampler s : immutableSamplers)
+            vkDestroySampler(device, s, nullptr);
+
+        if (pipelineCache != VK_NULL_HANDLE) {
+            size_t size;
+            res = vkGetPipelineCacheData(device, pipelineCache, &size, nullptr);
+            assert(res == VK_SUCCESS);
+            std::vector<uint8_t> data(size);
+            res = vkGetPipelineCacheData(device, pipelineCache, &size, data.data());
+            assert(res == VK_SUCCESS);
+
+            ShadowEngine::FileOutput file;
+            file.open("./cache/PipelineCache-Vulkan.cache");
+            file.write(data.data(), data.size());
+            file.close();
+
+            vkDestroyPipelineCache(device, pipelineCache, nullptr);
+        }
+
+        if (debugUtilsMessenger != VK_NULL_HANDLE)
+            vkDestroyDebugUtilsMessengerEXT(instance, debugUtilsMessenger, nullptr);
     }
 
 }

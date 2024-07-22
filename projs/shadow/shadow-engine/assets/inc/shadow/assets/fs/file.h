@@ -11,7 +11,7 @@ namespace ShadowEngine {
     FileInput();
     ~FileInput() = default;
 
-    [[nodiscard]] bool open(const std::string path);
+    [[nodiscard]] bool open(std::string path);
     void close();
 
     using InputStream::read;
@@ -32,7 +32,7 @@ namespace ShadowEngine {
     FileOutput();
     ~FileOutput() = default;
 
-    [[nodiscard]] bool open(std::string& path);
+    [[nodiscard]] bool open(std::string path);
     void close();
     void flush();
     bool errored() const { return error; }

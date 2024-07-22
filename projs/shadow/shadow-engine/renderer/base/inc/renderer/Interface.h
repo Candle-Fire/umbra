@@ -214,6 +214,8 @@ namespace rx {
 
         // Wait for the other command list to complete.
         virtual void WaitForCommands(ThreadCommands cmd, ThreadCommands waitFor) = 0;
+        // Wait for the given queue to finish processing. Commonly QueueType::GRAPHICS to wait for the previous frame to finish.
+        virtual void WaitForQueue(ThreadCommands cmd, QueueType queue) = 0;
         // Begin a render pass on the swapchain.
         virtual void BeginRenderPass(const SwapChain* sc, ThreadCommands cmd) = 0;
         // Begin a render pass on the given image.
@@ -359,7 +361,7 @@ namespace rx {
             GPUBuffer buffer;
             size_t offset = 0;
 
-            inline bool IsValid() const { return data != nullptr && buffer.isValid(); }
+            inline bool IsValid() const { return data != nullptr && buffer.IsValid(); }
         };
 
         // Start a staging buffer that will allow us to write to the GPU and copy it into a different buffer.
