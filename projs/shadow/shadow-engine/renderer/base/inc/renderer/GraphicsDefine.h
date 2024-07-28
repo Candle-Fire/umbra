@@ -536,7 +536,7 @@ namespace rx {
         FS,  // Fragment Shader.
         CS,  // Compute Shader.
         LIB, // Shader library (package of other shaders)
-        Size // Number of elements in the enum.
+        SIZE // Number of elements in the enum.
     };
 
     /**
@@ -1074,10 +1074,10 @@ namespace rx {
      * When setting up a render pass, we can configure what kind of behaviour it'll have.
      */
     enum class RenderPassFlags {
-        NONE = 0, // Nothing special.
-        ALLOW_UAV_WRITE, // Write into Unordered Access Views. Usually reserved for Compute.
-        SUSPENDING, // Pause to wait for other stuff if necessary.
-        RESUMING, // Kick other render passes that are suspended on this.
+        NONE = 0,           // Nothing special.
+        ALLOW_UAV_WRITE,    // Write into Unordered Access Views. Usually reserved for Compute.
+        SUSPENDING,         // Pause to wait for other stuff if necessary.
+        RESUMING,           // Kick other render passes that are suspended on this.
     };
 
     /**
@@ -1461,14 +1461,14 @@ namespace rx {
     graphicsItem(Sampler) {
         SamplerMeta meta;
 
-        const SamplerMeta &getMeta() const { return meta; }
+        const SamplerMeta &GetMeta() const { return meta; }
     };
 
     /**
      * A shader is a binary blob that lives on GPU and must be bound with a pipeline to be used.
      */
     graphicsItem(Shader) {
-        ShaderStage stage = ShaderStage::Size;
+        ShaderStage stage = ShaderStage::SIZE;
     };
 
     /**
@@ -1482,11 +1482,11 @@ namespace rx {
             UNKNOWN
         } type = Type::UNKNOWN;
 
-        constexpr bool isTexture() const { return type == Type::TEXTURE; }
+        constexpr bool IsTexture() const { return type == Type::TEXTURE; }
 
-        constexpr bool isBuffer() const { return type == Type::BUFFER; }
+        constexpr bool IsBuffer() const { return type == Type::BUFFER; }
 
-        constexpr bool isRT() const { return type == Type::RAYTRACING; }
+        constexpr bool IsRT() const { return type == Type::RAYTRACING; }
 
         // Only valid for STAGING or READBACK resources.
         void *mapped = nullptr;
@@ -1512,7 +1512,7 @@ namespace rx {
 
         const SparseTextureMeta *sparse;
 
-        constexpr const TextureMeta &getMeta() const { return meta; }
+        constexpr const TextureMeta &GetMeta() const { return meta; }
     };
 
     /**
@@ -1684,7 +1684,7 @@ namespace rx {
          * Convert all of the formats of the render targets, the depth stencil, and the sample count to an integer.
          * If the hash of the current render pass matches the hash of the one we're trying to swap it to... we don't need to change anything!
          */
-        constexpr size_t getHash() const {
+        constexpr size_t GetHash() const {
             union Hasher {
                 struct {
                     size_t format0: 6;
@@ -1717,11 +1717,11 @@ namespace rx {
             return hasher.value;
         }
 
-        static constexpr RenderPassMeta from(const RenderPassImage *images, uint32_t imageCount) {
+        static constexpr RenderPassMeta From(const RenderPassImage *images, uint32_t imageCount) {
             RenderPassMeta meta;
             for (size_t i = 0; i < imageCount; i++) {
                 const RenderPassImage &image = images[i];
-                const TextureMeta &desc = image.texture->getMeta();
+                const TextureMeta &desc = image.texture->GetMeta();
                 switch (image.type) {
                     case RenderPassImage::Type::RENDER_TARGET:
                         meta.targetFormats[meta.targetCount++] = desc.format;
@@ -1739,7 +1739,7 @@ namespace rx {
             return meta;
         }
 
-        static constexpr RenderPassMeta from(const SwapchainMeta &swapchainImages) {
+        static constexpr RenderPassMeta From(const SwapchainMeta &swapchainImages) {
             RenderPassMeta meta;
             meta.targetFormats[0] = swapchainImages.format;
             meta.targetCount = 1;
