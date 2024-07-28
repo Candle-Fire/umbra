@@ -54,9 +54,11 @@ namespace rx {
         enum class RenderPass : uint32_t {
             MAIN,
             PRE,
+            PRE_DEPTH,
             ENVMAPPING,
             SHADOW,
             VOXEL,
+            SKY_BLOCK,
             SIZE
         };
 
@@ -131,44 +133,51 @@ namespace rx {
             V_FLARE,
             V_DDGI,
 
-            /** Fragment */
+            /** Pixel */
 
-            F_OBJECT_PERMUTE_BEGIN,
-            F_OBJECT_PERMUTE_END,
-            F_OBJECT_TRANSPARENT_PERMUTE_BEGIN,
-            F_OBJECT_TRANSPARENT_PERMUTE_END,
-            F_BILLBOARD,
-            F_OBJECT_HOLOGRAM,
-            F_OBJECT_DEBUG,
-            F_OBJECT_SIMPLE,
-            F_OBJECT_PRE,
-            F_OBJECT_PRE_ALPHA,
-            F_BILLBOARD_PRE,
-            F_BILLBOARD_SIMPLE,
+            P_OBJECT_PERMUTE_BEGIN,
+            P_OBJECT_PERMUTE_END = P_OBJECT_PERMUTE_BEGIN + 11,
+            P_OBJECT_TRANSPARENT_PERMUTE_BEGIN,
+            P_OBJECT_TRANSPARENT_PERMUTE_END = P_OBJECT_TRANSPARENT_PERMUTE_BEGIN + 11,
+            P_BILLBOARD,
+            P_OBJECT_HOLOGRAM,
+            P_OBJECT_DEBUG,
+            P_OBJECT_SIMPLE,
+            P_OBJECT_PRE,
+            P_OBJECT_PRE_ALPHA,
+            P_OBJECT_PRE_DEPTH,
+            P_OBJECT_PRE_DEPTH_ALPHA,
+            P_BILLBOARD_PRE,
+            P_BILLBOARD_PRE_DEPTH,
+            P_BILLBOARD_SIMPLE,
 
-            F_VERTEXCOLOR,
-            F_LIGHTVISUAL,
-            F_LIGHT_DIRECT,
-            F_LIGHT_POINT,
-            F_LIGHT_SPOT,
-            F_SKY_STATIC,
-            F_SKY_DYNAMIC,
-            F_SUN,
-            F_ENVMAP,
-            F_ENVMAP_SKY_STATIC,
-            F_ENVMAP_SKY_DYNAMIC,
-            F_CUBEMAP,
-            F_CAPTUREBILLBOARDS,
-            F_VOXELIZER,
-            F_VOXEL,
-            F_FFVISUAL,
-            F_RT_DEBUGBV,
-            F_DOWNSAMPLE,
-            F_POST_UPSAMPLE,
-            F_POST_OUTLINE,
-            F_LENSFLARE,
-            F_DDGI,
-            F_POST_CLOUDS_UPSAMPLE,
+            P_SHADOW_ALPHA,
+            P_SHADOW_TRANSPARENT,
+            P_SHADOW_WATER,
+
+            P_VERTEXCOLOR,
+            P_LIGHTVISUAL,
+            P_LIGHT_DIRECT,
+            P_LIGHT_POINT,
+            P_LIGHT_SPOT,
+            P_SKY_STATIC,
+            P_SKY_DYNAMIC,
+            P_SUN,
+            P_ENVMAP,
+            P_ENVMAP_SKY_STATIC,
+            P_ENVMAP_SKY_DYNAMIC,
+            P_CUBEMAP,
+            P_CAPTUREBILLBOARDS,
+            P_VOXELIZER,
+            P_VOXEL,
+            P_FFVISUAL,
+            P_RT_DEBUGBV,
+            P_DOWNSAMPLE,
+            P_POST_UPSAMPLE,
+            P_POST_OUTLINE,
+            P_LENSFLARE,
+            P_DDGI,
+            P_POST_CLOUDS_UPSAMPLE,
 
             /** Geometry */
 
@@ -443,6 +452,35 @@ namespace rx {
             ANISO_MIRROR,
             COMPARE_DEPTH,
 
+            SIZE
+        };
+
+        enum class SkyRenderType : uint32_t {
+            STATIC,
+            DYNAMIC,
+            SUN,
+            ENVMAP_STATIC,
+            ENVMAP_DYNAMIC,
+            SIZE
+        };
+
+        enum class DebugRenderType : uint32_t {
+            ENVPROBE,
+            DDGI,
+            GRID,
+            CUBE,
+            CUBE_DEPTH,
+            LINE,
+            LINE_DEPTH,
+            TRI_SOLID,
+            TRI_WIRE,
+            TRI_SOLID_DEPTH,
+            TRI_WIRE_DEPTH,
+            EMITTER,
+            VOXEL,
+            BARRIER_POINT,
+            BARRIER_PLANE,
+            RAYTRACE,
             SIZE
         };
     }

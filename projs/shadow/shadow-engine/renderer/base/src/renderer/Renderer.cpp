@@ -112,6 +112,24 @@ namespace rx::internal {
 
     GPUBuffer luminanceBuffer;                                                                                          // A buffer for dynamic luminance compensation. Required by some shaders to exist. NVIDIA 10xx GPUs will error without such.
 
+    PipelineState PSOOcclusion;                                                                                         // PSO for Occlusion Queries
+    PipelineState PSOBillboard[defs::RenderPass::SIZE];                                                                 // PSO for billboard rendering, per render pass
+    PipelineState PSOBillboardWire;                                                                                     // PSO for billboard rendering of wires and lines.
+    PipelineState PSOGatherBillboard;                                                                                   // PSO for capturing billboard-rendered pixels into a buffer
+    PipelineState PSOLightVisual[3];                                                                                    // PSO for visualizing light-affected pixels into a buffer
+    PipelineState PSOLightVolumetric[3];                                                                                // PSO for rendering volumetric lights
+    PipelineState PSOLightmap;                                                                                          // PSO for rendering light maps
+    PipelineState PSOLensFlare;                                                                                         // PSO for rendering lens flares
+    PipelineState PSODownsampleDepth;                                                                                   // PSO for downsampling depth buffers
+    PipelineState PSOUpsample;                                                                                          // PSO for bilateral upsampling
+    PipelineState PSOUpsampleClouds;                                                                                    // PSO for upsampling volumetric clouds
+    PipelineState PSOOutline;                                                                                           // PSO for rendering outlines of objects
+    PipelineState PSOSky[defs::SkyRenderType::SIZE];                                                                    // PSO for sky rendering, per type
+    PipelineState PSODebug[defs::DebugRenderType::SIZE];                                                                // PSO for debug rendering, per mode
+
+    RaytracingPipeline PSORTReflect;                                                                                    // PSO for ray-traced reflections
+
+
     /**
      * An instance of a mesh, with associated distance to the camera.
      * Can be sorted back-to-front or front-to-back depending on need.
@@ -215,6 +233,67 @@ namespace rx::internal {
     std::unordered_map<uint32_t, PipelineState> PSOByVariant[defs::RenderPass::SIZE][11]; // TODO: Material Component types
     inline PipelineState* GetPipelineForVariants(RenderVariants var) {
         return &PSOByVariant[var.parts.pass][var.parts.shader][var.data];
+    }
+
+    defs::ShaderType VertexShaderFor(defs::RenderPass pass, bool tesselation, bool alpha, bool transparent) {
+        switch (pass) {
+            case defs::RenderPass::MAIN: return tesselation ? defs::ShaderType::V_OBJECT_COMMON_TESS : defs::ShaderType::V_OBJECT_COMMON;
+            case defs::RenderPass::PRE:
+            case defs::RenderPass::PRE_DEPTH:
+                return tesselation
+                    ? alpha ? defs::ShaderType::V_OBJECT_PRE_ALPHA_TESS : defs::ShaderType::V_OBJECT_PRE_TESS
+                    : alpha ? defs::ShaderType::V_OBJECT_PRE_ALPHA : defs::ShaderType::V_OBJECT_PRE;
+            case defs::RenderPass::ENVMAPPING:
+                return defs::ShaderType::V_ENVMAP;
+            case defs::RenderPass::SHADOW:
+                return transparent ? defs::ShaderType::V_SHADOW_TRANSPARENT :
+                    alpha ? defs::ShaderType::V_SHADOW_ALPHA : defs::ShaderType::V_SHADOW;
+            case defs::RenderPass::VOXEL: return defs::ShaderType::V_VOXELIZER;
+            case defs::RenderPass::SKY_BLOCK: return defs::ShaderType::V_SHADOW;
+        }
+    }
+
+    defs::ShaderType GeometryShaderFor(defs::RenderPass pass, bool alpha, bool transparent) {
+        switch (pass) {
+            case defs::RenderPass::VOXEL: return defs::ShaderType::G_VOXELIZER;
+            case defs::RenderPass::PRE: break;
+            case defs::RenderPass::ENVMAPPING:
+                if (iface->CheckCapability(GraphicsDeviceCapability::RT_VIEWPORT_WITHOUT_GEOMETRY_SHADER)) break;
+                return defs::ShaderType::G_ENVMAP_EMULATE;
+            case defs::RenderPass::SHADOW:
+                if (iface->CheckCapability(GraphicsDeviceCapability::RT_VIEWPORT_WITHOUT_GEOMETRY_SHADER)) break;
+                return transparent ? defs::ShaderType::G_SHADOW_TRANSPARENT_EMULATE : alpha ? defs::ShaderType::G_SHADOW_ALPHA_EMULATE : defs::ShaderType::G_SHADOW_EMULATE;
+        }
+    }
+
+    defs::ShaderType HullShaderFor(defs::RenderPass pass, bool tesselation, bool alpha) {
+        if (tesselation) {
+            if (pass == defs::RenderPass::MAIN)
+                return defs::ShaderType::H_OBJECT;
+            if (pass == defs::RenderPass::PRE || pass == defs::RenderPass::PRE_DEPTH)
+                return alpha ? defs::ShaderType::H_OBJECT_PRE_ALPHA : defs::ShaderType::H_OBJECT_PRE;
+        }
+        return defs::ShaderType::SIZE;
+    }
+
+    defs::ShaderType DomainShaderFor(defs::RenderPass pass, bool tesselation, bool alpha) {
+        if (tesselation) {
+            if (pass == defs::RenderPass::MAIN)
+                return defs::ShaderType::D_OBJECT;
+            if (pass == defs::RenderPass::PRE || pass == defs::RenderPass::PRE_DEPTH)
+                return alpha ? defs::ShaderType::D_OBJECT_PRE_ALPHA : defs::ShaderType::D_OBJECT_PRE;
+        }
+        return defs::ShaderType::SIZE;
+    }
+
+    defs::ShaderType PixelShaderFor(defs::RenderPass pass, bool alpha, bool transparent, int shader) {
+        switch (pass) {
+            case defs::RenderPass::MAIN: return static_cast<defs::ShaderType>(static_cast<int>(transparent ? defs::ShaderType::P_OBJECT_TRANSPARENT_PERMUTE_BEGIN : defs::ShaderType::P_OBJECT_PERMUTE_BEGIN) + shader);
+            case defs::RenderPass::PRE: return alpha ? defs::ShaderType::P_OBJECT_PRE_ALPHA : defs::ShaderType::P_OBJECT_PRE;
+            case defs::RenderPass::PRE_DEPTH: return alpha ? defs::ShaderType::P_OBJECT_PRE_DEPTH_ALPHA : defs::ShaderType::P_OBJECT_PRE_DEPTH;
+            case defs::RenderPass::ENVMAPPING: return defs::ShaderType::P_ENVMAP;
+            case defs::RenderPass::SHADOW: return transparent ? defs::ShaderType::P_SHADOW_TRANSPARENT /* TODO: Water Material Shader */ : alpha ? defs::ShaderType::P_SHADOW_ALPHA : defs::ShaderType::SIZE;
+        }
     }
 }
 
