@@ -171,7 +171,7 @@ namespace SH::Jobs {
 
     /**
      * Run the given task off-thread, with the given priority.
-     * The function will run, and then return. The task cannot be restarted, unless you call Run again.
+     * The task's function will be executed until return. The task cannot be restarted, unless you call Run again.
      * @param context a task context, with priority
      * @param task the function to run off-thread
      */
@@ -180,7 +180,7 @@ namespace SH::Jobs {
     /**
      * Dispatch a set of jobs, running the same code with different arguments.
      * The arguments that change are the task index and group index.
-     * Usually use this where iterating over a static list and performing an expensive task on every object within.
+     * Usually use this when iterating over a static list and performing an expensive task on every object within.
      * @param context a task context, with priority
      * @param jobs the number of jobs to create, total. Usually, max index of the list being processed
      * @param groups the number of jobs to run per thread. Usually, jobs / max_threads if jobs > max_threads, or 5 otherwise.
