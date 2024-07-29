@@ -43,11 +43,14 @@ namespace SH::Jobs {
     };
 
     /**
-     * A collection of tasks, a member of a task queue, running on any thread, with ordering data.
-     * All tasks in the group run the same code, but with different indexes passed via the Arguments.
+     * A task, a member of a task queue, running on any thread, with ordering data.
+     * A single function (task) that can be executed one or more times.
+     * If executed more than once, it will be passed the index (amount of times) of the run through TaskArguments.
+     * Optionally, multiple executions of the same task may share memory between them, for reconstructing or processing buffers.
+     * If executed once, groupIdx == groupEnd == 0, and shared memory == 0.
      */
     struct TaskGroup {
-        std::function<void(TaskArguments)> func;                                // The actual code the task executes
+        std::function<void(TaskArguments)> task;                                // The actual code the task executes
         ExecutionContext* context;                                              // A context, with priority
         uint32_t group;                                                         // The ID of the group that the thread is a part of
         uint32_t groupIdx;                                                      // The index of the current task into the group it is a part of
@@ -73,7 +76,7 @@ namespace SH::Jobs {
                 args.first = i == groupIdx;
                 args.last = i == groupEnd - 1;
 
-                func(args);
+                task(args);
             }
 
             context->count.fetch_sub(1);
@@ -82,16 +85,29 @@ namespace SH::Jobs {
 
     /**
      * A list of Task Groups, representing the groups assigned to a single thread.
+     * A thread may be assigned between zero to infinite Groups depending on how many threads are available, and how many tasks have been requested to run.
+     * The amount of TaskQueues that can be processed in parallel depends on the hardware concurrency property.
+     * The Queue is first-in-first-out.
      */
     struct TaskQueue {
         std::deque<TaskGroup> groups;
         std::mutex lock;
 
+        /**
+         * Add a task group to be processed by this thread.
+         * Pushes may happen while the thread is being processed, but it must not coincide with the parallel execution of the thread itself.
+         * @parameter tsk the function / task to push to the list
+         */
         inline void Push(const TaskGroup& tsk) {
             std::scoped_lock locker(lock);
             groups.push_back(tsk);
         }
 
+        /**
+         * Remove the oldest task group from the queue.
+         * @parameter a reference for the task output
+         * @return whether the operation succeded (false if the list was already empty)
+         */
         inline bool Pop(TaskGroup& tsk) {
             std::scoped_lock locker(lock);
             if (groups.empty()) return false;
@@ -103,6 +119,14 @@ namespace SH::Jobs {
 
     /**
      * A list of Task Queues, representing all the tasks set for a given priority.
+     * Each Priority is given a number of Threads to process, between 1 and infinity.
+     * If a thread assigned to a given Priority Queue is requested by a Queue of a higher priority, the given Queue will be paused to allow it to run instead.
+     * By default:
+     *  STREAM gets 1 thread
+     *  LOW gets 2 threads
+     *  HIGHEST gets all hardware threads
+     * An active std::thread may or may not be assigned to any hardware threads, allowing for a single Priority Queue to have more threads waiting than exists on hardware.
+     * In this case, the priority will always take precedence, and a LOW or STREAM will never run instead of a HIGHEST priority thread.
      */
     struct PriorityQueue {
         size_t nThreads;                            // The number of threads allocated to this priority.
@@ -147,6 +171,7 @@ namespace SH::Jobs {
 
     /**
      * Run the given task off-thread, with the given priority.
+     * The function will run, and then return. The task cannot be restarted, unless you call Run again.
      * @param context a task context, with priority
      * @param task the function to run off-thread
      */
