@@ -3,6 +3,7 @@
 #include <shadow/util/Synchronization.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
+#include <shadow/core/jobs/Job.h>
 
 /**
 * A bunch of internal states used by the Renderer abstractions (2D, 3D, PT, PTGI), abstracted through Vulkan and DX interfaces.
@@ -112,6 +113,8 @@ namespace rx::internal {
 
     GPUBuffer luminanceBuffer;                                                                                          // A buffer for dynamic luminance compensation. Required by some shaders to exist. NVIDIA 10xx GPUs will error without such.
 
+    SH::Jobs::ExecutionContext pipelineJobContext[defs::RenderPass::SIZE];                                              // Job contexts for processing PSOs.
+
     PipelineState PSOOcclusion;                                                                                         // PSO for Occlusion Queries
     PipelineState PSOBillboard[defs::RenderPass::SIZE];                                                                 // PSO for billboard rendering, per render pass
     PipelineState PSOBillboardWire;                                                                                     // PSO for billboard rendering of wires and lines.
@@ -126,6 +129,8 @@ namespace rx::internal {
     PipelineState PSOOutline;                                                                                           // PSO for rendering outlines of objects
     PipelineState PSOSky[defs::SkyRenderType::SIZE];                                                                    // PSO for sky rendering, per type
     PipelineState PSODebug[defs::DebugRenderType::SIZE];                                                                // PSO for debug rendering, per mode
+    PipelineState PSOWire;                                                                                              // PSO for wire (thin strips of pixels) rendering
+    PipelineState PSOWireTess;                                                                                          // PSO for wire (thin strips of pixels) rendering, with tesselation
 
     RaytracingPipeline PSORTReflect;                                                                                    // PSO for ray-traced reflections
 
