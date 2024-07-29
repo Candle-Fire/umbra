@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <renderer/GraphicsDefine.h>
+#include <string>
 
 /**
  * Shader compiler, management and tracking.
