@@ -1,13 +1,16 @@
-#include "core/ShadowApplication.h"
+#include "shadow/core/ShadowApplication.h"
 
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
 
 #include <SDL.h>
+#include <runtime/Runtime.h>
 
 int main(int argc, char *argv[])
 {
+    RUNTIME_BOOT();
+
     std::cout << "argc == " << argc << '\n';
 
     for(int ndx{}; ndx != argc; ++ndx) {
