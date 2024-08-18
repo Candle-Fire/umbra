@@ -1,9 +1,17 @@
 
+#include "shader/modules/Renderer.h"
+
 #include <renderer/Renderer.h>
 #include <shadow/util/Synchronization.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
+#include <shader/compiler/ShaderCompiler.h>
+#include <shadow/core/PathID.h>
+#include <shadow/core/Time.h>
 #include <shadow/core/jobs/Job.h>
+#include <shadow/util/string-helpers.h>
+
+#include "spdlog/spdlog.h"
 
 /**
 * A bunch of internal states used by the Renderer abstractions (2D, 3D, PT, PTGI), abstracted through Vulkan and DX interfaces.
@@ -38,6 +46,10 @@ namespace rx::internal {
     /*  ================================================================================================================== */
     /*  Renderer State */
     /*  Note: Most of the bools here are intended to be set by the editor, and read by the scene loader to set on startup. */
+
+    std::unique_ptr<ShadowEngine::FileSystem> fs;                                                                       // The active filesystem, to load assets and files from.
+    SH::Path shaderSourcePath;                                                                                          // The Filesystem path where shader source files are located. Expected to be within the above filesystem.
+    SH::Path shaderBinaryPath;                                                                                          // The Filesystem path where shader binary files are located. Must be within the above filesystem. Must be writable. Shaders whose source is available but no binary stored will have their binary created.
 
     std::atomic_bool ready { false };                                                                                  // Whether the renderer has initialized and is ready to operate.
 
@@ -91,6 +103,8 @@ namespace rx::internal {
     std::atomic<size_t> erroredShaders { 0 };                                                                          // The number of shaders that errored while loading.
     std::atomic<size_t> missingShaders { 0 };                                                                          // The number of shaders that were requested to load but could not be found.
 
+    std::vector<Renderer::CustomShader> customShaders;                                                                  // The custom shaders that are currently loaded by the renderer, and accessible by level rendering.
+
     Texture shadowMaps;                                                                                                 // A global shadow map atlas.
     Texture transparentShadowMaps;                                                                                      // A global shadow map atlas specifically for objects with transparency.
     int maxShadowRes2 = 1024;                                                                                           // The size of the shadow map, when accessed from a 2D view.
@@ -119,8 +133,8 @@ namespace rx::internal {
     PipelineState PSOBillboard[defs::RenderPass::SIZE];                                                                 // PSO for billboard rendering, per render pass
     PipelineState PSOBillboardWire;                                                                                     // PSO for billboard rendering of wires and lines.
     PipelineState PSOGatherBillboard;                                                                                   // PSO for capturing billboard-rendered pixels into a buffer
-    PipelineState PSOLightVisual[3];                                                                                    // PSO for visualizing light-affected pixels into a buffer
-    PipelineState PSOLightVolumetric[3];                                                                                // PSO for rendering volumetric lights
+    PipelineState PSOLightVisual[defs::LightType::SIZE];                                                                // PSO for visualizing light-affected pixels into a buffer
+    PipelineState PSOLightVolumetric[defs::LightType::SIZE];                                                            // PSO for rendering volumetric lights
     PipelineState PSOLightmap;                                                                                          // PSO for rendering light maps
     PipelineState PSOLensFlare;                                                                                         // PSO for rendering lens flares
     PipelineState PSODownsampleDepth;                                                                                   // PSO for downsampling depth buffers
@@ -235,7 +249,7 @@ namespace rx::internal {
         uint32_t data;
     };
 
-    std::unordered_map<uint32_t, PipelineState> PSOByVariant[defs::RenderPass::SIZE][11]; // TODO: Material Component types
+    std::unordered_map<uint32_t, PipelineState> PSOByVariant[defs::RenderPass::SIZE][defs::MaterialShaderType::SIZE]; // TODO: Material Component types
     inline PipelineState* GetPipelineForVariants(RenderVariants var) {
         return &PSOByVariant[var.parts.pass][var.parts.shader][var.data];
     }
@@ -304,6 +318,14 @@ namespace rx::internal {
 
 namespace rx {
 
+    size_t Renderer::GetShaderErrorCount() {
+        return internal::erroredShaders;
+    }
+
+    size_t Renderer::GetShaderMissingCount() {
+        return internal::missingShaders;
+    }
+
     const Sampler *Renderer::GetSampler(rx::defs::SamplerType ID) {
         return &rx::internal::samplers[static_cast<uint32_t>(ID)];
     }
@@ -329,7 +351,108 @@ namespace rx {
         return &rx::internal::texs[static_cast<uint32_t>(ID)];
     }
 
+    const std::string& Renderer::GetShaderPath() {
+        return internal::shaderBinaryPath.c_str();
+    }
 
+    const std::string& Renderer::GetShaderSourcePath() {
+        return internal::shaderSourcePath.c_str();
+    }
 
+    const std::vector<Renderer::CustomShader>& Renderer::GetCustomShaders() {
+        return internal::customShaders;
+    }
 
+    int Renderer::RegisterCustomShader(const CustomShader& shader) {
+        static std::mutex lock;
+        std::scoped_lock locker(lock);
+        internal::customShaders.push_back(shader);
+        return internal::customShaders.size() - 1;
+    }
+
+    bool Renderer::LoadShader(ShaderStage stage, Shader& out, const std::string& filename, ShaderModel model, std::vector<std::string> permute_defines) {
+
+        SH::Path shaderBinaryFile = GetShaderPath() + filename;
+
+        rx::shader::RegisterShader(shaderBinaryFile);
+
+        if (!rx::shader::IsMetadataOutdated(shaderBinaryFile)) {
+            rx::shader::CompilerInput in {
+                .format = internal::iface->GetShaderFormat(),
+                .stage = stage,
+                .model = model,
+                .defines = permute_defines
+            };
+
+            SH::Path source = GetShaderSourcePath();
+            source.makeAbsolute();
+
+            in.includes.push_back(source.c_str());
+            in.includes.push_back((source + SH::Path::getDirectory(filename)).c_str());
+            in.sourceName = (source + filename).replaceExtension("hlsl").c_str();
+
+            rx::shader::CompilerOutput output;
+            rx::shader::Compile(in, output);
+
+            if (out.IsValid()) {
+                rx::shader::SaveData(shaderBinaryFile, output);
+
+                if (!output.error.empty())
+                    spdlog::warn(output.error);
+                spdlog::trace("Shader Compiled: " + shaderBinaryFile.toString());
+                return internal::iface->CreateShader(stage, output.data, output.dataLen, &out);
+            } else {
+                spdlog::error("Shader Compilation failed: " + shaderBinaryFile.toString());
+                internal::erroredShaders.fetch_add(1);
+            }
+        }
+
+        if (internal::iface != nullptr) {
+            std::vector<uint8_t> buf;
+            if (internal::fs->readSync(shaderBinaryFile, buf)) {
+                bool success = internal::iface->CreateShader(stage, buf.data(), buf.size(), &out);
+                if (success)
+                    internal::iface->SetName(&out, shaderBinaryFile.c_str());
+            } else {
+                internal::missingShaders.fetch_add(1);
+            }
+        }
+
+        return false;
+    }
+
+    bool Renderer::IsStateInitializing() {
+        for (uint32_t renderPass = 0; renderPass < static_cast<uint32_t>(defs::RenderPass::SIZE); renderPass++)
+            if (SH::Jobs::IsWorking(internal::pipelineJobContext[renderPass]))
+                return true;
+    }
+
+    void SetupShaders() {
+
+    }
+
+    void SetupBuffers() {
+        GPUBufferMeta meta {
+            .size = sizeof(FrameConstants),
+            .usage = BufferUsage::STAGING,
+            .binding = BindFlag::CONSTANT_BUFFER
+        };
+        internal::iface->CreateBuffer(&meta, nullptr, &internal::buffers[static_cast<uint32_t>(defs::BufferType::FRAME)]);
+        internal::iface->SetName(&internal::buffers[static_cast<uint32_t>(defs::BufferType::FRAME)], "Frame Constants buffer");
+    }
+
+    void SetupStates() {
+
+    }
+
+    void Renderer::Initialize() {
+        SH::Timer timer;
+
+        SetupStates();
+        SetupBuffers();
+        SetupShaders();
+
+        spdlog::info("rx::Renderer initialized, " + std::to_string(timer.elapsedMillis()) + "ms");
+        internal::ready.store(true);
+    }
 }

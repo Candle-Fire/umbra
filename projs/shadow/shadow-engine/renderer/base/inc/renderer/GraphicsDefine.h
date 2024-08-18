@@ -390,6 +390,28 @@ namespace rx {
             SIZE
         };
 
+        enum class MaterialShaderType : uint32_t {
+            PBR,
+            PBR_REFLECT,
+            PBR_PARALLAX,
+            PBR_FILTERED,
+            PBR_CLOTH,
+            PBR_GLOSS,
+            PBR_CLOTH_GLOSS,
+            PBR_TERRAIN,
+            CARTOON,
+            UNLIT,
+            WATER,
+            SIZE
+        };
+
+        enum class LightType : uint32_t {
+            DIRECTIONAL,
+            SPOT,
+            POINT,
+            SIZE
+        };
+
         enum class InputLayout : uint32_t {
             OBJECT_DEBUG,
             LIGHTMAP,
@@ -1465,13 +1487,6 @@ namespace rx {
     };
 
     /**
-     * A shader is a binary blob that lives on GPU and must be bound with a pipeline to be used.
-     */
-    graphicsItem(Shader) {
-        ShaderStage stage = ShaderStage::SIZE;
-    };
-
-    /**
      * Other kinds of resources - such as buffers, textures, and raytracing acceleration structures (Bounding Volume Hierarchies) - are treated more or less the same.
      */
     graphicsItem(GPUResource) {
@@ -1498,6 +1513,13 @@ namespace rx {
     // A buffer just holds data - vertex buffers, index buffers, constant buffers, uniform buffers.
     resource(GPUBuffer) {
         metaHolder(GPUBufferMeta)
+    };
+
+    /**
+     * A shader is a binary blob that lives on GPU and must be bound with a pipeline to be used.
+     */
+    resource(Shader) {
+        ShaderStage stage = ShaderStage::SIZE;
     };
 
     /**

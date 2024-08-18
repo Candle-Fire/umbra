@@ -91,6 +91,7 @@ namespace rx {
         static size_t GetShaderMissingCount();
 
         static bool LoadShader(ShaderStage stage, Shader& out, const std::string& filename, ShaderModel model = ShaderModel::SM60, std::vector<std::string> permute_defines = {});
+        static bool IsStateInitializing();
 
         struct Visibility {
             uint32_t layerMask = ~0u;
@@ -193,6 +194,8 @@ namespace rx {
             DRAW_FOREGROUND_ONLY = 256,
             DRAW_MAIN_CAMERA = 512,
         };
+
+        static void SetActiveFilesystem(const std::unique_ptr<ShadowEngine::FileSystem>& fs);
 
         static void DrawScene(const Visibility& vis, rx::defs::RenderPass renderPass, ThreadCommands cmd, uint32_t flags = DRAW_OPAQUE);
 
