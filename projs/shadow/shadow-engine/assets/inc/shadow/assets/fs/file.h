@@ -1,7 +1,9 @@
 #pragma once
 #include <shadow/assets/fs/iostream.h>
-#include <shadow/assets/fs/path.h>
 #include <memory>
+#include <vector>
+#include <shadow/core/PathID.h>
+
 #include "shadow/util/Delegate.h"
 
 namespace ShadowEngine {
@@ -58,6 +60,7 @@ namespace ShadowEngine {
   struct FileSystem {
     // A function called when the data of a file is updated, such as when an asynchronous operation completes.
     using ContentCallback = Delegate<void(size_t, const uint8_t*, bool)>;
+    using Path = SH::Path;
     // A handle for asynchronous data movement; such as reading or writing a file.
     struct AsyncHandle {
       static AsyncHandle invalid() { return AsyncHandle(0xffffffff); }
@@ -103,7 +106,8 @@ namespace ShadowEngine {
     // Write new content to a file synchronously. The thread will be blocked when doing this.
     virtual bool saveSync(const Path& file, const uint8_t* content, size_t size) = 0;
     // Read content from a file synchronously. The thread will be blocked when doing this.
-    virtual bool readSync(const Path& file, struct OutputMemoryStream& content) = 0;
+    virtual bool readSync(const Path& file, OutputMemoryStream& content) = 0;
+    virtual bool readSync(const Path& file, std::vector<uint8_t>& buf) = 0;
 
     // Read a file asynchronously. The given callback will be called with the file content once it is available.
     virtual AsyncHandle readAsync(const Path& file, const ContentCallback& callback) = 0;
