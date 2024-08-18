@@ -95,7 +95,7 @@ namespace SH {
 
     /// @brief Registers a new module descriptor
     /// @param descriptor The module descriptor to register
-    void AddDescriptors(ModuleDescriptor descriptor) { modules.push_back({descriptor = descriptor}); }
+    void AddDescriptors(ModuleDescriptor descriptor);
 
     /// @brief [BEWARE DRAGONS] Instructs the module manager to load modules form an assembly's default entry point
     /// @param id The id of the assembly to load from

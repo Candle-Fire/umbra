@@ -215,4 +215,13 @@ namespace SH {
       }
   }
 
+  void ModuleManager::AddDescriptors(ModuleDescriptor descriptor)
+  {
+      if(descriptor.class_name.empty())
+      {
+          spdlog::error("Descriptor for " + descriptor.id + " didn't specify a class name. Skipping");
+          return;
+      }
+      modules.push_back({descriptor = descriptor});
+  }
 }

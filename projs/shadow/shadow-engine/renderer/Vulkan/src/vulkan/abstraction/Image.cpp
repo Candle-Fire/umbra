@@ -4,8 +4,8 @@
 #include <fstream>
 #include <utility>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "shadow/util/stb_image.h"
+//#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 #include "shadow/util/File.h"
 

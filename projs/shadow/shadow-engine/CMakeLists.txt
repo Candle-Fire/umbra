@@ -30,7 +30,6 @@ target_link_libraries(shadow-engine
         glm::glm
         spdlog::spdlog
         dylib
-        #        ImGui
         GPUOpen::VulkanMemoryAllocator
         Vulkan::Vulkan
 )
@@ -38,6 +37,21 @@ target_link_libraries(shadow-engine
 target_compile_definitions(shadow-engine
         PRIVATE
         EXPORTING_SH_ENGINE
+)
+
+FILE(GLOB_RECURSE VK2D_SOURCES
+        ${Vulkan2D_SOURCE_DIR}/VK2D/*.c
+        ${VMA_SOURCE_DIR}/src/VmaUsage.cpp
+)
+target_sources(shadow-engine PUBLIC
+        ${VK2D_SOURCES}
+)
+SET(IncludeDirs
+        ${Vulkan2D_SOURCE_DIR}
+        ${VMA_SOURCE_DIR}/src
+)
+target_include_directories(shadow-engine BEFORE
+        PUBLIC ${IncludeDirs}
 )
 
 if (TRUE)

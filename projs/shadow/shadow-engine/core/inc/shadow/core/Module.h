@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "shadow/SHObject.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
+//#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
 
 namespace SH {
 
@@ -51,11 +51,11 @@ namespace SH {
   public:
     // Begin the render pass using the given commands.
     // Will call out through the regular modules to gather geometry to render.
-    virtual void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) = 0;
+    //virtual void BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &commands) = 0;
 
     virtual void EnableEditor() = 0;
 
-    virtual VkExtent2D GetRenderExtent() = 0;
+    //virtual VkExtent2D GetRenderExtent() = 0;
   };
 
 }

@@ -2,13 +2,28 @@
 
 extern "C" {
 [[maybe_unused]] void EXPORT assembly_entry(SH::ModuleManager &m) {
+    // m.AddDescriptors({
+    //                      .id="module:/renderer/vulkan",
+    //                      .name = "Vulkan",
+    //                      .class_name = "VulkanModule",
+    //                      .assembly="assembly:/core"_id,
+    //                      .dependencies={"module:/platform/sdl2"},
+    //                  });
+
     m.AddDescriptors({
-                         .id="module:/renderer/vulkan",
-                         .name = "Vulkan",
-                         .class_name = "VulkanModule",
+                         .id="module:/renderer/v2d",
+                         .name = "Vulkan2D Renderer",
+                         .class_name = "",
                          .assembly="assembly:/core"_id,
-                         .dependencies={"module:/platform/sdl2"},
+                         .dependencies={"module:/platform/sdl2", "module:/render-manager"},
                      });
+
+    m.AddDescriptors({
+        .id = "module:/render-manager",
+        .name = "Render Manager",
+        .class_name = "RenderManager",
+        .assembly = "assembly:/core"_id,
+    });
 
     m.AddDescriptors({
                          .id="module:/core",
