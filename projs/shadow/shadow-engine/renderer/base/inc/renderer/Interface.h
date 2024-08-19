@@ -125,7 +125,6 @@ namespace rx {
 
         // For debugging: assign the resource a name ON-GPU
         virtual void SetName(GPUResource* resource, const char* name) const {}
-        virtual void setName(Shader* shader, const char* name) const {}
 
         // Start a new command list for the current thread and begin listening.
         virtual ThreadCommands BeginCommands(QueueType queue = QueueType::GRAPHICS) = 0;

@@ -13,8 +13,8 @@ namespace rx {
 
         // Figure out if this is the first time setup (depth stencil null)
         const Texture* depthBuffer = GetDepthStencil();
-        if (depthBuffer != nullptr && (resScale != 1.0f || depthBuffer->getMeta().sampleCount > 1)) {
-            TextureMeta meta = depthBuffer->getMeta();
+        if (depthBuffer != nullptr && (resScale != 1.0f || depthBuffer->GetMeta().sampleCount > 1)) {
+            TextureMeta meta = depthBuffer->GetMeta();
             meta.layout = ResourceState::SHADER_RESOURCE;
             meta.bindFlag = BindFlag::RENDER_TARGET | BindFlag::SHADER_RESOURCE;
             meta.format = ImageFormat::R8G8B8A8_UNORM;
@@ -71,8 +71,6 @@ namespace rx {
                 }
             }
         }
-
-        Renderer::Update(dt);
     }
 
     void Renderer2D::FixedUpdate() {
@@ -91,8 +89,6 @@ namespace rx {
                 }
             }
         }
-
-        Renderer::FixedUpdate();
     }
 
     void Renderer2D::Render() const {
@@ -106,7 +102,7 @@ namespace rx {
         const Texture* dsv = GetDepthStencil();
 
         if (targetStenciled.IsValid()) {
-            if (targetStenciled.getMeta().sampleCount > 1) {
+            if (targetStenciled.GetMeta().sampleCount > 1) {
                 RenderPassImage img[] = {
                         RenderPassImage::RenderTarget(&targetStenciled, RenderPassImage::LoadOp::CLEAR),
                         RenderPassImage::DepthStencil(dsv, RenderPassImage::LoadOp::LOAD,
@@ -131,8 +127,8 @@ namespace rx {
             dsv = nullptr;
 
             Viewport vp{
-                    .width = (float) targetStenciled.getMeta().width,
-                    .height = (float) targetStenciled.getMeta().height
+                    .width = (float) targetStenciled.GetMeta().width,
+                    .height = (float) targetStenciled.GetMeta().height
             };
 
             interface->BindViewports(&vp, 1, commands);
@@ -162,8 +158,8 @@ namespace rx {
         }
 
         Viewport port {
-            .width = (float) target.getMeta().width,
-            .height = (float) target.getMeta().height
+            .width = (float) target.GetMeta().width,
+            .height = (float) target.GetMeta().height
         };
 
         interface->BindViewports(&port, 1, commands);
@@ -173,7 +169,7 @@ namespace rx {
                 interface->EventBegin("Copy stenciled sprite layers", commands);
                 rx::Image::RenderMode fx;
                 fx.enableFullscreen();
-                if (targetStenciled.getMeta().sampleCount > 1)
+                if (targetStenciled.GetMeta().sampleCount > 1)
                     rx::Image::Draw(&targetStencilResolved, fx, commands);
                 else
                     rx::Image::Draw(&targetStenciled, fx, commands);
@@ -208,7 +204,6 @@ namespace rx {
         }
         interface->EventEnd(commands);
         interface->EndRenderPass(commands);
-        Renderer::Render();
     }
 
     void Renderer2D::Compose(rx::ThreadCommands cmd) const {
@@ -218,7 +213,6 @@ namespace rx {
         if (colorSpace != ColorSpace::SRGB)
             fx.enableLinear(HDRScaling);
         rx::Image::Draw(&GetRenderResult(), fx, cmd);
-        Renderer::Compose(cmd);
     }
 
     void Renderer2D::AddSprite(rx::Sprite *s, const std::string &layer) {

@@ -1554,7 +1554,7 @@ namespace rx {
                             const GPUResource& res = table.shaders[unrolled - vulkan::BindShift::TEXTURE];
                             images.emplace_back(VkDescriptorImageInfo{});
 
-                            if (!res.IsValid() || !res.isTexture()) {
+                            if (!res.IsValid() || !res.IsTexture()) {
                                 images.back().imageView =
                                     viewtype == VK_IMAGE_VIEW_TYPE_1D         ? iface->nullImageView1     :
                                     viewtype == VK_IMAGE_VIEW_TYPE_2D         ? iface->nullImageView2     :
@@ -1579,7 +1579,7 @@ namespace rx {
                             const GPUResource& res = table.uniforms[unrolled - vulkan::BindShift::UNIFORM];
                             images.emplace_back(VkDescriptorImageInfo{ .imageLayout = VK_IMAGE_LAYOUT_GENERAL });
 
-                            if (!res.IsValid() || !res.isTexture()) {
+                            if (!res.IsValid() || !res.IsTexture()) {
                                 images.back().imageView =
                                     viewtype == VK_IMAGE_VIEW_TYPE_1D         ? iface->nullImageView1     :
                                     viewtype == VK_IMAGE_VIEW_TYPE_2D         ? iface->nullImageView2     :
@@ -1618,7 +1618,7 @@ namespace rx {
                             const GPUResource& res = table.shaders[unrolled - vulkan::BindShift::TEXTURE];
 
                             views.emplace_back(
-                                (res.IsValid() && res.isBuffer()) ?
+                                (res.IsValid() && res.IsBuffer()) ?
                                   table.shaderIndex[unrolled - vulkan::BindShift::TEXTURE] >= 0 ?
                                       vulkan::structs::ToInternal((const GPUBuffer*)(&res))->srvRes[table.shaderIndex[unrolled - vulkan::BindShift::TEXTURE]].view :
                                       vulkan::structs::ToInternal((const GPUBuffer*)(&res))->srv.view
@@ -1632,7 +1632,7 @@ namespace rx {
                             const GPUResource& res = table.uniforms[unrolled - vulkan::BindShift::UNIFORM];
 
                             views.emplace_back(
-                                (res.IsValid() && res.isBuffer()) ?
+                                (res.IsValid() && res.IsBuffer()) ?
                                   table.uniformIndex[unrolled - vulkan::BindShift::UNIFORM] >= 0 ?
                                       vulkan::structs::ToInternal((const GPUBuffer*)&res)->uavRes[table.uniformIndex[unrolled - vulkan::BindShift::UNIFORM]].view :
                                       vulkan::structs::ToInternal((const GPUBuffer*)&res)->uav.view
@@ -1645,14 +1645,14 @@ namespace rx {
                         case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
                             if (bind.binding < vulkan::BindShift::UNIFORM) {
                                 const GPUBuffer& buf = table.constants[unrolled - vulkan::BindShift::BUFFER];
-                                buffers.emplace_back( (buf.IsValid() && buf.isBuffer()) ? VkDescriptorBufferInfo { .buffer = iface->nullBuffer, .range = VK_WHOLE_SIZE} :
+                                buffers.emplace_back( (buf.IsValid() && buf.IsBuffer()) ? VkDescriptorBufferInfo { .buffer = iface->nullBuffer, .range = VK_WHOLE_SIZE} :
                                   table.shaderIndex[unrolled - vulkan::BindShift::BUFFER] >= 0 ?
                                       vulkan::structs::ToInternal(&buf)->srvRes[table.shaderIndex[unrolled - vulkan::BindShift::BUFFER]].info :
                                       vulkan::structs::ToInternal(&buf)->srv.info
                                 );
                             } else {
                                 const GPUResource& res = table.uniforms[unrolled - vulkan::BindShift::UNIFORM];
-                                buffers.emplace_back( (res.IsValid() && res.isBuffer()) ? VkDescriptorBufferInfo { .buffer = iface->nullBuffer, .range = VK_WHOLE_SIZE} :
+                                buffers.emplace_back( (res.IsValid() && res.IsBuffer()) ? VkDescriptorBufferInfo { .buffer = iface->nullBuffer, .range = VK_WHOLE_SIZE} :
                                   table.uniformIndex[unrolled - vulkan::BindShift::UNIFORM] >= 0 ?
                                       vulkan::structs::ToInternal((const GPUBuffer*)&res)->uavRes[table.uniformIndex[unrolled - vulkan::BindShift::UNIFORM]].info :
                                       vulkan::structs::ToInternal((const GPUBuffer*)&res)->uav.info
@@ -2798,5 +2798,45 @@ namespace rx {
         if (debugUtilsMessenger != VK_NULL_HANDLE)
             vkDestroyDebugUtilsMessengerEXT(instance, debugUtilsMessenger, nullptr);
     }
+
+    ThreadCommands VulkanInterface::BeginCommands(QueueType queue) {
+
+    }
+
+
+    bool VulkanInterface::CreateTexture(const TextureMeta* meta, const SubresourceMeta* subresource, Texture* tex, const GPUResource* alias, size_t aliasOffset) const {
+
+    }
+
+    void VulkanInterface::SetName(GPUResource* resource, const char* name) const {
+
+    }
+
+    void VulkanInterface::BeginRenderPass(const SwapChain* sc, ThreadCommands cmd) {
+
+    }
+
+    void VulkanInterface::BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd) {
+
+    }
+
+    void VulkanInterface::EndRenderPass(ThreadCommands cmd) {
+
+    }
+
+
+    void VulkanInterface::BindViewports(const Viewport* viewports, uint32_t vpCount, ThreadCommands cmd) {
+
+    }
+
+    void VulkanInterface::EventBegin(const char* name, ThreadCommands cmd) {
+
+    }
+
+    void VulkanInterface::EventEnd(ThreadCommands cmd) {
+
+    }
+
+
 
 }

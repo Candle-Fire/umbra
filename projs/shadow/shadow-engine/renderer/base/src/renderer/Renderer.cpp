@@ -455,4 +455,7 @@ namespace rx {
         spdlog::info("rx::Renderer initialized, " + std::to_string(timer.elapsedMillis()) + "ms");
         internal::ready.store(true);
     }
+
+    
+
 }

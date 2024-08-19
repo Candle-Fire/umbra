@@ -694,8 +694,7 @@ y;                                        \
         int WriteShaderIdentifier(const RaytracingAccelerationMeta* meta, uint32_t idx, void* data) const override {}
 
         // For debugging: assign the resource a name ON-GPU
-        void SetName(GPUResource* resource, const char* name) const override{}
-        void setName(Shader* shader, const char* name) const override {}
+        void SetName(GPUResource* resource, const char* name) const override;
 
         // Start a new command list for the current thread and begin listening.
         ThreadCommands BeginCommands(QueueType queue = QueueType::GRAPHICS) override;
