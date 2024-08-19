@@ -3269,7 +3269,86 @@ namespace rx {
     }
 
     void VulkanInterface::BeginRenderPass(const SwapChain* sc, ThreadCommands cmd) {
+        VulkanThreadCommands& cmds = GetThreadCommands(cmd);
+        cmds.renderPassStartBarriers.clear();
+        cmds.renderPassEndBarriers.clear();
+        auto internal = vulkan::structs::ToInternal(sc);
 
+        internal->acquireIdx = (internal->acquireIdx + 1) % internal->acquire.size();
+
+        internal->lock.lock();
+        VkResult res = vkAcquireNextImageKHR(device, internal->swapchain, UINT64_MAX, internal->acquire[internal->acquireIdx], VK_NULL_HANDLE, &internal->imageIdx);
+        internal->lock.unlock();
+
+        // Handle the surface being resized automatically here
+        if (res != VK_SUCCESS) {
+            if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR) {
+                // Destroy the current swapchain
+                {
+                    std::scoped_lock lock(memoryManager->destroyLock);
+                    for (auto& x : internal->acquire)
+                        memoryManager->destroyer_semaphores.emplace_back(x, memoryManager->frames);
+                }
+                internal->acquire.clear();
+
+                // Create a new swapchain
+                if (vulkan::create::Swapchain(internal, physicalDevice, device, memoryManager)) {
+                    // Recurse with the new, working swapchain. Acquire the first image, and continue.
+                    BeginRenderPass(sc, cmd);
+                    return;
+                }
+            }
+        }
+        cmds.prevSwapchains.push_back(*sc);
+
+        VkRenderingAttachmentInfo colorAttach {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .imageView = internal->views[internal->imageIdx],
+            .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .clearValue = { { { sc->meta.clear[0], sc->meta.clear[1], sc->meta.clear[2], sc->meta.clear[3] } } }
+        };
+
+        VkRenderingInfo rendering {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+            .layerCount = 1,
+            .renderArea = { { 0, 0}, { std::min(sc->meta.width, internal->extent.width), std::min(sc->meta.height, internal->extent.height) } },
+            .colorAttachmentCount = 1,
+            .pColorAttachments = &colorAttach
+        };
+
+        VkImageMemoryBarrier2 barrier {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+            .pNext = nullptr,
+            .srcStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            .srcAccessMask = VK_ACCESS_2_NONE,
+            .dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+            .dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image = internal->images[internal->imageIdx],
+            .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS }
+        };
+
+        VkDependencyInfo dep {
+            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .imageMemoryBarrierCount = 1,
+            .pImageMemoryBarriers = &barrier
+        };
+
+        vkCmdPipelineBarrier2(cmds.GetCommandBuffer(), &dep);
+
+        barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        barrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_NONE;
+        cmds.renderPassEndBarriers.push_back(barrier);
+
+        vkCmdBeginRendering(cmds.GetCommandBuffer(), &rendering);
+        cmds.passMeta = RenderPassMeta::From(sc->meta);
     }
 
     void VulkanInterface::BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd) {
