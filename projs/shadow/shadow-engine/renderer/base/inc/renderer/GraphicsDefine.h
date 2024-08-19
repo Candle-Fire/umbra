@@ -1505,6 +1505,7 @@ namespace rx {
             BUFFER,
             TEXTURE,
             RAYTRACING,
+            SHADER,
             UNKNOWN
         } type = Type::UNKNOWN;
 
@@ -1513,6 +1514,8 @@ namespace rx {
         constexpr bool IsBuffer() const { return type == Type::BUFFER; }
 
         constexpr bool IsRT() const { return type == Type::RAYTRACING; }
+
+        constexpr bool IsShader() const { return type == SHADER; }
 
         // Only valid for STAGING or READBACK resources.
         void *mapped = nullptr;

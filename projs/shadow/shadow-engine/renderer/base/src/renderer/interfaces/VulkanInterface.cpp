@@ -3244,7 +3244,28 @@ namespace rx {
     }
 
     void VulkanInterface::SetName(GPUResource* resource, const char* name) const {
+        if (!debugUtilsMessenger || resource == nullptr || !resource->IsValid())
+            return;
 
+        VkDebugUtilsObjectNameInfoEXT info { VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, nullptr, VK_OBJECT_TYPE_UNKNOWN, 0, name };
+        if (resource->IsTexture()) {
+            info.objectType = VK_OBJECT_TYPE_IMAGE;
+            info.objectHandle = (size_t) vulkan::structs::ToInternal((const Texture*) resource)->resource;
+        } else if (resource->IsBuffer()) {
+            info.objectType = VK_OBJECT_TYPE_BUFFER;
+            info.objectHandle = (size_t) vulkan::structs::ToInternal((const GPUBuffer*) resource)->resource;
+        } else if (resource->IsRT()) {
+            info.objectType = VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR;
+            info.objectHandle = (size_t) vulkan::structs::ToInternal((const RaytracingAcceleration*) resource)->res;
+        } else if (resource->IsShader()) {
+            info.objectType = VK_OBJECT_TYPE_SHADER_MODULE;
+            info.objectHandle = (size_t) vulkan::structs::ToInternal((const Shader*) resource)->shader;
+        }
+
+        if (info.objectHandle == (size_t) VK_NULL_HANDLE) return;
+
+        VkResult res = vkSetDebugUtilsObjectNameEXT(device, &info);
+        assert(res == VK_SUCCESS);
     }
 
     void VulkanInterface::BeginRenderPass(const SwapChain* sc, ThreadCommands cmd) {
