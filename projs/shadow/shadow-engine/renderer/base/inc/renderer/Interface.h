@@ -67,7 +67,7 @@ namespace rx {
      */
     class Interface {
     protected:
-        static constexpr uint32_t FRAMEBUFFERS = 2; // Double buffering by default!
+        static constexpr uint32_t frameBuffers = 2; // Double buffering by default!
         size_t frameCount = 0; // Increments by 1 every time a game frame is rendered.
         Validation validation = Validation::DISABLED; // Get debug errors from the GPU and CPU
         GraphicsDeviceCapability capabilities = GraphicsDeviceCapability::NONE; // See what the GPU is capable of.
@@ -107,9 +107,9 @@ namespace rx {
         virtual bool CreateVideoDecoder(const VideoMeta* meta, VideoDecoder* decoder) const { return false; }
 
         // Start a subresource reference for a texture.
-        virtual bool CreateSubresource(Texture* tex, SubresourceMeta meta, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const ImageFormat* formatChange = nullptr, const ImageAspect* aspect = nullptr, const Swizzle* swizzle = nullptr) = 0;
+        virtual bool CreateSubresource(Texture* tex, SubresourceType type, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const ImageFormat* formatChange = nullptr, const ImageAspect* aspect = nullptr, const Swizzle* swizzle = nullptr) const = 0;
         // Start a subresource reference to a buffer.
-        virtual bool CreateSubresource(GPUBuffer* buf, SubresourceMeta meta, size_t offset, size_t size = ~0u, const ImageFormat* formatChange = nullptr, uint32_t* strideChange = nullptr) const = 0;
+        virtual bool CreateSubresource(GPUBuffer* buf, SubresourceType type, size_t offset, size_t size = ~0u, const ImageFormat* formatChange = nullptr, uint32_t* strideChange = nullptr) const = 0;
 
         // Fetch the descriptor index for a (sub)resource in the current active shader. TODO: is this necessary with bindless?
         virtual int GetDescriptorIdx(const GPUResource* resource, ImageViewType sub, int subIdx = -1) const = 0;
@@ -151,7 +151,7 @@ namespace rx {
         constexpr bool CheckCapability(GraphicsDeviceCapability cap) const { return has_flag(capabilities, cap); }
 
         // Get the number of framebuffers in use.
-        static constexpr uint32_t GetBufferCount() { return FRAMEBUFFERS; }
+        static constexpr uint32_t GetBufferCount() { return frameBuffers; }
         // Get the current "primary" framebuffer.
         constexpr uint32_t GetBufferIndex() const { return GetElapsedFrames() % GetBufferCount(); }
 

@@ -32,7 +32,7 @@ namespace rx {
         size_t computeFamily = VK_QUEUE_FAMILY_IGNORED;                                         // The queue index of the compute shader queue.
         size_t copyFamily = VK_QUEUE_FAMILY_IGNORED;                                            // The queue index of the presentation (draw to screen) queue.
         size_t videoFamily = VK_QUEUE_FAMILY_IGNORED;                                           // The queue index of the video (h.264) decoder queue.
-        std::vector<size_t> families;                                                           // The indices of all queues supported.
+        std::vector<uint32_t> families;                                                         // The indices of all queues supported.
         VkQueue graphicsQueue = VK_NULL_HANDLE;                                                 // The handle of the graphics (render) queue.
         VkQueue computeQueue = VK_NULL_HANDLE;                                                  // The handle of the compute shader queue.
         VkQueue copyQueue = VK_NULL_HANDLE;                                                     // The handle of the presentation (draw to screen) queue.
@@ -176,7 +176,7 @@ namespace rx {
 
         mutable Uploader upload;                                                                // An Uploader, to easily send data of arbitrary size to the GPU.
 
-        VkFence frameFence[FRAMEBUFFERS][QueueType::COUNT] = {};                                // The fences to be raised when each queue finishes working on a given framebuffer.
+        VkFence frameFence[frameBuffers][QueueType::COUNT] = {};                                // The fences to be raised when each queue finishes working on a given framebuffer.
 
         /**
          * @brief The struct that binds constants, shader resources, uniforms and samplers to a pipeline state object.
@@ -285,8 +285,8 @@ namespace rx {
          * All VulkanThreadCommands are submitted in sequence in batches.
          */
         struct VulkanThreadCommands {
-            VkCommandPool pools[FRAMEBUFFERS][QueueType::COUNT] = {};                             // The command pools per frame, per queue to use.
-            VkCommandBuffer buffers[FRAMEBUFFERS][QueueType::COUNT] = {};                         // The command buffers per frame, per queue to use.
+            VkCommandPool pools[frameBuffers][QueueType::COUNT] = {};                             // The command pools per frame, per queue to use.
+            VkCommandBuffer buffers[frameBuffers][QueueType::COUNT] = {};                         // The command buffers per frame, per queue to use.
             uint32_t bufferIdx = 0;                                                               // The current framebuffer in use - index pools and buffers by bufferIdx to get the active frame.
             QueueType queue = {};                                                                 // The current command queue in use - index pools and buffers by queue to get the specific buffer needed.
 
@@ -298,8 +298,8 @@ namespace rx {
             std::vector<VkSemaphore> signals;                                                     // Semaphores that this ThreadCommands will signal when completed.
 
             DescriptorBind binds;                                                                 // The shader resources bound to this thread, for each frame
-            DescriptorPool bindPools[FRAMEBUFFERS];                                               // The DescriptorBindPools for this thread, for each frame
-            GPULinearAllocator frameAllocators[FRAMEBUFFERS];                                     // The linear allocators for each frame
+            DescriptorPool bindPools[frameBuffers];                                               // The DescriptorBindPools for this thread, for each frame
+            GPULinearAllocator frameAllocators[frameBuffers];                                     // The linear allocators for each frame
 
             std::vector<std::pair<size_t, VkPipeline>> pipelines;                                 // A vectorized map of pipeline hash to PSO
             const PipelineState* activePSO = nullptr;                                             // The active PSO
@@ -660,7 +660,7 @@ y;                                        \
         // Start a buffer on the GPU. Do not read from dest.
         bool CreateBuffer(const GPUBufferMeta* meta, const std::function<void(void* dest)>& callback, GPUBuffer* buffer, const GPUResource* alias = nullptr, size_t aliasOffset = 0) const override;
         // Start a texture, with optional initial data.
-        bool CreateTexture(const TextureMeta* meta, const SubresourceMeta* subresource, Texture* tex, const GPUResource* alias, size_t aliasOffset = 0) const override;
+        bool CreateTexture(const TextureMeta* meta, const SubresourceMeta* initialData, Texture* tex, const GPUResource* alias, size_t aliasOffset = 0) const override;
         // Start a shader from bytecode. Does not accept source, in glsl or hlsl.
         bool CreateShader(ShaderStage stage, const void* code, size_t size, Shader* shader) const override;
         // Start a sampler for a generic sample type.
@@ -677,9 +677,9 @@ y;                                        \
         bool CreateVideoDecoder(const VideoMeta* meta, VideoDecoder* decoder) const override { return false; }
 
         // Start a subresource reference for a texture.
-        bool CreateSubresource(Texture* tex, SubresourceMeta meta, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const ImageFormat* formatChange = nullptr, const ImageAspect* aspect = nullptr, const Swizzle* swizzle = nullptr) override;
+        bool CreateSubresource(Texture* tex, SubresourceType type, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const ImageFormat* formatChange = nullptr, const ImageAspect* aspect = nullptr, const Swizzle* swizzle = nullptr) const override;
         // Start a subresource reference to a buffer.
-        bool CreateSubresource(GPUBuffer* buf, SubresourceMeta meta, size_t offset, size_t size = ~0u, const ImageFormat* formatChange = nullptr, uint32_t* strideChange = nullptr) const override;
+        bool CreateSubresource(GPUBuffer* buf, SubresourceType type, size_t offset, size_t size = ~0u, const ImageFormat* formatChange = nullptr, uint32_t* strideChange = nullptr) const override;
 
         // Fetch the descriptor index for a (sub)resource in the current active shader. TODO: is this necessary with bindless?
         int GetDescriptorIdx(const GPUResource* resource, ImageViewType sub, int subIdx = -1) const override;
@@ -721,7 +721,7 @@ y;                                        \
         constexpr bool CheckCapability(GraphicsDeviceCapability cap) const { return has_flag(capabilities, cap); }
 
         // Get the number of framebuffers in use.
-        static constexpr uint32_t GetBufferCount() { return FRAMEBUFFERS; }
+        static constexpr uint32_t GetBufferCount() { return frameBuffers; }
         // Get the current "primary" framebuffer.
         constexpr uint32_t GetBufferIndex() const { return GetElapsedFrames() % GetBufferCount(); }
 

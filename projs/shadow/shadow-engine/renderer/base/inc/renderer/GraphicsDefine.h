@@ -1014,7 +1014,8 @@ namespace rx {
         CAST_FORMATTED = bit(12),
         VIDEO_DECODE = bit(13),
         NO_DEFAULT_DESCRIPTORS = bit(14),
-        SAMPLE_COMPRESSED_TEXTURE = bit(15)
+        SAMPLE_COMPRESSED_TEXTURE = bit(15),
+        SHARED_MEMORY = bit(16) // Not fully supported. Please don't use yet.
     };
 
     /**
@@ -1079,6 +1080,16 @@ namespace rx {
         // Video specific
         VIDEO_DECODE_SOURCE = bit(15),
         VIDEO_DECODE_DESTINATION = bit(16)
+    };
+
+    /**
+     * All the possible uses of image / buffer subresources.
+     */
+    enum class SubresourceType {
+        SHADER_RESOURCE,
+        UNORDERED_ACCESS,
+        RENDER_TARGET,
+        DEPTH_STENCIL
     };
 
     /**

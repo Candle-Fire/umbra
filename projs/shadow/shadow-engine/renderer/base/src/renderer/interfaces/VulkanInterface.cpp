@@ -608,6 +608,7 @@ namespace rx {
                 std::shared_ptr<VulkanInterface::MemoryManager> manager;
                 VmaAllocation alloc = nullptr;
                 VkImage resource = VK_NULL_HANDLE;
+                VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL;
                 VkBuffer staging = VK_NULL_HANDLE;
 
                 struct Subresource {
@@ -772,7 +773,7 @@ namespace rx {
                 std::vector<size_t> uniformSlots;
 
                 VkGraphicsPipelineCreateInfo pipelineCreate = {};
-                VkPipelineShaderStageCreateInfo stageCreates[static_cast<size_t>(ShaderStage::Size)] = {};
+                VkPipelineShaderStageCreateInfo stageCreates[static_cast<size_t>(ShaderStage::SIZE)] = {};
                 VkPipelineInputAssemblyStateCreateInfo inputCreate = {};
                 VkPipelineRasterizationStateCreateInfo rasterizerCreate = {};
                 VkPipelineRasterizationDepthClipStateCreateInfoEXT depthClipCreate = {};
@@ -2800,12 +2801,446 @@ namespace rx {
     }
 
     ThreadCommands VulkanInterface::BeginCommands(QueueType queue) {
+        VkResult result;
 
+        // Allocate the new internal state, create a flyweight with the internal reference
+        cmdLock.Lock();
+        uint32_t currentCmd = cmdCount++;
+        if (currentCmd >= cmds.size())
+            cmds.push_back(std::make_unique<VulkanThreadCommands>());
+
+        ThreadCommands cmd { cmds[currentCmd].get() };
+        cmdLock.Unlock();
+
+        // Initialize the internal state
+        VulkanThreadCommands& vk = GetThreadCommands(cmd);
+        vk.Reset(GetBufferIndex());
+        vk.queue = queue;
+        vk.id = currentCmd;
+
+        // Handle issues with the Reset that may arise if we don't have room in the buffer
+        if (vk.GetCommandBuffer() == VK_NULL_HANDLE) {
+            for (uint32_t frame = 0; frame < frameBuffers; frame++) {
+                VkCommandPoolCreateInfo pool = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+                pool.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+                switch (queue) {
+                    case GRAPHICS: pool.queueFamilyIndex = graphicsFamily; break;
+                    case COMPUTE: pool.queueFamilyIndex = computeFamily; break;
+                    case COPY: pool.queueFamilyIndex = copyFamily; break;
+                    case VIDEO_DECODE: pool.queueFamilyIndex = videoFamily; break;
+                    default: assert(0);
+                }
+
+                result = vkCreateCommandPool(device, &pool, nullptr, &vk.pools[frame][queue]);
+                assert(result == VK_SUCCESS);
+
+                VkCommandBufferAllocateInfo buffer {
+                    VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                    nullptr,
+                    vk.pools[frame][queue],
+                    VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                    1
+                };
+
+                result = vkAllocateCommandBuffers(device, &buffer, &vk.buffers[frame][queue]);
+                assert(result == VK_SUCCESS);
+
+                vk.bindPools[frame].Init(this);
+            }
+            vk.binds.Init(this);
+        }
+
+        // The command buffers and pools are all set, now reset & get ready to record commands
+        result = vkResetCommandPool(device, vk.GetCommandPool(), 0);
+        assert(result == VK_SUCCESS);
+
+        VkCommandBufferBeginInfo begin = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
+        result = vkBeginCommandBuffer(vk.GetCommandBuffer(), &begin);
+        assert(result == VK_SUCCESS);
+
+        // Set graphics state if we're doing that
+        if (queue == GRAPHICS) {
+            vkCmdSetRasterizerDiscardEnable(vk.GetCommandBuffer(), VK_FALSE);
+
+            VkViewport vp { 0, 0, 1, 1, 0, 1 };
+            vkCmdSetViewportWithCount(vk.GetCommandBuffer(), 1, &vp);
+
+            VkRect2D scissor { { 0, 0 }, { 65535, 65535 }};
+            vkCmdSetScissorWithCount(vk.GetCommandBuffer(), 1, &scissor);
+
+            float blend[] = { 1, 1, 1, 1};
+            vkCmdSetBlendConstants(vk.GetCommandBuffer(), blend);
+
+            vkCmdSetStencilReference(vk.GetCommandBuffer(), VK_STENCIL_FRONT_AND_BACK, ~0u);
+
+            if (deviceFeatures2.features.depthBounds == VK_TRUE)
+                vkCmdSetDepthBounds(vk.GetCommandBuffer(), 0.0f, 1.0f);
+
+            const VkDeviceSize zero {};
+            vkCmdBindVertexBuffers2(vk.GetCommandBuffer(), 0, 1, &nullBuffer, &zero, &zero, &zero);
+        }
+
+        return cmd;
     }
 
 
-    bool VulkanInterface::CreateTexture(const TextureMeta* meta, const SubresourceMeta* subresource, Texture* tex, const GPUResource* alias, size_t aliasOffset) const {
+    bool VulkanInterface::CreateTexture(const TextureMeta* meta, const SubresourceMeta* initialData, Texture* tex, const GPUResource* alias, size_t aliasOffset) const {
+        auto internal = std::make_shared<vulkan::structs::VulkanTexture>();
+        internal->manager = memoryManager;
+        internal->layout = vulkan::convert::ImageLayout(meta->layout);
+        tex->internal = internal;
+        tex->type = GPUResource::Type::TEXTURE;
+        tex->mapped = nullptr;
+        tex->mappedSize = 0;
+        tex->mappedResources = nullptr;
+        tex->mappedResourceCount = 0;
+        tex->sparse = nullptr;
+        tex->meta = *meta;
 
+        // Every texture gets mipped, even if we ask for none.
+        if (tex->meta.mipLevels == 0)
+            tex->meta.mipLevels = GetMipCount(tex->meta.width, tex->meta.height, tex->meta.depth);
+
+        VkImageCreateInfo image { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
+        image.extent = { tex->meta.width, tex->meta.height, tex->meta.depth };
+        image.format = vulkan::convert::Format(tex->meta.format);
+        image.arrayLayers = tex->meta.arraySize;
+        image.mipLevels = tex->meta.mipLevels;
+        image.samples = (VkSampleCountFlagBits) tex->meta.sampleCount;
+        image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        image.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image.usage = 0;
+        image.flags = 0;
+
+        if (has_flag(tex->meta.bindFlag, BindFlag::SHADER_RESOURCE))
+            image.usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+        if (has_flag(tex->meta.bindFlag, BindFlag::UNORDERED_ACCESS)) {
+            image.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+            if (IsFormatSRGB(tex->meta.format))
+                image.flags |= VK_IMAGE_CREATE_EXTENDED_USAGE_BIT;
+        }
+
+        if (has_flag(tex->meta.bindFlag, BindFlag::RENDER_TARGET))
+            image.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        if (has_flag(tex->meta.bindFlag, BindFlag::DEPTH_STENCIL))
+            image.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+        if (has_flag(tex->meta.bindFlag, BindFlag::SHADING_RATE))
+            image.usage |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+
+        if (has_flag(tex->meta.resourceFlags, ResourceFlags::TRANSIENT_ATTACHMENT))
+            image.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+        else
+            image.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+        if (has_flag(tex->meta.resourceFlags, ResourceFlags::TEXTURE_CUBEMAP))
+            image.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+
+        if (has_flag(tex->meta.resourceFlags, ResourceFlags::CAST_TYPED) || has_flag(tex->meta.resourceFlags, ResourceFlags::CAST_FORMATTED))
+            image.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+
+        if (has_flag(tex->meta.resourceFlags, ResourceFlags::VIDEO_DECODE))
+            image.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR | VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR | VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR;
+
+        if (meta->format == ImageFormat::NV12 && has_flag(tex->meta.bindFlag, BindFlag::SHADER_RESOURCE))
+            image.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+
+        if (families.size() > 1) {
+            image.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            image.queueFamilyIndexCount = (uint32_t) families.size();
+            image.pQueueFamilyIndices = families.data();
+        } else {
+            image.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+
+        switch (tex->meta.type) {
+            case TextureMeta::Type::TEXTURE_1D: image.imageType = VK_IMAGE_TYPE_1D; break;
+            case TextureMeta::Type::TEXTURE_2D: image.imageType = VK_IMAGE_TYPE_2D; break;
+            case TextureMeta::Type::TEXTURE_3D: image.imageType = VK_IMAGE_TYPE_3D; break;
+        }
+
+        if (has_flag(tex->meta.resourceFlags, ResourceFlags::SPARSE)) {
+            // Ensure that we're not trying to sparse an image type we don't support
+            assert(CheckCapability(GraphicsDeviceCapability::SPARSE_TEXTURE2D) || image.imageType != VK_IMAGE_TYPE_2D);
+            assert(CheckCapability(GraphicsDeviceCapability::SPARSE_TEXTURE3D) || image.imageType != VK_IMAGE_TYPE_3D);
+
+            VkResult res = vkCreateImage(device, &image, nullptr, &internal->resource);
+            assert(res == VK_SUCCESS);
+
+            VkMemoryRequirements req = {};
+            vkGetImageMemoryRequirements(device, internal->resource, &req);
+            tex->sparsePageSize = req.alignment;
+
+            uint32_t nSparseReqs = 0;
+            vkGetImageSparseMemoryRequirements(device, internal->resource, &nSparseReqs, nullptr);
+
+            std::vector<VkSparseImageMemoryRequirements> sparseReqs(nSparseReqs);
+            tex->sparse = &internal->sparse;
+
+            vkGetImageSparseMemoryRequirements(device, internal->resource, &nSparseReqs, sparseReqs.data());
+            SparseTextureMeta& out = internal->sparse;
+            VkSparseImageMemoryRequirements& in = sparseReqs[0];
+            out.totalTiles = (uint32_t) req.size / req.alignment;
+            out.tileWidth = in.formatProperties.imageGranularity.width;
+            out.tileHeight = in.formatProperties.imageGranularity.height;
+            out.tileDepth = in.formatProperties.imageGranularity.depth;
+            out.packedMipStart = in.imageMipTailFirstLod;
+            out.packedMipCount = tex->meta.mipLevels - in.imageMipTailFirstLod;
+            out.packedMipTileOffset = (uint32_t) in.imageMipTailOffset / req.alignment;
+            out.packedMipTileCount = (uint32_t) in.imageMipTailSize / req.alignment;
+        } else {
+            VmaAllocationCreateInfo alloc {};
+            alloc.usage = VMA_MEMORY_USAGE_AUTO;
+
+            if (tex->meta.usage == BufferUsage::READBACK || tex->meta.usage == BufferUsage::STAGING) {
+                VkBufferCreateInfo buffer { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+                auto stride = GetFormatStride(tex->meta.format);
+                auto blockSize = GetFormatBlockSize(tex->meta.format);
+                auto xBlocks = tex->meta.width / blockSize;
+                auto yBlocks = tex->meta.height / blockSize;
+                auto mipWidth = xBlocks;
+                auto mipHeight = yBlocks;
+                auto mipDepth = tex->meta.depth;
+
+                // Calculate buffer size by generating mips repeatedly
+                for (auto mip = 0; mip < tex->meta.mipLevels; mip++) {
+                    buffer.size += mipWidth * mipHeight * mipDepth;
+                    mipWidth = std::max(1u, mipWidth / 2);
+                    mipHeight = std::max(1u, mipHeight / 2);
+                    mipDepth = std::max(1u, mipDepth / 2);
+                }
+
+                buffer.size *= image.arrayLayers;
+                buffer.size *= stride;
+                alloc.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+                if (tex->meta.usage == BufferUsage::READBACK) {
+                    alloc.flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+                    buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+                } else if (tex->meta.usage == BufferUsage::STAGING) {
+                    alloc.flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+                    buffer.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                }
+
+                VmaAllocationInfo allocInfo;
+                VkResult res = vmaCreateBuffer(memoryManager->allocator, &buffer, &alloc, &internal->staging, &internal->alloc, &allocInfo);
+                assert(res == VK_SUCCESS);
+
+                tex->mapped = allocInfo.pMappedData;
+                tex->mappedSize = allocInfo.size;
+
+                internal->mappedRes.resize(tex->meta.arraySize * tex->meta.mipLevels);
+
+                size_t subIdx = 0;
+                size_t subOff = 0;
+                for (uint32_t layer = 0; layer < tex->meta.arraySize; layer++) {
+                    uint32_t rPitch = (uint32_t) xBlocks * stride;
+                    uint32_t sPitch = (uint32_t) rPitch * yBlocks;
+                    uint32_t mipWidth = xBlocks;
+                    for (uint32_t mip = 0; mip < tex->meta.mipLevels; mip++) {
+                        SubresourceMeta& res = internal->mappedRes[subIdx++];
+                        res.data = (uint8_t*) tex->mapped + subOff;
+                        res.rowPitch = rPitch;
+                        res.slicePitch = sPitch;
+                        subOff += std::max(rPitch + mipWidth, sPitch);
+                        rPitch = std::max(stride, rPitch / 2);
+                        sPitch = std::max(stride, sPitch / 4);
+                        mipWidth = std::max(1u, mipWidth / 2);
+                    }
+                }
+                tex->mappedResources = internal->mappedRes.data();
+                tex->mappedResourceCount = internal->mappedRes.size();
+            } else {
+                VmaAllocator allocator = memoryManager->allocator;
+                VkExternalMemoryImageCreateInfo externalCreate { VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO };
+
+                if (has_flag(tex->meta.resourceFlags, ResourceFlags::SHARED_MEMORY)) {
+#ifdef WIN32
+                    externalCreate.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+#elif defined(__linux__)
+                    externalCreate.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+#endif
+                    image.pNext = &externalCreate;
+                    allocator = memoryManager->externalAllocator;
+                    alloc.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+                }
+
+                VkResult res;
+                if (alias == nullptr) {
+                    res = vmaCreateImage(allocator, &image, &alloc, &internal->resource, &internal->alloc, nullptr);
+                } else {
+                    if (alias->IsTexture()) {
+                        auto aliasInt = vulkan::structs::ToInternal((const Texture*) alias);
+                        res = vmaCreateAliasingImage2(allocator, aliasInt->alloc, aliasOffset, &image, &internal->resource);
+                    } else {
+                        auto aliasInt = vulkan::structs::ToInternal((const GPUBuffer*) alias);
+                        res = vmaCreateAliasingImage2(allocator, aliasInt->alloc, aliasOffset, &image, &internal->resource);
+                    }
+                }
+
+                assert(res == VK_SUCCESS);
+
+                if (has_flag(tex->meta.resourceFlags, ResourceFlags::SHARED_MEMORY)) {
+                    VmaAllocationInfo allocInfo;
+                    vmaGetAllocationInfo(allocator, internal->alloc, &allocInfo);
+
+#if defined(WIN32)
+                    // vkGetMemoryWin32HandleKHR
+                    // TODO: why doesn't this exist?
+#endif
+                }
+            }
+        }
+
+        // Upload initial data to the staging buffer if we must
+        if (initialData != nullptr) {
+            Uploader::Copy copy;
+            void* mapped = nullptr;
+            VmaAllocationInfo info;
+            vmaGetAllocationInfo(memoryManager->allocator, internal->alloc, &info);
+
+            if (meta->usage == BufferUsage::STAGING)
+                mapped = tex->mapped;
+            else {
+                copy = upload.Allocate(info.size);
+                mapped = copy.uploadBuffer.mapped;
+            }
+
+            std::vector<VkBufferImageCopy> regions;
+
+            VkDeviceSize offset = 0;
+            uint32_t initialidx = 0;
+            for (uint32_t layer = 0; layer < meta->arraySize; layer++) {
+                uint32_t width = image.extent.width;
+                uint32_t height = image.extent.height;
+                uint32_t depth = image.extent.depth;
+
+                for (uint32_t mip = 0; mip < meta->mipLevels; mip++) {
+                    const SubresourceMeta& metaSub = initialData[initialidx++];
+                    uint32_t blockSize = GetFormatBlockSize(meta->format), xBlocks = std::max(1u, width / blockSize), yBlocks = std::max(1u, height / blockSize);
+                    uint32_t dstRow = xBlocks * GetFormatStride(meta->format), dstSlice = dstRow * yBlocks;
+                    uint32_t srcRow = metaSub.rowPitch, srcSlice = metaSub.slicePitch;
+                    for (uint32_t z = 0; z < depth; z++) {
+                        uint8_t* map = (uint8_t*) mapped + offset + dstSlice * z;
+                        uint8_t* src = (uint8_t*) metaSub.data + srcSlice * z;
+                        for (uint32_t y = 0; y < yBlocks; y++)
+                            std::memcpy(map + dstRow * y, src + srcRow * y, dstRow);
+                    }
+
+                    if (copy.IsValid()) {
+                        VkBufferImageCopy region {
+                            .bufferOffset = offset,
+                            .bufferRowLength = 0,
+                            .bufferImageHeight = 0,
+                            .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, mip, layer, 1 },
+                            .imageOffset = { 0, 0, 0 },
+                            .imageExtent = { width, height, depth }
+                        };
+                        regions.push_back(region);
+                    }
+
+                    offset += dstSlice * depth;
+                    offset = AlignTo(offset, VkDeviceSize(4));
+
+                    width = std::max(1u, width / 2);
+                    height = std::max(1u, height / 2);
+                    depth = std::max(1u, depth / 2);
+                }
+            }
+
+            if (copy.IsValid()) {
+                VkImageMemoryBarrier2 barrier {
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+                    .pNext = nullptr,
+                    .srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                    .srcAccessMask = 0,
+                    .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                    .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+                    .oldLayout = image.initialLayout,
+                    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = internal->resource,
+                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS}
+                };
+
+                VkDependencyInfo dep {
+                    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+                    .imageMemoryBarrierCount = 1,
+                    .pImageMemoryBarriers = &barrier
+                };
+
+                vkCmdPipelineBarrier2(copy.transferBuffer, &dep);
+                vkCmdCopyBufferToImage(copy.transferBuffer, vulkan::structs::ToInternal(&copy.uploadBuffer)->resource, internal->resource, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (uint32_t) regions.size(), regions.data());
+
+                std::swap(barrier.srcStageMask, barrier.dstStageMask);
+                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                barrier.newLayout = vulkan::convert::ImageLayout(tex->meta.layout);
+                barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+                barrier.dstAccessMask = vulkan::convert::ResourceAccess(tex->meta.layout);
+                vkCmdPipelineBarrier2(copy.transitionBuffer, &dep);
+
+                upload.Submit(copy);
+            }
+        } else if (tex->meta.layout != ResourceState::UNDEFINED && internal->resource != VK_NULL_HANDLE) {
+            VkImageMemoryBarrier2 barrier {
+                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+                .pNext = nullptr,
+                .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                .srcAccessMask = 0,
+                .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                .dstAccessMask = vulkan::convert::ResourceAccess(tex->meta.layout),
+                .oldLayout = image.initialLayout,
+                .newLayout = vulkan::convert::ImageLayout(tex->meta.layout),
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = internal->resource,
+                .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image.mipLevels, 0, image.arrayLayers }
+            };
+            if (IsFormatDepth(tex->meta.format)) {
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                if (IsFormatStencil(tex->meta.format))
+                    barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+            }
+
+            Uploader::Copy copy = upload.Allocate(0);
+            VkDependencyInfo dep { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier };
+            vkCmdPipelineBarrier2(copy.transitionBuffer, &dep);
+            upload.Submit(copy);
+        }
+
+        if (!has_flag(meta->resourceFlags, ResourceFlags::NO_DEFAULT_DESCRIPTORS)) {
+            if (has_flag(meta->bindFlag, BindFlag::RENDER_TARGET))
+                CreateSubresource(tex, SubresourceType::RENDER_TARGET, 0, -1, 0, -1);
+            if (has_flag(meta->bindFlag, BindFlag::DEPTH_STENCIL))
+                CreateSubresource(tex, SubresourceType::DEPTH_STENCIL, 0, -1, 0, -1);
+            if (has_flag(meta->bindFlag, BindFlag::SHADER_RESOURCE))
+                CreateSubresource(tex, SubresourceType::SHADER_RESOURCE, 0, -1, 0, -1);
+            if (has_flag(meta->bindFlag, BindFlag::UNORDERED_ACCESS))
+                CreateSubresource(tex, SubresourceType::UNORDERED_ACCESS, 0, -1, 0, -1);
+        }
+
+        if (has_flag(tex->meta.resourceFlags, ResourceFlags::VIDEO_DECODE)) {
+            VkImageViewCreateInfo view {
+                .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                .pNext = nullptr,
+                .flags = 0,
+                .image = internal->resource,
+                .viewType = image.arrayLayers > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D,
+                .format = image.format,
+                .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image.mipLevels, 0, image.arrayLayers }
+            };
+
+            VkImageViewUsageCreateInfo usage { VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO, nullptr, VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR | VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR | VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR };
+            view.pNext = &usage;
+
+            VkResult res = vkCreateImageView(device, &view, nullptr, &internal->videoView);
+            assert(res == VK_SUCCESS);
+        }
+
+        return true;
     }
 
     void VulkanInterface::SetName(GPUResource* resource, const char* name) const {
