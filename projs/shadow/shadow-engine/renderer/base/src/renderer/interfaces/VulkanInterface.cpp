@@ -842,7 +842,7 @@ namespace rx {
 
                 VkSurfaceKHR surface = VK_NULL_HANDLE;
 
-                size_t imageIdx = 0;
+                uint32_t imageIdx = 0;
                 size_t acquireIdx = 0;
                 std::vector<VkSemaphore> acquire;
                 VkSemaphore release = VK_NULL_HANDLE;
