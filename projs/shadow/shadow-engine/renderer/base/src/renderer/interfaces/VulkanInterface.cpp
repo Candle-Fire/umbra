@@ -3530,7 +3530,16 @@ namespace rx {
     }
 
     void VulkanInterface::EndRenderPass(ThreadCommands cmd) {
+        VulkanThreadCommands& cmds = GetThreadCommands(cmd);
+        vkCmdEndRendering(cmds.GetCommandBuffer());
 
+        if (!cmds.renderPassEndBarriers.empty()) {
+            VkDependencyInfo dep = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = static_cast<uint32_t>(cmds.renderPassEndBarriers.size()), cmds.renderPassEndBarriers.data() };
+            vkCmdPipelineBarrier2(cmds.GetCommandBuffer(), &dep);
+            cmds.renderPassEndBarriers.clear();
+        }
+
+        cmds.passMeta = {};
     }
 
 
