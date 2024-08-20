@@ -614,10 +614,10 @@ namespace rx {
                 struct Subresource {
                     VkImageView view = VK_NULL_HANDLE;
                     int idx = -1;
-                    size_t firstMip = 0;
-                    size_t mips = 0;
-                    size_t firstSlice = 0;
-                    size_t slices = 0;
+                    uint32_t firstMip = 0;
+                    uint32_t mips = 0;
+                    uint32_t firstSlice = 0;
+                    uint32_t slices = 0;
 
                     constexpr bool IsValid() const { return idx >= 0; }
                 };
@@ -3351,8 +3351,182 @@ namespace rx {
         cmds.passMeta = RenderPassMeta::From(sc->meta);
     }
 
-    void VulkanInterface::BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd) {
+    void VulkanInterface::BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd, RenderPassFlags flags) {
+        VulkanThreadCommands& cmds = GetThreadCommands(cmd);
+        cmds.renderPassStartBarriers.clear();
+        cmds.renderPassEndBarriers.clear();
 
+        VkRenderingInfo rendering { VK_STRUCTURE_TYPE_RENDERING_INFO };
+        if (has_flag(flags, RenderPassFlags::SUSPENDING))
+            rendering.flags |= VK_RENDERING_SUSPENDING_BIT;
+        if (has_flag(flags, RenderPassFlags::RESUMING))
+            rendering.flags |= VK_RENDERING_RESUMING_BIT;
+        rendering.layerCount = 1;
+        rendering.renderArea.offset = { 0, 0 };
+        if (imageCount == 0)
+            rendering.renderArea.extent = { deviceProps2.properties.limits.maxFramebufferWidth, deviceProps2.properties.limits.maxFramebufferHeight };
+
+        VkRenderingAttachmentInfo color[8] = {}, depth = {}, stencil = {};
+        VkRenderingFragmentShadingRateAttachmentInfoKHR shading {};
+        bool hasColor = false, hasDepth = false, hasStencil = false;
+        uint32_t colorResolves = 0;
+        for (uint32_t i = 0; i < imageCount; i++) {
+            const auto& image = imgs[i];
+            const Texture* tex = image.texture;
+            const TextureMeta& meta = tex->GetMeta();
+            int sub = image.subResource;
+            vulkan::structs::VulkanTexture::Subresource descriptor;
+            auto internal = vulkan::structs::ToInternal(tex);
+
+            rendering.renderArea.extent = { std::max(rendering.renderArea.extent.width, meta.width), std::max(rendering.renderArea.extent.height, meta.height) };
+
+            VkAttachmentLoadOp load;
+            switch (image.loadOp) {
+                case RenderPassImage::LoadOp::LOAD: load = VK_ATTACHMENT_LOAD_OP_LOAD; break;
+                case RenderPassImage::LoadOp::CLEAR: load = VK_ATTACHMENT_LOAD_OP_CLEAR; break;
+                case RenderPassImage::LoadOp::DONTCARE: load = VK_ATTACHMENT_LOAD_OP_DONT_CARE; break;
+            }
+            VkAttachmentStoreOp store;
+            switch (image.storeOp) {
+                case RenderPassImage::StoreOp::STORE: store = VK_ATTACHMENT_STORE_OP_STORE; break;
+                case RenderPassImage::StoreOp::DONTCARE: store = VK_ATTACHMENT_STORE_OP_DONT_CARE; break;
+            }
+
+            switch (image.type) {
+                case RenderPassImage::Type::RENDER_TARGET: {
+                    descriptor = sub < 0 ? internal->rtv : internal->rtvRes[sub];
+                    VkRenderingAttachmentInfo& attachment = color[rendering.colorAttachmentCount++];
+                    attachment = {
+                        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                        .imageView = descriptor.view,
+                        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                        .loadOp = load,
+                        .storeOp = store,
+                        .clearValue = { meta.clear.color[0], meta.clear.color[1], meta.clear.color[2], meta.clear.color[3] };
+                    };
+                    hasColor = true;
+                    break;
+                }
+
+                case RenderPassImage::Type::RESOLVE: {
+                    descriptor = sub < 0 ? internal->srv : internal->srvRes[sub];
+                    VkRenderingAttachmentInfo& attachment = color[colorResolves++];
+                    attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+                    attachment.resolveImageView = descriptor.view;
+                    attachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    attachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+                    break;
+                }
+
+                case RenderPassImage::Type::RESOLVE_DEPTH: {
+                    descriptor = sub < 0 ? internal->dsv : internal->dsvRes[sub];
+                    depth.sType = stencil.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+                    depth.resolveImageView = descriptor.view;
+                    stencil.resolveImageView = descriptor.view;
+                    depth.resolveImageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+                    stencil.resolveImageLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL;
+
+                    depth.resolveMode = stencil.resolveMode =
+                        image.depthResolve == RenderPassImage::DepthResolveMode::MAX ? VK_RESOLVE_MODE_MAX_BIT : VK_RESOLVE_MODE_MIN_BIT;
+                    break;
+                }
+
+                case RenderPassImage::Type::DEPTH_STENCIL: {
+                    descriptor = sub < 0 ? internal->dsv : internal->dsvRes[sub];
+                    depth.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+                    depth.imageView = descriptor.view;
+                    depth.imageLayout = image.during == ResourceState::DEPTH_STENCIL_RO ? VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+                    depth.loadOp = load;
+                    depth.storeOp = store;
+                    depth.clearValue.depthStencil.depth = meta.clear.depthStencil.depth;
+                    hasDepth = true;
+                    if (IsFormatStencil(meta.format)) {
+                        stencil.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+                        stencil.imageView = descriptor.view;
+                        stencil.imageLayout = image.during == ResourceState::DEPTH_STENCIL_RO ? VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL;
+                        stencil.loadOp = load;
+                        stencil.storeOp = store;
+                        stencil.clearValue.depthStencil.stencil = meta.clear.depthStencil.stencil;
+                        hasStencil = true;
+                    }
+                    break;
+                }
+
+                case RenderPassImage::Type::SHADING_RATE_SOURCE: {
+                    descriptor = sub < 0 ? internal->uav : internal->uavRes[sub];
+                    shading.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+                    shading.imageView = descriptor.view;
+                    shading.imageLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+                    shading.shadingRateAttachmentTexelSize = { variableRateShadingTileSize, variableRateShadingTileSize };
+                    rendering.pNext = &shading;
+                    break;
+                }
+
+                default: break;
+            }
+
+            if (image.before != image.during) {
+                VkImageMemoryBarrier2& barrier = cmds.renderPassStartBarriers.emplace_back(VkImageMemoryBarrier2 {
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+                    .image = internal->resource,
+                    .oldLayout = vulkan::convert::ImageLayout(image.before),
+                    .newLayout = vulkan::convert::ImageLayout(image.during),
+                    .srcStageMask = vulkan::convert::PipelineStage(image.before),
+                    .dstStageMask = vulkan::convert::PipelineStage(image.during),
+                    .srcAccessMask = vulkan::convert::ResourceAccess(image.before),
+                    .dstAccessMask = vulkan::convert::ResourceAccess(image.during),
+                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, descriptor.firstMip, descriptor.mips, descriptor.firstSlice, descriptor.slices },
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED
+                });
+
+                assert(barrier.newLayout != VK_IMAGE_LAYOUT_UNDEFINED);
+
+                if (IsFormatDepth(meta.format)) {
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                    if (IsFormatStencil(meta.format))
+                        barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
+            }
+
+            if (image.during != image.after) {
+                VkImageMemoryBarrier2& barrier = cmds.renderPassEndBarriers.emplace_back(VkImageMemoryBarrier2 {
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+                    .image = internal->resource,
+                    .oldLayout = vulkan::convert::ImageLayout(image.during),
+                    .newLayout = vulkan::convert::ImageLayout(image.after),
+                    .srcStageMask = vulkan::convert::PipelineStage(image.during),
+                    .dstStageMask = vulkan::convert::PipelineStage(image.after),
+                    .srcAccessMask = vulkan::convert::ResourceAccess(image.during),
+                    .dstAccessMask = vulkan::convert::ResourceAccess(image.after),
+                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, descriptor.firstMip, descriptor.mips, descriptor.firstSlice, descriptor.slices },
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED
+                });
+
+                assert(barrier.newLayout != VK_IMAGE_LAYOUT_UNDEFINED);
+
+                if (IsFormatDepth(meta.format)) {
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                    if (IsFormatStencil(meta.format))
+                        barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
+            }
+
+            rendering.layerCount = std::min(meta.arraySize, std::max(rendering.layerCount, descriptor.slices));
+        }
+
+        rendering.pColorAttachments = hasColor ? color : nullptr;
+        rendering.pDepthAttachment = hasDepth ? &depth : nullptr;
+        rendering.pStencilAttachment = hasStencil ? &stencil : nullptr;
+
+        if (!cmds.renderPassStartBarriers.empty()) {
+            VkDependencyInfo dep = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = static_cast<uint32_t>(cmds.renderPassStartBarriers.size()), cmds.renderPassStartBarriers.data() };
+            vkCmdPipelineBarrier2(cmds.GetCommandBuffer(), &dep);
+        }
+
+        vkCmdBeginRendering(cmds.GetCommandBuffer(), &rendering);
+        cmds.passMeta = RenderPassMeta::From(imgs, imageCount);
     }
 
     void VulkanInterface::EndRenderPass(ThreadCommands cmd) {

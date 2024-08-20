@@ -804,7 +804,7 @@ y;                                        \
         // Begin a render pass on the swapchain.
         void BeginRenderPass(const SwapChain* sc, ThreadCommands cmd) override;
         // Begin a render pass on the given image.
-        void BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd) override;
+        void BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd, RenderPassFlags flags) override;
         // End a render pass
         void EndRenderPass(ThreadCommands cmd) override;
         // Bind rectangles to the scissor buffer.
