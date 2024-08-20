@@ -678,7 +678,7 @@ namespace rx::Font {
   }
 
   void FontManager::destroyResource(SH::Resource& res) {
-      free(static_cast<FontResource*>(&res));
+      free(dynamic_cast<FontResource*>(&res));
   }
 
 }

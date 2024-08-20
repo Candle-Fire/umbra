@@ -1,3 +1,7 @@
+#define VMA_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+
 #include <algorithm>
 #include <cfloat>
 #include <renderer/interfaces/VulkanInterface.h>
