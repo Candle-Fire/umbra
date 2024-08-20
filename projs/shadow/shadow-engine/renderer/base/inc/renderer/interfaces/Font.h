@@ -4,8 +4,6 @@
 #include "renderer/GraphicsDefine.h"
 #include "renderer/Canvas.h"
 #include "renderer/Interface.h"
-#include "renderer/assets/RenderResource.h"
-#include "shadow/assets/fs/path.h"
 #include "shadow/assets/resource/Resource.h"
 #include <shadow/assets/resource/ResourceManager.h>
 #include "imstb_truetype.h"
@@ -159,8 +157,6 @@ namespace rx::Font {
   float TextHeight(const std::string &text, const RenderMode &render);
   float TextHeight(const std::wstring &text, const RenderMode &render);
 
-  using namespace ShadowEngine;
-
   struct FontStyle {
     std::string name;
     std::vector<uint8_t> fontBuffer;
@@ -177,8 +173,8 @@ namespace rx::Font {
     }
 
     void Create(const std::string &fileName) {
-        OutputMemoryStream oms;
-        SH::ShadowApplication::diskFS->readSync(ShadowEngine::Path(fileName), oms);
+        SH::OutputMemoryStream oms;
+        SH::ShadowApplication::diskFS->readSync(SH::Path(fileName), oms);
 
         if (oms.empty())
             spdlog::error("Failed to load font " + fileName + " because it could not be opened.");
@@ -187,18 +183,18 @@ namespace rx::Font {
     }
   };
 
-  struct API FontResource final : Resource {
-    FontResource(const Path &path, ResourceTypeManager &manager);
-    ShadowEngine::ResourceType getType() const override { return TYPE; }
+  struct API FontResource final : SH::Resource {
+    FontResource(const SH::Path &path, SH::ResourceTypeManager &manager);
+    SH::ResourceType getType() const override { return TYPE; }
 
     void unload() override { fileData.free(); }
     bool load(size_t size, const uint8_t *mem) override;
 
-    OutputMemoryStream fileData;
-    static const ResourceType TYPE;
+    SH::OutputMemoryStream fileData;
+    static const SH::ResourceType TYPE;
   };
 
-  struct API FontManager final : ResourceTypeManager {
+  struct API FontManager final : SH::ResourceTypeManager {
     friend struct FontResource;
   public:
     FontManager();
@@ -207,8 +203,8 @@ namespace rx::Font {
     rx::Texture *getAtlasTexture();
 
   private:
-    virtual ShadowEngine::Resource* createResource(const ShadowEngine::Path &path) override;
-    void destroyResource(ShadowEngine::Resource &res) override;
+    virtual SH::Resource* createResource(const SH::Path &path) override;
+    void destroyResource(SH::Resource &res) override;
 
   };
 }

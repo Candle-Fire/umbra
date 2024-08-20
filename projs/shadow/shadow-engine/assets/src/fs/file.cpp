@@ -3,11 +3,10 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <filesystem>
-#include <shadow/assets/fs/path.h>
 #include <map>
 #include <shadow/util/Synchronization.h>
 
-namespace ShadowEngine {
+namespace SH {
     // Because fuck Linux? Need platform-specific source files!
 #ifdef _WIN32
 
@@ -291,7 +290,7 @@ namespace ShadowEngine {
 
             const auto count = pack.read<size_t>();
             for (size_t i = 0; i < count; i++) {
-                const auto hash = pack.read<PathHash>();
+                const auto hash = pack.read<SH::PathHash>();
                 PackFile& file = packFiles[hash];
                 file.offset = pack.read<size_t>();
                 file.size = pack.read<size_t>();
@@ -302,7 +301,7 @@ namespace ShadowEngine {
 
         bool readSync(const Path& path, OutputMemoryStream& content) override {
             std::string basename = Path::getFilename(const_cast<std::string &>(path.get()));
-            PathHash hash = path.getHash();
+            SH::PathHash hash = path.getHash();
 
             auto i = packFiles.find(hash);
             if (i == packFiles.end()) return false;
@@ -324,7 +323,7 @@ namespace ShadowEngine {
             size_t size;
         };
 
-        std::map<PathHash, PackFile> packFiles;
+        std::map<SH::PathHash, PackFile> packFiles;
         FileInput pack;
     };
 

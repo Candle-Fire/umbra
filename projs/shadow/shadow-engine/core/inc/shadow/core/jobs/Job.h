@@ -2,7 +2,9 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
-
+#include <deque>
+#include <mutex>
+#include <condition_variable>
 
 /**
  * A threaded task/job system.

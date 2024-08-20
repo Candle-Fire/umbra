@@ -218,7 +218,7 @@ namespace rx {
         // Begin a render pass on the swapchain.
         virtual void BeginRenderPass(const SwapChain* sc, ThreadCommands cmd) = 0;
         // Begin a render pass on the given image. If imageCount is zero, then no rendering will be done, but uniform buffers will still be passed to the shaders.
-        virtual void BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd, RenderPassFlags flags) = 0;
+        virtual void BeginRenderPass(const RenderPassImage* imgs, uint32_t imageCount, ThreadCommands cmd, RenderPassFlags flags = RenderPassFlags::NONE) = 0;
         // End a render pass
         virtual void EndRenderPass(ThreadCommands cmd) = 0;
         // Bind rectangles to the scissor buffer.

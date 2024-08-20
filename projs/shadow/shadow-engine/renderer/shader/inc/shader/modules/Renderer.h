@@ -2,6 +2,8 @@
 
 #include "shader/ShaderBase.h"
 
+static const uint ENTITY_COUNT = 256;
+
 enum FrameOptions {
     OPTION_TEMPORAL_ANTIALIASING = 1 << 0,
     OPTION_VXGI_ENABLED = 1 << 1,

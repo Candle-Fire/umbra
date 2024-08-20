@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-namespace ShadowEngine {
+namespace SH {
 
   template<typename T> struct Delegate;
 

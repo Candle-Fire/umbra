@@ -1,10 +1,8 @@
 #pragma once
 #include <map>
-#include <shadow/assets/fs/hash.h>
-#include <shadow/assets/fs/path.h>
 #include <shadow/assets/resource/Resource.h>
 
-namespace ShadowEngine {
+namespace SH {
 
   /**
    * Handles all of the Resources of a single Type.
@@ -15,7 +13,7 @@ namespace ShadowEngine {
     friend struct Resource;
     friend struct ResourceManager;
 
-    using ResourceTable = std::map<PathHash, struct Resource*>;
+    using ResourceTable = std::map<SH::PathHash, struct Resource*>;
 
     void create(struct ResourceType type, struct ResourceManager& manager);
     void destroy();
@@ -24,7 +22,7 @@ namespace ShadowEngine {
 
     void removeUnreferencedResources();
 
-    void reload(const Path& path);
+    void reload(const SH::Path& path);
     void reload(Resource& resource);
 
     ResourceTable& getResources() { return resources; }
@@ -34,10 +32,10 @@ namespace ShadowEngine {
     ResourceManager& getOwner() const { return *owner; }
 
   protected:
-    Resource* load(const Path& path);
-    virtual Resource* createResource(const Path& path) = 0;
+    Resource* load(const SH::Path& path);
+    virtual Resource* createResource(const SH::Path& path) = 0;
     virtual void destroyResource(Resource& res) = 0;
-    Resource* get(const Path& path);
+    Resource* get(const SH::Path& path);
 
     ResourceTable resources;
     ResourceManager* owner;
@@ -68,19 +66,19 @@ namespace ShadowEngine {
     const ResourceTypeManagers& getAll() const { return managers; }
 
     template <typename R>
-    R* load(const Path& path) {
+    R* load(const SH::Path& path) {
         return static_cast<R*>(load(R::TYPE, path));
     }
 
-    Resource* load(ResourceTypeManager& manager, const Path& path);
-    Resource* load(ResourceType type, const Path& path);
+    Resource* load(ResourceTypeManager& manager, const SH::Path& path);
+    Resource* load(ResourceType type, const SH::Path& path);
 
     void setLoadHook(LoadHook* hook);
     bool isHooked() const { return hook; }
     LoadHook::Action onLoad(Resource& res) const;
     void add(ResourceType, ResourceTypeManager* manager);
     void remove(ResourceType type);
-    void reload(const Path& path);
+    void reload(const SH::Path& path);
     void reloadAll();
     void removeUnreferenced();
     void setUnloadable(bool enable);

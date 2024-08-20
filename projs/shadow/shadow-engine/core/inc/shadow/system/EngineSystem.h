@@ -4,7 +4,7 @@
 #include <vector>
 #include "shadow/util/Delegate.h"
 
-namespace ShadowEngine {
+namespace SH {
 
   /**
    * Manage Engine Systems.

@@ -1535,10 +1535,10 @@ namespace rx {
                     VkWriteDescriptorSet write = {
                         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                         .dstSet = set,
-                        .dstArrayElement = descriptorIdx,
-                        .descriptorType = bind.descriptorType,
                         .dstBinding = bind.binding,
-                        .descriptorCount = 1
+                        .dstArrayElement = descriptorIdx,
+                        .descriptorCount = 1,
+                        .descriptorType = bind.descriptorType
                       };
 
                     descriptorWrite.emplace_back(write);
@@ -1569,7 +1569,7 @@ namespace rx {
                             } else {
                                 int sub = table.shaderIndex[unrolled - vulkan::BindShift::TEXTURE];
                                 auto tex = vulkan::structs::ToInternal(static_cast<const Texture*>(&res));
-                                images.back().imageView = sub >= 0 ? tex->srvRes[sub] : tex->srv.view;
+                                images.back().imageView = sub >= 0 ? tex->srvRes[sub].view : tex->srv.view;
                                 images.back().imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                             }
                             write.pImageInfo = &images.back();
@@ -1593,7 +1593,7 @@ namespace rx {
                             } else {
                                 int sub = table.uniformIndex[unrolled - vulkan::BindShift::UNIFORM];
                                 auto tex = vulkan::structs::ToInternal(static_cast<const Texture*>(&res));
-                                images.back().imageView = sub >= 0 ? tex->uavRes[sub] : tex->uav.view;
+                                images.back().imageView = sub >= 0 ? tex->uavRes[sub].view : tex->uav.view;
                             }
                             write.pImageInfo = &images.back();
                             break;
@@ -1720,10 +1720,10 @@ namespace rx {
                 // Setup multisampling
                 VkPipelineMultisampleStateCreateInfo msCreate = {
                     .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-                    .sampleShadingEnable = VK_FALSE,
                     .rasterizationSamples = (pso->meta.rasterizer != nullptr && pso->meta.rasterizer->forcedSampleCount > 1) ?
                         (VkSampleCountFlagBits) pso->meta.rasterizer->forcedSampleCount :
                         (VkSampleCountFlagBits) command.passMeta.sampleCount,
+                    .sampleShadingEnable = VK_FALSE,
                     .minSampleShading = 1.f,
                     .pSampleMask = &pso->meta.sampleMask,
                     .alphaToCoverageEnable = pso->meta.blend != nullptr ?
@@ -1887,16 +1887,15 @@ namespace rx {
         samplerMinmaxProps = {};
 
         #define APPEND_PROPERTIES_CHAIN(x, y)   \
-        x##.sType = y;                          \
+        x.sType = y;                          \
         *props = &x;                            \
-        props = &x##.pNext
+        props = &x.pNext
 
 
         #define APPEND_FEATURES_CHAIN(x, y)     \
-        x##.sType = y;                          \
+        x.sType = y;                          \
         *features = &x;                         \
-        features = &x##.pNext
-
+        features = &x.pNext
 
         APPEND_PROPERTIES_CHAIN(samplerMinmaxProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES);
         APPEND_PROPERTIES_CHAIN(depthStencilResolveProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES);
@@ -2065,12 +2064,12 @@ namespace rx {
 
         VkInstanceCreateInfo instanceCreate = {
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            .pNext = &debugCreate,
             .pApplicationInfo = &app,
             .enabledLayerCount = static_cast<uint32_t>(instanceLayers.size()),
             .ppEnabledLayerNames = instanceLayers.data(),
             .enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size()),
             .ppEnabledExtensionNames = instanceExtensions.data(),
-            .pNext = &debugCreate
         };
 
         res = vkCreateInstance(&instanceCreate, nullptr, &instance);
@@ -2138,11 +2137,11 @@ namespace rx {
         capabilityH264 = {
             .profile = {
                 .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+                .pNext = &decodeH264Profile,
                 .videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR,
-                .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
-                .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
                 .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
-                .pNext = &decodeH264Profile
+                .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+                .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR
             },
             .decode = {
                 .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
@@ -2314,10 +2313,9 @@ namespace rx {
         // Create logical device
         VkDeviceCreateInfo deviceCreate = {
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+            .pNext = &deviceFeatures2,
             .queueCreateInfoCount = static_cast<uint32_t>(queueCreate.size()),
             .pQueueCreateInfos = queueCreate.data(),
-            .pEnabledFeatures = nullptr,
-            .pNext = &deviceFeatures2,
             .enabledExtensionCount = static_cast<uint32_t>(enabledExts.size()),
             .ppEnabledExtensionNames = enabledExts.data()
         };
@@ -2350,11 +2348,12 @@ namespace rx {
 
         // Initialize VMA
         VmaAllocatorCreateInfo allocatorCreate = {
+            .flags = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT | VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT,
             .physicalDevice = physicalDevice,
             .device = device,
             .instance = instance,
-            .flags = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT | VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT
         };
+
         if (deviceFeatures12.bufferDeviceAddress)
             allocatorCreate.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
@@ -2388,7 +2387,6 @@ namespace rx {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
             .size = 4,
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            .flags = 0
         };
 
         VmaAllocationCreateInfo allocationInfo = {
@@ -2400,23 +2398,22 @@ namespace rx {
 
         VkBufferViewCreateInfo bufferViewInfo = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO,
+            .buffer = nullBuffer,
             .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-            .range = VK_WHOLE_SIZE,
-            .buffer = nullBuffer
+            .range = VK_WHOLE_SIZE
         };
         res = vkCreateBufferView(device, &bufferViewInfo, nullptr, &nullBufferView);
 
         VkImageCreateInfo imageInfo = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-            .extent = { 1, 1, 1 },
             .format = VK_FORMAT_R8G8B8A8_UNORM,
-            .arrayLayers = 1,
+            .extent = { 1, 1, 1 },
             .mipLevels = 1,
+            .arrayLayers = 1,
             .samples = VK_SAMPLE_COUNT_1_BIT,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
             .tiling = VK_IMAGE_TILING_OPTIMAL,
             .usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-            .flags = 0
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         };
 
         allocationInfo = { .usage = VMA_MEMORY_USAGE_GPU_ONLY };
@@ -2442,22 +2439,22 @@ namespace rx {
         Uploader::Copy command = upload.Allocate(0);
         VkImageMemoryBarrier2 barrier = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-            .oldLayout = imageInfo.initialLayout,
-            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
             .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
             .srcAccessMask = 0,
             .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
             .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
-            .subresourceRange = {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseArrayLayer = 0,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .layerCount = 1
-            },
+            .oldLayout = imageInfo.initialLayout,
+            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = nullImage1
+            .image = nullImage1,
+            .subresourceRange = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+            },
         };
         VkDependencyInfo dependency = {
             .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
@@ -2478,16 +2475,16 @@ namespace rx {
         // Create image views
         VkImageViewCreateInfo view = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image = nullImage1,
+            .viewType = VK_IMAGE_VIEW_TYPE_1D,
+            .format = VK_FORMAT_R8G8B8A8_UNORM,
             .subresourceRange = {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
                 .baseMipLevel = 0,
-                .levelCount = 1
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
             },
-            .format = VK_FORMAT_R8G8B8A8_UNORM,
-            .image = nullImage1,
-            .viewType = VK_IMAGE_VIEW_TYPE_1D
         };
 
         res = vkCreateImageView(device, &view, nullptr, &nullImageView1);
@@ -2565,7 +2562,7 @@ namespace rx {
             memoryManager->bindlessRT.Init(device, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 32);
 
         // Load the pipeline cache from disk.
-        ShadowEngine::FileInput cacheFile;
+        SH::FileInput cacheFile;
         std::vector<uint8_t> cacheData;
         cacheFile.open(std::string("./cache/PipelineCache-Vulkan.cache"));
         cacheData.resize(cacheFile.size());
@@ -2788,7 +2785,7 @@ namespace rx {
             res = vkGetPipelineCacheData(device, pipelineCache, &size, data.data());
             assert(res == VK_SUCCESS);
 
-            ShadowEngine::FileOutput file;
+            SH::FileOutput file;
             file.open("./cache/PipelineCache-Vulkan.cache");
             file.write(data.data(), data.size());
             file.close();
@@ -3312,8 +3309,8 @@ namespace rx {
 
         VkRenderingInfo rendering {
             .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-            .layerCount = 1,
             .renderArea = { { 0, 0}, { std::min(sc->meta.width, internal->extent.width), std::min(sc->meta.height, internal->extent.height) } },
+            .layerCount = 1,
             .colorAttachmentCount = 1,
             .pColorAttachments = &colorAttach
         };
@@ -3402,7 +3399,7 @@ namespace rx {
                         .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         .loadOp = load,
                         .storeOp = store,
-                        .clearValue = { meta.clear.color[0], meta.clear.color[1], meta.clear.color[2], meta.clear.color[3] };
+                        .clearValue = { meta.clear.color[0], meta.clear.color[1], meta.clear.color[2], meta.clear.color[3] }
                     };
                     hasColor = true;
                     break;
@@ -3468,16 +3465,16 @@ namespace rx {
             if (image.before != image.during) {
                 VkImageMemoryBarrier2& barrier = cmds.renderPassStartBarriers.emplace_back(VkImageMemoryBarrier2 {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-                    .image = internal->resource,
+                    .srcStageMask = vulkan::convert::PipelineStage(image.before),
+                    .srcAccessMask = vulkan::convert::ResourceAccess(image.before),
+                    .dstStageMask = vulkan::convert::PipelineStage(image.during),
+                    .dstAccessMask = vulkan::convert::ResourceAccess(image.during),
                     .oldLayout = vulkan::convert::ImageLayout(image.before),
                     .newLayout = vulkan::convert::ImageLayout(image.during),
-                    .srcStageMask = vulkan::convert::PipelineStage(image.before),
-                    .dstStageMask = vulkan::convert::PipelineStage(image.during),
-                    .srcAccessMask = vulkan::convert::ResourceAccess(image.before),
-                    .dstAccessMask = vulkan::convert::ResourceAccess(image.during),
-                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, descriptor.firstMip, descriptor.mips, descriptor.firstSlice, descriptor.slices },
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = internal->resource,
+                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, descriptor.firstMip, descriptor.mips, descriptor.firstSlice, descriptor.slices },
                 });
 
                 assert(barrier.newLayout != VK_IMAGE_LAYOUT_UNDEFINED);
@@ -3492,16 +3489,16 @@ namespace rx {
             if (image.during != image.after) {
                 VkImageMemoryBarrier2& barrier = cmds.renderPassEndBarriers.emplace_back(VkImageMemoryBarrier2 {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-                    .image = internal->resource,
+                    .srcStageMask = vulkan::convert::PipelineStage(image.during),
+                    .srcAccessMask = vulkan::convert::ResourceAccess(image.during),
+                    .dstStageMask = vulkan::convert::PipelineStage(image.after),
+                    .dstAccessMask = vulkan::convert::ResourceAccess(image.after),
                     .oldLayout = vulkan::convert::ImageLayout(image.during),
                     .newLayout = vulkan::convert::ImageLayout(image.after),
-                    .srcStageMask = vulkan::convert::PipelineStage(image.during),
-                    .dstStageMask = vulkan::convert::PipelineStage(image.after),
-                    .srcAccessMask = vulkan::convert::ResourceAccess(image.during),
-                    .dstAccessMask = vulkan::convert::ResourceAccess(image.after),
-                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, descriptor.firstMip, descriptor.mips, descriptor.firstSlice, descriptor.slices },
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = internal->resource,
+                    .subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, descriptor.firstMip, descriptor.mips, descriptor.firstSlice, descriptor.slices },
                 });
 
                 assert(barrier.newLayout != VK_IMAGE_LAYOUT_UNDEFINED);
@@ -3521,7 +3518,7 @@ namespace rx {
         rendering.pStencilAttachment = hasStencil ? &stencil : nullptr;
 
         if (!cmds.renderPassStartBarriers.empty()) {
-            VkDependencyInfo dep = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = static_cast<uint32_t>(cmds.renderPassStartBarriers.size()), cmds.renderPassStartBarriers.data() };
+            VkDependencyInfo dep = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = static_cast<uint32_t>(cmds.renderPassStartBarriers.size()), .pImageMemoryBarriers = cmds.renderPassStartBarriers.data() };
             vkCmdPipelineBarrier2(cmds.GetCommandBuffer(), &dep);
         }
 
@@ -3534,7 +3531,7 @@ namespace rx {
         vkCmdEndRendering(cmds.GetCommandBuffer());
 
         if (!cmds.renderPassEndBarriers.empty()) {
-            VkDependencyInfo dep = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = static_cast<uint32_t>(cmds.renderPassEndBarriers.size()), cmds.renderPassEndBarriers.data() };
+            VkDependencyInfo dep = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .imageMemoryBarrierCount = static_cast<uint32_t>(cmds.renderPassEndBarriers.size()), .pImageMemoryBarriers = cmds.renderPassEndBarriers.data() };
             vkCmdPipelineBarrier2(cmds.GetCommandBuffer(), &dep);
             cmds.renderPassEndBarriers.clear();
         }

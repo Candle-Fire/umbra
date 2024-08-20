@@ -2,10 +2,10 @@
 #include "shadow/assets/resource/ResourceManager.h"
 #include "shadow/assets/resource/Resource.h"
 
-namespace ShadowEngine {
+namespace SH {
 
   struct PrefabManager final : ResourceTypeManager {
-    explicit PrefabManager() : ResourceTypeManager() { }
+    explicit PrefabManager() { }
 
     Resource* createResource(const Path& path) override {
         return new PrefabResource(path, *this);

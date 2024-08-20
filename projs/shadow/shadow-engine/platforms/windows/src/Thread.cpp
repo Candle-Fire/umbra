@@ -24,7 +24,7 @@ namespace SH {
     volatile bool running;
     volatile bool finished;
     const char* name;
-    ShadowEngine::ConditionVariable cv;
+    ConditionVariable cv;
     Thread* owner;
   };
 
@@ -88,7 +88,7 @@ namespace SH {
           ::SetThreadAffinityMask(implementation->handle, mask);
   }
 
-  void Thread::Wait(struct ShadowEngine::Mutex &mut) {
+  void Thread::Wait(struct Mutex &mut) {
       implementation->cv.sleep(mut);
   }
 

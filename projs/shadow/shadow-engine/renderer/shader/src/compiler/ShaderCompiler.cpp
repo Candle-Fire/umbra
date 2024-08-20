@@ -9,7 +9,9 @@
 #define __RPC_FAR
 #include <dxc/WinAdapter.h>
 #endif
-
+#ifndef _Maybenull_
+#define _Maybenull_
+#endif
 #include <dylib.hpp>
 #include <unordered_set>
 #include <dxc/dxcapi.h>
@@ -24,7 +26,7 @@ namespace rx::shader {
         DxcCreateInstanceProc CreateInstance = nullptr;
         DXCInternal(const std::string& modifier = "") {
             const std::string library = ifsystem("./libdxcompiler" + modifier + ".so", "dxcompiler" + modifier + ".dll", "./libdxcompiler" + modifier + ".dylib");
-            ShadowEngine::Path path(library);
+            SH::Path path(library);
             dylib* lib = (dylib*)ShadowEngine::Library::load(path);
 
             if (lib != nullptr) {
@@ -98,7 +100,7 @@ namespace rx::shader {
         if (compiler == nullptr) return;
 
         std::vector<uint8_t> sourceData;
-        ShadowEngine::FileInput file;
+        SH::FileInput file;
         if (!file.open(in.sourceName)) return;
         sourceData.resize(file.size());
         file.read(sourceData.data(), file.size());
@@ -169,7 +171,7 @@ namespace rx::shader {
         args.push_back(L"-E");
         SH::Util::Str::StringConvert(in.entryPoint, args.emplace_back());
 
-        SH::Util::Str::StringConvert(ShadowEngine::Path::getFilename((std::string&) in.sourceName), args.emplace_back());
+        SH::Util::Str::StringConvert(SH::Path::getFilename((std::string&) in.sourceName), args.emplace_back());
 
         DxcBuffer source = { sourceData.data(), sourceData.size(), DXC_CP_ACP };
 
@@ -241,7 +243,7 @@ namespace rx::shader {
     bool SaveData(const std::string& filename, const CompilerOutput& out) {
         // TODO: Save dependency data
 
-        ShadowEngine::FileOutput shaderFile;
+        SH::FileOutput shaderFile;
         if (!shaderFile.open(filename)) return false;
         shaderFile.write(out.data, out.dataLen);
         shaderFile.close();

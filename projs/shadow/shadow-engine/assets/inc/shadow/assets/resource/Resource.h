@@ -1,11 +1,13 @@
 #pragma once
 
-#include "shadow/assets/fs/hash.h"
-#include "shadow/assets/fs/path.h"
-#include "shadow/assets/fs/file.h"
+#include <shadow/assets/fs/file.h>
+#include <shadow/assets/fs/iostream.h>
+#include <shadow/core/PathID.h>
+#include <shadow/util/hash.h>
+
 #include <shadow/util/DelegateList.h>
 
-namespace ShadowEngine {
+namespace SH {
 
   /**
    * A runtime-only struct that determines the type of a resource - whether it be a texture, mesh, animation, or other data.
@@ -19,7 +21,7 @@ namespace ShadowEngine {
     bool operator< (const ResourceType& o) const { return o.hash.getHash() < hash.getHash(); }
     bool isValid() const { return hash.getHash() != 0; }
 
-    HeapHash hash;
+    SH::HeapHash hash;
   };
 
   // A Resource Type that is guaranteed to be invalid.
@@ -28,7 +30,7 @@ namespace ShadowEngine {
 
   // A specialization of HashFunc for ResourceTypes, since they already have a HeapHash within.
   template<> struct HashFunc<ResourceType> {
-    static uint32_t get(const ResourceType& key) { return HashFunc<HeapHash>::get(key.hash); }
+    static uint32_t get(const ResourceType& key) { return HashFunc<SH::HeapHash>::get(key.hash); }
   };
 
 #pragma pack(1)
@@ -75,7 +77,7 @@ namespace ShadowEngine {
     Observer const& getCallback() const { return callback; }
     size_t getSize() const { return size; }
 
-    const Path& getPath() const { return path; }
+    const SH::Path& getPath() const { return path; }
 
     struct ResourceTypeManager& getManager() { return manager; }
 
@@ -91,7 +93,7 @@ namespace ShadowEngine {
     }
 
   protected:
-    Resource(Path  path, ResourceTypeManager& manager);
+    Resource(SH::Path path, ResourceTypeManager& manager);
 
     virtual void onReadying() {}
     virtual void unload() = 0;
@@ -119,7 +121,7 @@ namespace ShadowEngine {
 
     Observer callback;
     size_t size;
-    Path path;
+    SH::Path path;
     uint32_t references;
     uint16_t failedDependencies;
     FileSystem::AsyncHandle handle;
@@ -128,13 +130,13 @@ namespace ShadowEngine {
   };
 
   struct PrefabResource : Resource {
-    PrefabResource(const Path& path, ResourceTypeManager& resource_manager);
+    PrefabResource(const SH::Path& path, ResourceTypeManager& resource_manager);
     ResourceType getType() const override;
     void unload() override;
     bool load(size_t size, const uint8_t* data) override;
 
     OutputMemoryStream data;
-    StableHash hash;
+    SH::StableHash hash;
     static const ResourceType TYPE;
   };
 }

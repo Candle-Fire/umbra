@@ -11,7 +11,7 @@
 namespace SH::Jobs {
     struct State {
         size_t nCores = 0;
-        PriorityQueue priorities[Priority::SIZE];
+        PriorityQueue priorities[static_cast<uint32_t>(Priority::SIZE)];
         std::atomic_bool alive { true };
 
         void Destroy() {
@@ -127,7 +127,7 @@ namespace SH::Jobs {
 
         TaskGroup group;
         group.context = &context;
-        group.func = task;
+        group.task = task;
         group.shared = (uint32_t) sharedMem;
 
         for (uint32_t grp = 0; grp < nGroups; grp++) {

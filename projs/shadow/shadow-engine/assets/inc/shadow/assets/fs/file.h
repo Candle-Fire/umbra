@@ -6,7 +6,7 @@
 
 #include "shadow/util/Delegate.h"
 
-namespace ShadowEngine {
+namespace SH {
 
   // An input stream that can read a file on disk.
   struct FileInput final : InputStream {

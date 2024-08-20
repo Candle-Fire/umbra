@@ -2511,3 +2511,13 @@ template<>
 struct enable_bitmask_operators<rx::ResourceState> {
   static const bool enable = true;
 };
+
+template<>
+struct enable_bitmask_operators<rx::ColorWrite> {
+    static const bool enable = true;
+};
+
+template<>
+struct enable_bitmask_operators<rx::RenderPassFlags> {
+    static const bool enable = true;
+};

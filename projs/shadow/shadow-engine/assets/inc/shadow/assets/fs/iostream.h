@@ -2,7 +2,7 @@
 #include <string>
 #include <cstdint>
 
-namespace ShadowEngine {
+namespace SH {
   // A custom OutputStream that can be implemented to output to any arbitrary data structure.
   // The idea is that it can write to a file, or into memory, or into a temporary buffer that is copied to both.
   // As opposed to the hardcoded streams that exist in C++, which have a single purpose for their entire lifetime.

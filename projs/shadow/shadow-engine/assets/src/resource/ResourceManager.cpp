@@ -2,7 +2,7 @@
 #include "shadow/assets/resource/Resource.h"
 #include "spdlog/spdlog.h"
 
-namespace ShadowEngine {
+namespace SH {
 
   ResourceManager* manager;
 

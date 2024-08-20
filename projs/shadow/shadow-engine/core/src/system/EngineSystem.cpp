@@ -2,9 +2,8 @@
 #include "shadow/core/Libraries.h"
 #include "spdlog/spdlog.h"
 #include "dylib.hpp"
-#include <shadow/assets/fs/path.h>
 
-namespace ShadowEngine {
+namespace SH {
 
   EngineSystem::~EngineSystem() = default;
 
@@ -79,8 +78,8 @@ namespace ShadowEngine {
 #error Undefined platform
 #endif
 
-        if (!ShadowEngine::Path::hasExtension(p, ext)) p = p.append(ext);
-        ShadowEngine::Path sePath(p);
+        if (!Path::hasExtension(p, ext)) p = p.append(ext);
+        Path sePath(p);
 
         spdlog::info("Loading EngineSystem from ", p);
 
@@ -111,7 +110,7 @@ namespace ShadowEngine {
         return nullptr;
     }
 
-    void addSystem(ShadowEngine::EngineSystem *system, void *library) override {
+    void addSystem(EngineSystem *system, void *library) override {
         systems.push_back(system);
         libraries.push_back(library);
         for (auto* sys : systems) {
@@ -127,10 +126,10 @@ namespace ShadowEngine {
   };
 }
 
-std::unique_ptr<ShadowEngine::SystemManager> ShadowEngine::SystemManager::create() {
+std::unique_ptr<SH::SystemManager> SH::SystemManager::create() {
     return std::make_unique<SystemManagerImpl>();
 }
 
-void ShadowEngine::SystemManager::createAllSystems() {
+void SH::SystemManager::createAllSystems() {
     // TODO
 }

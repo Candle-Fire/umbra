@@ -468,7 +468,7 @@ namespace rx::Font {
       if (parse.quads > 0) {
           rx::Interface *iface = rx::GetInterface();
           rx::Interface::GPUAllocation mem = iface->CreateStagingBuffer(sizeof(FontVertex) * parse.quads * 4, cmd);
-          if (!mem.isValid())
+          if (!mem.IsValid())
               return parse.cursor;
           internal::CommitText(mem.data);
 
@@ -656,11 +656,9 @@ namespace rx::Font {
       return &internal::texture;
   }
 
-  using namespace ShadowEngine; // Resource, ResourceType, Path
+  const SH::ResourceType FontResource::TYPE("font");
 
-  const ResourceType FontResource::TYPE("font");
-
-  FontResource::FontResource(const Path& path, ResourceTypeManager& manager)
+  FontResource::FontResource(const SH::Path& path, SH::ResourceTypeManager& manager)
     : Resource(path, manager), fileData() {
   }
 
@@ -675,11 +673,11 @@ namespace rx::Font {
   FontManager::FontManager()
     : ResourceTypeManager() {}
 
-  Resource* FontManager::createResource(const Path& path) {
+  SH::Resource* FontManager::createResource(const SH::Path& path) {
       return new FontResource(path, *this);
   }
 
-  void FontManager::destroyResource(Resource& res) {
+  void FontManager::destroyResource(SH::Resource& res) {
       free(static_cast<FontResource*>(&res));
   }
 

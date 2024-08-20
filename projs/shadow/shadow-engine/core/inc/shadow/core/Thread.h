@@ -23,7 +23,7 @@ namespace SH {
     void SetAffinity(size_t mask);
 
     // Wait. The given mutex will lock on the current thread, and will not be avaiable until this thread restarts.
-    void Wait(struct ShadowEngine::Mutex& mut);
+    void Wait(struct Mutex& mut);
     // Unlock current thread and resumes. Partner to wait.
     void Notify();
 

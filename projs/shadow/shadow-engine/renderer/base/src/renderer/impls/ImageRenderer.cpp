@@ -325,7 +325,7 @@ namespace rx::Image {
         float invHeight = 1;
         float invWidth = 1;
         if (tex != nullptr) {
-            const TextureMeta& meta = tex->getMeta();
+            const TextureMeta& meta = tex->GetMeta();
             invWidth = 1 / float(meta.width);
             invHeight = 1 / float(meta.height);
         }

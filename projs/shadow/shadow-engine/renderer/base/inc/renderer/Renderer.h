@@ -195,7 +195,7 @@ namespace rx {
             DRAW_MAIN_CAMERA = 512,
         };
 
-        static void SetActiveFilesystem(const std::unique_ptr<ShadowEngine::FileSystem>& fs);
+        static void SetActiveFilesystem(const std::unique_ptr<SH::FileSystem>& fs);
 
         static void DrawScene(const Visibility& vis, rx::defs::RenderPass renderPass, ThreadCommands cmd, uint32_t flags = DRAW_OPAQUE);
 

@@ -363,7 +363,7 @@ namespace rx {
 
         std::vector<std::unique_ptr<VulkanThreadCommands>> cmds;                                // A list of all active and inactive Thread Commands, for all threads managed by the engine.
         uint32_t cmdCount = 0;                                                                  // The number of active Thread Commands. Should always be == cmds.size(), unless a thread is currently initializing one.
-        ShadowEngine::SpinLock cmdLock;                                                         // A lock to prevent more than one thread submitting the commands at a time.
+        SH::SpinLock cmdLock;                                                         // A lock to prevent more than one thread submitting the commands at a time.
 
         /**
          * @brief Convert the given ThreadCommands to the Vulkan-specific specialization

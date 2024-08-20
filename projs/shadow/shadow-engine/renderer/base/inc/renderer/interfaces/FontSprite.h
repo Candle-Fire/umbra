@@ -26,7 +26,7 @@ namespace rx {
         : params(params), fontName(fontName) {
         SetText(text);
         if (!fontName.empty())
-            fontResource = ShadowEngine::ResourceManager::Get().load<rx::Font::FontResource>(ShadowEngine::Path(fontName));
+            fontResource = SH::ResourceManager::Get().load<rx::Font::FontResource>(SH::Path(fontName));
     }
     virtual ~FontSprite();
 

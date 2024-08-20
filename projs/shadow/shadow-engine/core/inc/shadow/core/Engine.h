@@ -4,10 +4,12 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <shadow/assets/resource/ResourceManager.h>
+
 #include "shadow/assets/fs/file.h"
 #include <shadow/system/EngineSystem.h>
 
-namespace ShadowEngine {
+namespace SH {
 
   struct API Engine {
 
@@ -21,13 +23,13 @@ namespace ShadowEngine {
     static std::unique_ptr<Engine> create(Initialization&& init);
 
     virtual void init() = 0;
-    virtual struct World& createWorld(bool main) = 0;
+    virtual World& createWorld(bool main) = 0;
     virtual void destroyWorld(World& world) = 0;
 
-    virtual struct FileSystem& getFileSystem() = 0;
+    virtual FileSystem& getFileSystem() = 0;
 
-    virtual struct SystemManager getSystemManager() = 0;
-    virtual struct ResourceManager getResourceManager() = 0;
+    virtual SystemManager& getSystemManager() = 0;
+    virtual ResourceManager& getResourceManager() = 0;
 
     virtual void startGame(World& world) = 0;
     virtual void stopGame(World& world) = 0;

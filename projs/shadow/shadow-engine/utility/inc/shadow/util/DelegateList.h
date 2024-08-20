@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <algorithm>
 
-namespace ShadowEngine {
+namespace SH {
 
   template<typename T> struct DelegateList;
 

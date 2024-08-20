@@ -20,14 +20,16 @@ namespace rx::internal {
 
     Interface*& iface = GetInterface();
 
-    Shader              shaders[defs::ShaderType::SIZE];
-    Texture             texs[defs::TextureType::SIZE];
-    InputLayout         layouts[defs::InputLayout::SIZE];
-    RasterizerState     rasters[defs::RasterizerState::SIZE];
-    DepthStencilState   stencils[defs::DepthStencilState::SIZE];
-    BlendState          blends[defs::BlendModes::SIZE];
-    GPUBuffer           buffers[defs::BufferType::SIZE];
-    Sampler             samplers[defs::SamplerType::SIZE];
+#define ENUMSIZE(x) static_cast<uint32_t>(x::SIZE)
+
+    Shader              shaders[ENUMSIZE(defs::ShaderType)];
+    Texture             texs[ENUMSIZE(defs::TextureType)];
+    InputLayout         layouts[ENUMSIZE(defs::InputLayout)];
+    RasterizerState     rasters[ENUMSIZE(defs::RasterizerState)];
+    DepthStencilState   stencils[ENUMSIZE(defs::DepthStencilState)];
+    BlendState          blends[ENUMSIZE(defs::BlendModes)];
+    GPUBuffer           buffers[ENUMSIZE(defs::BufferType)];
+    Sampler             samplers[ENUMSIZE(defs::SamplerType)];
 
     /**
      * An internally (externally?) tracked array of memory barriers
@@ -47,7 +49,7 @@ namespace rx::internal {
     /*  Renderer State */
     /*  Note: Most of the bools here are intended to be set by the editor, and read by the scene loader to set on startup. */
 
-    std::unique_ptr<ShadowEngine::FileSystem> fs;                                                                       // The active filesystem, to load assets and files from.
+    std::unique_ptr<SH::FileSystem> fs;                                                                       // The active filesystem, to load assets and files from.
     SH::Path shaderSourcePath;                                                                                          // The Filesystem path where shader source files are located. Expected to be within the above filesystem.
     SH::Path shaderBinaryPath;                                                                                          // The Filesystem path where shader binary files are located. Must be within the above filesystem. Must be writable. Shaders whose source is available but no binary stored will have their binary created.
 
@@ -121,28 +123,28 @@ namespace rx::internal {
 
     std::vector<uint8_t> debugTexts;                                                                                    // A buffer of texts used to send data to the console from the renderer.
 
-    ShadowEngine::SpinLock mipperLock;                                                                                  // A lock used by the dynamic mipmap generator.
+    SH::SpinLock mipperLock;                                                                                  // A lock used by the dynamic mipmap generator.
     std::vector<std::pair<Texture, bool>> mipperList;                                                                   // A list of textures for the dynamic mipmap generator to process. pair<Texture, whether it has been processed yet>
     std::vector<std::pair<Texture, Texture>> decompressorList;                                                          // A list of textures for the decompressor to work on. pair<compressed texture, decompressed texture>
 
     GPUBuffer luminanceBuffer;                                                                                          // A buffer for dynamic luminance compensation. Required by some shaders to exist. NVIDIA 10xx GPUs will error without such.
 
-    SH::Jobs::ExecutionContext pipelineJobContext[defs::RenderPass::SIZE];                                              // Job contexts for processing PSOs.
+    SH::Jobs::ExecutionContext pipelineJobContext[ENUMSIZE(defs::RenderPass)];                                              // Job contexts for processing PSOs.
 
     PipelineState PSOOcclusion;                                                                                         // PSO for Occlusion Queries
-    PipelineState PSOBillboard[defs::RenderPass::SIZE];                                                                 // PSO for billboard rendering, per render pass
+    PipelineState PSOBillboard[ENUMSIZE(defs::RenderPass)];                                                                 // PSO for billboard rendering, per render pass
     PipelineState PSOBillboardWire;                                                                                     // PSO for billboard rendering of wires and lines.
     PipelineState PSOGatherBillboard;                                                                                   // PSO for capturing billboard-rendered pixels into a buffer
-    PipelineState PSOLightVisual[defs::LightType::SIZE];                                                                // PSO for visualizing light-affected pixels into a buffer
-    PipelineState PSOLightVolumetric[defs::LightType::SIZE];                                                            // PSO for rendering volumetric lights
+    PipelineState PSOLightVisual[ENUMSIZE(defs::LightType)];                                                                // PSO for visualizing light-affected pixels into a buffer
+    PipelineState PSOLightVolumetric[ENUMSIZE(defs::LightType)];                                                            // PSO for rendering volumetric lights
     PipelineState PSOLightmap;                                                                                          // PSO for rendering light maps
     PipelineState PSOLensFlare;                                                                                         // PSO for rendering lens flares
     PipelineState PSODownsampleDepth;                                                                                   // PSO for downsampling depth buffers
     PipelineState PSOUpsample;                                                                                          // PSO for bilateral upsampling
     PipelineState PSOUpsampleClouds;                                                                                    // PSO for upsampling volumetric clouds
     PipelineState PSOOutline;                                                                                           // PSO for rendering outlines of objects
-    PipelineState PSOSky[defs::SkyRenderType::SIZE];                                                                    // PSO for sky rendering, per type
-    PipelineState PSODebug[defs::DebugRenderType::SIZE];                                                                // PSO for debug rendering, per mode
+    PipelineState PSOSky[ENUMSIZE(defs::SkyRenderType)];                                                                    // PSO for sky rendering, per type
+    PipelineState PSODebug[ENUMSIZE(defs::DebugRenderType)];                                                                // PSO for debug rendering, per mode
     PipelineState PSOWire;                                                                                              // PSO for wire (thin strips of pixels) rendering
     PipelineState PSOWireTess;                                                                                          // PSO for wire (thin strips of pixels) rendering, with tesselation
 
@@ -213,8 +215,8 @@ namespace rx::internal {
                 size_t data;
             };
 
-            Sort a { .parts = { .distance = this->distance, .mesh = static_cast<uint16_t>(this->mesh), .sort = this->sort }};
-            Sort b { .parts = { .distance = other.distance, .mesh = static_cast<uint16_t>(other.mesh), .sort = other.sort }};
+            const Sort a { .parts = { .mesh = static_cast<uint16_t>(this->mesh), .sort = this->sort, .distance = this->distance } };
+            const Sort b { .parts = { .mesh = static_cast<uint16_t>(other.mesh), .sort = other.sort, .distance = other.distance } };
             return a.data > b.data;
         }
     };
@@ -249,7 +251,7 @@ namespace rx::internal {
         uint32_t data;
     };
 
-    std::unordered_map<uint32_t, PipelineState> PSOByVariant[defs::RenderPass::SIZE][defs::MaterialShaderType::SIZE]; // TODO: Material Component types
+    std::unordered_map<uint32_t, PipelineState> PSOByVariant[ENUMSIZE(defs::RenderPass)][ENUMSIZE(defs::MaterialShaderType)]; // TODO: Material Component types
     inline PipelineState* GetPipelineForVariants(RenderVariants var) {
         return &PSOByVariant[var.parts.pass][var.parts.shader][var.data];
     }
@@ -456,6 +458,6 @@ namespace rx {
         internal::ready.store(true);
     }
 
-    
+
 
 }

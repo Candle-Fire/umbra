@@ -3,12 +3,13 @@
 #include <cstdint>
 #include <atomic>
 #include <thread>
+#include <xmmintrin.h>
 
 #ifdef __linux__
 #include <pthread.h>
 #endif
 
-namespace ShadowEngine {
+namespace SH {
   // A simple synchronization system that allows one "accessing thread" at a time.
   struct alignas(8) Mutex {
     friend struct ConditionVariable;

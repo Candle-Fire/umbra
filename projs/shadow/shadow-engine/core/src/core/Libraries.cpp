@@ -1,9 +1,8 @@
 #include <shadow/core/Libraries.h>
-#include <shadow/assets/fs/path.h>
 #include "dylib.hpp"
 
 namespace ShadowEngine {
-  void* Library::load(ShadowEngine::Path& p) {
+  void* Library::load(SH::Path& p) {
       return new dylib("./", p.c_str());
   }
 
