@@ -3544,17 +3544,30 @@ namespace rx {
 
 
     void VulkanInterface::BindViewports(const Viewport* viewports, uint32_t vpCount, ThreadCommands cmd) {
+        assert(viewports != nullptr);
 
+        assert(vpCount < 16);
+        assert(vpCount < deviceProps2.properties.limits.maxViewports);
+
+        VkViewport vps[16];
+        for (uint32_t i = 0; i < vpCount; i++) {
+            const Viewport& vp = viewports[i];
+            vps[i] = { vp.topLeftX, vp.topLeftY + vp.height, std::max(1.f, vp.width), -vp.height, vp.minDepth, vp.maxDepth };
+        }
+        vkCmdSetViewportWithCount(GetThreadCommands(cmd).GetCommandBuffer(), vpCount, vps);
     }
 
     void VulkanInterface::EventBegin(const char* name, ThreadCommands cmd) {
+        if (!debugUtilsMessenger) return;
 
+        VkDebugUtilsLabelEXT label = { VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, name, { 0, 0, 0, 1 } };
+        vkCmdBeginDebugUtilsLabelEXT(GetThreadCommands(cmd).GetCommandBuffer(), &label);
     }
 
     void VulkanInterface::EventEnd(ThreadCommands cmd) {
+        if (!debugUtilsMessenger) return;
 
+        vkCmdEndDebugUtilsLabelEXT(GetThreadCommands(cmd).GetCommandBuffer());
     }
-
-
 
 }

@@ -809,7 +809,7 @@ y;                                        \
         void EndRenderPass(ThreadCommands cmd) override;
         // Bind rectangles to the scissor buffer.
         void BindScissorRectangles(const Rect* rects, uint32_t rectCount, ThreadCommands cmd) override;
-        // Bind viewports to be rendered
+        // Bind viewports to be rendered. vpCount must be <= 16.
         void BindViewports(const Viewport* viewports, uint32_t vpCount, ThreadCommands cmd) override;
         // Bind a resource to a shader slot
         void BindResource(const GPUResource* res, uint32_t slot, ThreadCommands cmd, int subResource = -1) override;
