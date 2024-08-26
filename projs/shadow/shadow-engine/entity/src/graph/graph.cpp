@@ -1,5 +1,7 @@
 #include "shadow/entitiy/graph/graph.h"
 
+#include <algorithm>
+
 namespace SH::Entities {
 
     SHObject_Base_Impl(NodeBase)

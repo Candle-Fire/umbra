@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <string>
 #include <vector>
 #include <memory>
@@ -34,7 +35,7 @@ namespace SH {
   struct ModuleDescriptor {
     /// @brief The logical ID of the module eg.: "module:/renderer/vulkan"
     ID id;
-    /// @brief The human readable name for the module
+    /// @brief The human-readable name for the module
     std::string name;
     /// @brief The class that should be created for this module
     std::string class_name;
@@ -60,7 +61,7 @@ namespace SH {
   /// @brief Central manager for runtime loaded engine modules
   class API ModuleManager {
 
-    /// @brief List of all of the known modules
+    /// @brief List of all the known modules
     /// These modules can be active, inactive or not even loaded
     std::vector<ModuleHolder> modules;
 
@@ -142,10 +143,15 @@ namespace SH {
 
     /// @brief Runs the callback function if the given module is active
     template<class T>
-    void IfModuleActive(const ID &id, const std::function<void(T &)> &callback) {
+    requires std::derived_from<T, Module>
+    void IfModuleActive(const ID &id, const std::function<void(std::shared_ptr<T>)> &callback) {
         if (IsModuleActive(id)) {
-            auto m = GetById<T>(id);
-            callback(m);
+            std::weak_ptr<Module> m = GetById<T>(id);
+            if(m.expired())
+            {
+              callback(std::dynamic_pointer_cast<T>(m.lock()));
+            }
+
         }
     }
 
@@ -154,4 +160,5 @@ namespace SH {
     void Update(int frame);
   };
 
+  ModuleManager& Mgr();
 }

@@ -4,6 +4,9 @@
 #include <algorithm>
 
 #include "shadow/core/module-manager-v2.h"
+
+#include <shadow/core/ShadowApplication.h>
+
 #include "runtime/Runtime.h"
 
 namespace SH {
@@ -43,8 +46,9 @@ namespace SH {
 
   void ModuleManager::Init() {
 
+      spdlog::info("Initializing module manager...");
       for (const auto &i : this->modules) {
-          spdlog::debug("\"{0}\" is registered", i.descriptor.id);
+          spdlog::debug("\t\"{0}\" is registered", i.descriptor.id);
       }
 
       //Sort
@@ -183,6 +187,11 @@ namespace SH {
       }
   }
 
+  ModuleManager& Mgr()
+  {
+      return ShadowApplication::Get().GetModuleManager();
+  }
+
   void ModuleManager::DeactivateModule(Module *module_ptr, bool force) {
       spdlog::info("Deactivating module {0}", module_ptr->GetType());
       if (!this->finalized || force) {
@@ -208,7 +217,7 @@ namespace SH {
   void ModuleManager::PrintModuleInfo() {
       spdlog::info("Module info:");
       for (const auto &i : this->modules) {
-          spdlog::info("Module {0}({1}) is {2}",
+          spdlog::info(" \tModule {0}({1}) is {2}",
                        i.descriptor.name,
                        i.descriptor.id,
                        i.enabled ? "enabled" : "disabled");

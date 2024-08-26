@@ -63,39 +63,23 @@ namespace SH {
       }
 
       moduleManager.Init();
-
-      //renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
-
-      //renderCommands = std::make_unique<vlkx::RenderCommand>(2);
   }
 
   void ShadowApplication::Start() {
-      SDL_Event event;
+
       while (running) {
-          while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-              SH::Events::SDLEvent e(event);
-              SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
-              //eventBus.fire(e);
-              if (event.type == SDL_QUIT)
-                  running = false;
-          }
 
-          eventBus.fire(SH::Events::PreRender());
+          moduleManager.Update(0);
 
-          /*
-          if (!renderer.expired()) {
-              auto r = renderer.lock();
-              r->BeginRenderPass(renderCommands);
-          }
-
-          renderCommands->nextFrame();
-          */
           Time::UpdateTime();
       }
 
-      //moduleManager.Destroy();
-
       delete gameLib;
+  }
+
+  void ShadowApplication::Stop()
+  {
+      this->running = false;
   }
 
   ShadowApplication &ShadowApplication::Get() { return *instance; };

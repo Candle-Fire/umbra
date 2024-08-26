@@ -4,7 +4,9 @@ find_package(ImGui REQUIRED)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-add_library(shadow-engine SHARED)
+add_library(shadow-engine SHARED
+        renderer/2D/inc/RenderPipeline.h
+        renderer/2D/src/render_graph.cpp)
 add_library(shadow::engine ALIAS shadow-engine)
 
 add_executable(shadow-engine-tests)
@@ -32,6 +34,7 @@ target_link_libraries(shadow-engine
         dylib
         GPUOpen::VulkanMemoryAllocator
         Vulkan::Vulkan
+        Vulkan2D
 )
 
 target_compile_definitions(shadow-engine
@@ -39,19 +42,14 @@ target_compile_definitions(shadow-engine
         EXPORTING_SH_ENGINE
 )
 
-FILE(GLOB_RECURSE VK2D_SOURCES
-        ${Vulkan2D_SOURCE_DIR}/VK2D/*.c
+target_sources(shadow-engine PUBLIC
+        ${Vulkan2D_SOURCES}
         ${VMA_SOURCE_DIR}/src/VmaUsage.cpp
 )
-target_sources(shadow-engine PUBLIC
-        ${VK2D_SOURCES}
-)
-SET(IncludeDirs
-        ${Vulkan2D_SOURCE_DIR}
-        ${VMA_SOURCE_DIR}/src
-)
 target_include_directories(shadow-engine BEFORE
-        PUBLIC ${IncludeDirs}
+        PUBLIC
+        ${Vulkan2D_INCLUDE_DIR}
+        ${VMA_SOURCE_DIR}/src
 )
 
 if (TRUE)

@@ -1,22 +1,37 @@
 #pragma once
 
+#include <glm/vec2.hpp>
 #include <shadow/core/Module.h>
+#include <shadow/core/SDL2Module.h>
+#include <VK2D/Structs.h>
 
+#include "shadow/SHObject.h"
 #include "shadow/renderer/IRenderer.h"
 
 namespace SH::Renderer::V2D
 {
 
-    class Renderer2D : public Module, IRenderer
+    class Renderer2D final : public Module, IRenderer
     {
         SHObject_Base(Renderer2D)
 
+        std::weak_ptr<SDL2Module> platform;
+
+        vec4 clearColour;
+
+        bool renderingToTexture = false;
+        VK2DTexture render_target = nullptr;
+        glm::ivec2 render_target_size;
+
+        VK2DCameraIndex windowCam;
+        VK2DCameraSpec cam;
     public:
         Renderer2D();
 
-        virtual ~Renderer2D();
+        ~Renderer2D() override;
 
         RendererCapabilities getCapabilities() const override;
+        void RecreateRenderTargets();
 
         void setRenderExtent(int width, int height) override;
         void RenderSceneToTexture() override;

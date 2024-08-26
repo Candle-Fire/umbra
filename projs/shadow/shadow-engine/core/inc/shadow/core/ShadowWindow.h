@@ -1,9 +1,13 @@
 #pragma once
 
-#include "SDL.h"
+#include <shadow/event-bus/events.h>
+#include "shadow/SHObject.h"
 
-namespace SH {
+#include <SDL.h>
 
+
+namespace SH
+{
   class ShadowWindow {
   public:
 
@@ -20,6 +24,23 @@ namespace SH {
     ShadowWindow(int W, int H);
 
     ~ShadowWindow();
+
+    void UpdateSize();
+
   };
 
+  class WindowResizeEvent final : public Events::Event
+  {
+    SHObject_Base(WindowResizeEvent)
+
+  public:
+    int Width;
+    int Height;
+
+    WindowResizeEvent(const int width, const int height)
+      : Width(width),
+        Height(height)
+    {
+    }
+  };
 }

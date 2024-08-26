@@ -13,7 +13,7 @@ extern "C" {
     m.AddDescriptors({
                          .id="module:/renderer/v2d",
                          .name = "Vulkan2D Renderer",
-                         .class_name = "",
+                         .class_name = "Renderer2D",
                          .assembly="assembly:/core"_id,
                          .dependencies={"module:/platform/sdl2", "module:/render-manager"},
                      });

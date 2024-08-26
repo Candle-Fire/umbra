@@ -19,3 +19,6 @@
 [submodule "projs/shadow/extern/vulkan_memory_allocator"]
 	path = projs/shadow/extern/vulkan_memory_allocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "projs/shadow/extern/Vulkan2D"]
+	path = projs/shadow/extern/Vulkan2D
+	url = git@github.com:dpeter99/Vulkan2D.git

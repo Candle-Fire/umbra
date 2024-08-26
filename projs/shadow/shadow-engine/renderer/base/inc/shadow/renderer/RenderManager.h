@@ -1,25 +1,26 @@
 #pragma once
+
 #include <memory>
-#include <string>
 #include <vector>
 #include <shadow/exports.h>
 #include <shadow/core/Module.h>
 
 #include "IRenderer.h"
+#include "shadow/SHObject.h"
 
 namespace SH::Renderer
 {
-    API class RenderManager: public Module
+    API class RenderManager final : public Module
     {
         SHObject_Base(RenderManager)
 
-        std::weak_ptr<IRenderer> mainRenderer;
+        IRenderer* mainRenderer = nullptr;
 
     public:
-        void addRenderer();
+        void registerRenderer();
 
-        void setRenderer();
+        void setRenderer(IRenderer* renderer);
 
-        std::vector<IRenderer*> getRenderers();
+        std::vector<IRenderer&> getRenderers();
     };
 }

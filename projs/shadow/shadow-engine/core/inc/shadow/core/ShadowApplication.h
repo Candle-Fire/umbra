@@ -63,5 +63,7 @@ namespace SH {
         void Init();
 
         void Start();
+
+        void Stop();
     };
 }

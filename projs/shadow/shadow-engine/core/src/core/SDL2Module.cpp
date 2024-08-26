@@ -1,10 +1,12 @@
 #include "shadow/core/SDL2Module.h"
+#include "shadow/SHObject.h"
 #include "shadow/core/ShadowWindow.h"
 #include "shadow/core/module-manager-v2.h"
 #include "spdlog/spdlog.h"
-#include "imgui_impl_sdl2.h"
 
 #include "shadow/core/ShadowApplication.h"
+#include <SDL.h>
+#include <SDL_events.h>
 
 SHObject_Base_Impl(SH::SDL2Module)
 
@@ -20,18 +22,34 @@ void SH::SDL2Module::PreInit() {
     }
 
     window = new ShadowWindow(1280, 720);
-    SDL_SetWindowResizable(window->sdlWindowPtr, SDL_TRUE);
+
     //SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
-void SH::SDL2Module::Init() {
-    SH::ShadowApplication::Get().GetEventBus().subscribe<SH::Events::SDLEvent>([this](auto &&PH1) {
-        SDLEvent(std::forward<decltype(PH1)>(PH1));
-    });
+void SH::SDL2Module::Update(int frame)
+{
+    static SDL_Event event;
+    while (SDL_PollEvent(&event)) {  // poll until all events are handled!
+        if(event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+        {
+            window->UpdateSize();
+        }
+
+
+        Events::SDLEvent e(event);
+        Events::EventDispatcher<Events::SDLEvent>::call(e);
+
+        if (event.type == SDL_QUIT)
+        {
+            ShadowApplication::Get().Stop();
+        }
+    }
 }
 
-void SH::SDL2Module::SDLEvent(SH::Events::SDLEvent &sdl_event) {
-    ImGui_ImplSDL2_ProcessEvent(&sdl_event.event);
+void SH::SDL2Module::Init() {
+    // ShadowApplication::Get().GetEventBus().subscribe<Events::SDLEvent>([this](auto &&PH1) {
+    //     SDLEvent(std::forward<decltype(PH1)>(PH1));
+    // });
 }
 
 void SH::SDL2Module::Destroy() {
