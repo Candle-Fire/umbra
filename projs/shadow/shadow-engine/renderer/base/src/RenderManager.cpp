@@ -10,5 +10,10 @@ void SH::Renderer::RenderManager::setRenderer(IRenderer* renderer)
   this->mainRenderer = renderer;
 }
 
+SH::Renderer::IRenderer* SH::Renderer::RenderManager::getRenderer() const
+{
+  return mainRenderer;
+}
+
 MODULE_ENTRY(SH::Renderer::RenderManager, RenderManager)
 

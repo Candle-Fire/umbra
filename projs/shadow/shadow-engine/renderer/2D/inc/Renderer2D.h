@@ -7,11 +7,12 @@
 
 #include "shadow/SHObject.h"
 #include "shadow/renderer/IRenderer.h"
+#include "shadow/renderer/IImGuiRenderer.h"
 
 namespace SH::Renderer::V2D
 {
 
-    class Renderer2D final : public Module, IRenderer
+    class Renderer2D final : public Module, IRenderer, IImGuiRenderer
     {
         SHObject_Base(Renderer2D)
 
@@ -25,6 +26,8 @@ namespace SH::Renderer::V2D
 
         VK2DCameraIndex windowCam;
         VK2DCameraSpec cam;
+
+        bool ImGuiEnabled = false;
     public:
         Renderer2D();
 
@@ -40,6 +43,16 @@ namespace SH::Renderer::V2D
         void PreInit() override;
         void Init() override;
         void Update(int frame) override;
+
+        // #####
+        // ImGui
+        // #####
+
+        void EnableImGui() override;
+        void FrameStart() override;
+        void FrameEnd() override;
+        ImGuiMode getImGuiMode() override;
+        void setImGuiMode(ImGuiMode mode) override;
     };
 
 }

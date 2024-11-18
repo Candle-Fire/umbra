@@ -54,6 +54,7 @@ namespace SH::Renderer::V2D
     {
         Mgr().IfModuleActive<RenderManager>("module:/render-manager", [this](const std::shared_ptr<RenderManager>& rmg)
         {
+            //TODO: Check if a renderer is already set, maybe here, maybe in the render managger
             rmg->setRenderer(this);
         });
     }
@@ -63,6 +64,7 @@ namespace SH::Renderer::V2D
         platform = Mgr().GetById<SDL2Module>("module:/platform/sdl2");
         if (platform.expired()) {
             Mgr().DeactivateModule(this);
+            //TODO: Add some logging to make the problem more visible
             return;
         }
         auto p = platform.lock();
@@ -88,6 +90,24 @@ namespace SH::Renderer::V2D
 
         cam = {VK2D_CAMERA_TYPE_DEFAULT, 0, 0, p->window->Width * 1.0f, p->window->Height * 1.0f, 1, 0};
         windowCam = vk2dCameraCreate(cam);
+
+        if(this->ImGuiEnabled)
+        {
+            ImGui_ImplVulkan_InitInfo init_info = {};
+            init_info.Instance = vk->getVulkan();
+            init_info.PhysicalDevice = vk->getDevice()->physical;
+            init_info.Device = vk->getDevice()->logical;
+            init_info.QueueFamily = vk->getDevice()->queueData.graphics;
+            init_info.Queue = vk->getDevice()->graphicsQueue;
+            init_info.PipelineCache = VK_NULL_HANDLE;
+            init_info.DescriptorPool = imGuiPool;
+            init_info.Subpass = 1;
+            init_info.MinImageCount = vk->getSwapchain()->images.size();
+            init_info.ImageCount = vk->getSwapchain()->images.size();
+            init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+            init_info.Allocator = VK_NULL_HANDLE;
+            init_info.CheckVkResultFn = nullptr;
+        }
 
         ShadowApplication::Get().GetEventBus().subscribe<WindowResizeEvent>([this](const WindowResizeEvent &PH1) {
             this->setRenderExtent(PH1.Width, PH1.Height);
@@ -120,6 +140,11 @@ namespace SH::Renderer::V2D
         //SH::ShadowApplication::Get().GetEventBus().fire(SH::Renderer::LateRender());
 
         vk2dRendererEndFrame();
+    }
+
+    void Renderer2D::EnableImGui()
+    {
+        this->ImGuiEnabled = true;
     }
 
     void Renderer2D::BeginRenderPass()

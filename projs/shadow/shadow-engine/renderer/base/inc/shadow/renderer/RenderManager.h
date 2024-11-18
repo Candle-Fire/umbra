@@ -20,7 +20,6 @@ namespace SH::Renderer
         void registerRenderer();
 
         void setRenderer(IRenderer* renderer);
-
-        std::vector<IRenderer&> getRenderers();
+        IRenderer* getRenderer() const;
     };
 }
