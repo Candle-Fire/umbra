@@ -26,6 +26,14 @@ extern "C" {
     });
 
     m.AddDescriptors({
+      .id = "module:/imgui",
+      .name = "ImGUI",
+      .class_name = "ImGuiModule",
+      .assembly = "assembly:/core"_id,
+      .dependencies = {"module:/render-manager", "module:/renderer/v2d"}
+    });
+
+    m.AddDescriptors({
                          .id="module:/core",
                          .name = "Core",
                          .class_name = "CoreModule",

@@ -40,7 +40,7 @@ namespace SH::Events {
     static BusMap subscriptions;
   };
 
-  #define Event_Impl(type) template<> EventDispatcherHolder<type>::BusMap EventDispatcherHolder<type>::subscriptions(10);
+  #define Event_Impl(type) template<> SH::Events::EventDispatcherHolder<type>::BusMap SH::Events::EventDispatcherHolder<type>::subscriptions(10);
 
   template<EventType T,
       BusID Bus = SH::Events::MainBus,

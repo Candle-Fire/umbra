@@ -12,7 +12,7 @@
 namespace SH::Renderer::V2D
 {
 
-    class Renderer2D final : public Module, IRenderer, IImGuiRenderer
+    class Renderer2D final : public Module, public IRenderer, public IImGuiRenderer
     {
         SHObject_Base(Renderer2D)
 
@@ -44,13 +44,16 @@ namespace SH::Renderer::V2D
         void Init() override;
         void Update(int frame) override;
 
+
         // #####
         // ImGui
         // #####
 
-        void EnableImGui() override;
-        void FrameStart() override;
-        void FrameEnd() override;
+        ImGuiMode imguiMode = ImGuiMode::Normal;
+
+        void InitImGUI() override;
+        void ImGuiFrameStart() override;
+        void ImGuiFrameEnd() override;
         ImGuiMode getImGuiMode() override;
         void setImGuiMode(ImGuiMode mode) override;
     };

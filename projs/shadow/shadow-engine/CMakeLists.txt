@@ -6,7 +6,8 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_library(shadow-engine SHARED
         renderer/2D/inc/RenderPipeline.h
-        renderer/2D/src/render_graph.cpp)
+        renderer/2D/src/render_graph.cpp
+        renderer/base/inc/shadow/renderer/RendererEvents.h)
 add_library(shadow::engine ALIAS shadow-engine)
 
 add_executable(shadow-engine-tests)

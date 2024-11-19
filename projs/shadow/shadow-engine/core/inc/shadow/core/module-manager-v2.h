@@ -147,7 +147,7 @@ namespace SH {
     void IfModuleActive(const ID &id, const std::function<void(std::shared_ptr<T>)> &callback) {
         if (IsModuleActive(id)) {
             std::weak_ptr<Module> m = GetById<T>(id);
-            if(m.expired())
+            if(!m.expired())
             {
               callback(std::dynamic_pointer_cast<T>(m.lock()));
             }
