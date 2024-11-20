@@ -1,5 +1,6 @@
 #pragma once
 
+#include <R2DRenderTarget.h>
 #include <glm/vec2.hpp>
 #include <shadow/core/Module.h>
 #include <shadow/core/SDL2Module.h>
@@ -21,7 +22,7 @@ namespace SH::Renderer::V2D
         vec4 clearColour;
 
         bool renderingToTexture = false;
-        VK2DTexture render_target = nullptr;
+        R2DTexture* render_target = nullptr;
         glm::ivec2 render_target_size;
 
         VK2DCameraIndex windowCam;
@@ -44,6 +45,7 @@ namespace SH::Renderer::V2D
         void Init() override;
         void Update(int frame) override;
 
+        IRenderTarget& getRenderTarget() const override;
 
         // #####
         // ImGui

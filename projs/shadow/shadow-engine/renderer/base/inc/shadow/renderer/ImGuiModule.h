@@ -18,6 +18,8 @@ public:
     void Init() override;
     void SDLEvent(SH::Events::SDLEvent& e);
     void LateRender(LateRender &e);
+private:
+    void InternalInit() const;
 };
 
 } // Renderer

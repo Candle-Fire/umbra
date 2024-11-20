@@ -37,7 +37,7 @@ namespace SH::Renderer::V2D
     {
         Mgr().IfModuleActive<RenderManager>("module:/render-manager", [this](const std::shared_ptr<RenderManager>& rmg)
         {
-            //TODO: Check if a renderer is already set, maybe here, maybe in the render managger
+            // TODO: Check if a renderer is already set, maybe here, maybe in the render managger
             rmg->setRenderer(this);
         });
     }
@@ -47,7 +47,7 @@ namespace SH::Renderer::V2D
         platform = Mgr().GetById<SDL2Module>("module:/platform/sdl2");
         if (platform.expired()) {
             Mgr().DeactivateModule(this);
-            //TODO: Add some logging to make the problem more visible
+            // TODO: Add some logging to make the problem more visible
             return;
         }
         auto p = platform.lock();
@@ -90,30 +90,35 @@ namespace SH::Renderer::V2D
         vk2dCameraUpdate(windowCam, cam);
         vk2dRendererLockCameras(windowCam);
 
-        //if (renderingToTexture) {
-        //    vk2dRendererSetTarget(render_target);
-        //}
-
-
+        if (renderingToTexture) {
+            vk2dRendererSetTarget(render_target->GetInternalImg());
+        }
 
         vec4 grey = {0.3, 0.3, 0.3, 1};
         vk2dRendererSetColourMod(VK2D_BLACK);
         vk2dRendererDrawRectangle(50, 50, 100, 100, 0, 0, 0);
 
-        //vec4 clear = {1, 0.0, 0.2, 1.0};
-        //vk2dRendererSetBlendMode(VK2D_BLEND_MODE_NONE);
-        //vk2dRendererSetTarget(VK2D_TARGET_SCREEN);
+        vec4 clear = {1, 0.5, 1.0, 1.0};
+        vk2dRendererSetBlendMode(VK2D_BLEND_MODE_BLEND);
+        vk2dRendererSetTarget(VK2D_TARGET_SCREEN);
+        vk2dRendererSetColourMod(clear);
+        vk2dRendererClear();
 
         ShadowApplication::Get().GetEventBus().fire(LateRender());
 
         vk2dRendererEndFrame();
     }
 
+    IRenderTarget& Renderer2D::getRenderTarget() const
+    {
+        return *render_target;
+    }
+
     void Renderer2D::RecreateRenderTargets() {
         if (render_target != nullptr) {
-            vk2dTextureFree(render_target);
+            delete render_target;
         }
-        render_target = vk2dTextureCreate(render_target_size.x, render_target_size.y);
+        render_target = new R2DTexture(render_target_size.x, render_target_size.y);
     }
 
 
@@ -164,6 +169,7 @@ namespace SH::Renderer::V2D
         init_info.Queue = vk2dVulkanGetQueue();
         init_info.PipelineCache = VK_NULL_HANDLE;
         init_info.DescriptorPool = imGuiPool;
+        init_info.RenderPass = vk2dR->renderPass;
         //init_info.Subpass = 1;
         init_info.MinImageCount = vk2dR->swapchainImageCount;
         init_info.ImageCount = vk2dVulkanGetSwapchainImageCount();
@@ -171,11 +177,11 @@ namespace SH::Renderer::V2D
         init_info.Allocator = VK_NULL_HANDLE;
         init_info.CheckVkResultFn = nullptr;
 
-        ImGui_ImplVulkan_Init(&init_info, vk2dR->renderPass);
+        ImGui_ImplVulkan_Init(&init_info);
 
-        auto cmdBuffer = vk2dVulkanGetSingleUseBuffer();
-        ImGui_ImplVulkan_CreateFontsTexture(cmdBuffer);
-        vk2dVulkanSubmitSingleUseBuffer(cmdBuffer);
+        //auto cmdBuffer = vk2dVulkanGetSingleUseBuffer();
+        ImGui_ImplVulkan_CreateFontsTexture();
+        //vk2dVulkanSubmitSingleUseBuffer(cmdBuffer);
 
         spdlog::debug("V2D Renderer ImGUI Init Finished");
     }
@@ -193,10 +199,16 @@ namespace SH::Renderer::V2D
 
     ImGuiMode Renderer2D::getImGuiMode()
     {
+        return imguiMode;
     }
 
     void Renderer2D::setImGuiMode(ImGuiMode mode)
     {
+        imguiMode = mode;
+        if(imguiMode == ImGuiMode::Host)
+        {
+            RenderSceneToTexture();
+        }
     }
 
     void Renderer2D::BeginRenderPass()

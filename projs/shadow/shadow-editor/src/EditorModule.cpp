@@ -13,13 +13,14 @@ namespace SH::Editor {
 
   MODULE_ENTRY(SH::Editor::EditorModule, EditorModule)
 
-  void EditorModule::OverlayRender(SH::Events::OverlayRender &) {
-      static bool dockspaceOpen = true;
+  void EditorModule::OverlayRender(Events::OverlayRender & e)
+  {
+      static bool dockSpaceOpen = true;
 
       ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-      static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+      static ImGuiDockNodeFlags dockSpace_flags = ImGuiDockNodeFlags_None;
 
-      ImGuiViewport *viewport = ImGui::GetMainViewport();
+      ImGuiViewport const *viewport = ImGui::GetMainViewport();
       ImGui::SetNextWindowPos(viewport->Pos);
       ImGui::SetNextWindowSize(viewport->Size);
       ImGui::SetNextWindowViewport(viewport->ID);
@@ -30,17 +31,17 @@ namespace SH::Editor {
       window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-      ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+      ImGui::Begin("DockSpace Demo", &dockSpaceOpen, window_flags);
       ImGui::PopStyleVar(3);
 
       // DockSpace
-      ImGuiIO &io = ImGui::GetIO();
+      ImGuiIO const &io = ImGui::GetIO();
       ImGuiStyle &style = ImGui::GetStyle();
       float minWinSizeX = style.WindowMinSize.x;
       style.WindowMinSize.x = 370.0f;
       if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
           ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-          ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+          ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockSpace_flags);
       }
 
       if (ImGui::BeginMenuBar()) {
@@ -56,11 +57,12 @@ namespace SH::Editor {
       ImGui::End();
   }
 
-  void EditorModule::DrawMenu() {
+  void EditorModule::DrawMenu() const
+  {
 
-      for (const auto &menu : this->menus) {
+      for (const auto& [path, menu] : this->menus) {
           std::vector<std::string> menu_path =
-              SH::Util::Str::explode(menu.first, '/');
+              SH::Util::Str::explode(path, '/');
 
           int depth = 0;
           for (; depth < menu_path.size() - 1; ++depth) {
@@ -70,7 +72,7 @@ namespace SH::Editor {
           }
           if (depth == menu_path.size() - 1)
               if (ImGui::MenuItem(menu_path.back().c_str()))
-                  menu.second.clk();
+                  menu.clk();
 
           for (; depth > 0; depth--) {
               ImGui::EndMenu();
@@ -86,8 +88,8 @@ namespace SH::Editor {
       windows.push_back(std::make_shared<DebugWindows>());
   }
 
-  void EditorModule::RegisterMenu(std::string path, Menu m) {
-      menus.emplace(path, m);
+  void EditorModule::RegisterMenu(std::string const & path, Menu m) {
+      menus.try_emplace(path, m);
   }
 
 }

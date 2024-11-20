@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IRenderTarget.h"
 #include "shadow/util/enum_helpers.h"
 
 namespace SH::Renderer {
@@ -24,7 +25,7 @@ namespace SH::Renderer {
         /***
          * @brief Returns the active render target
          */
-        //virtual R2D::ITexture2D *getRenderTarget() const = 0;
+        virtual IRenderTarget& getRenderTarget() const = 0;
 
         virtual void RenderSceneToTexture() = 0;
 

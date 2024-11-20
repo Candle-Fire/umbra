@@ -5,13 +5,11 @@
 #include "runtime/Runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
-//#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
-//#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
 #include "shadow/platform/console-setup.h"
 
 #define CATCH(x) \
-    try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
+  try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
 
 namespace SH {
 
@@ -20,10 +18,6 @@ namespace SH {
   SHObject_Base_Impl(ShadowApplication)
 
   ShadowApplication *ShadowApplication::instance = nullptr;
-
-  //std::unique_ptr<vlkx::RenderCommand> renderCommands;
-
-  //std::weak_ptr<VulkanModule> renderer;
 
   ShadowApplication::ShadowApplication(int argc, char *argv[]) {
       instance = this;

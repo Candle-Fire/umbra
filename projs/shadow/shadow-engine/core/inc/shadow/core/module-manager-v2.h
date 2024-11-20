@@ -123,7 +123,6 @@ namespace SH {
     std::weak_ptr<T> GetById(const std::string &id) {
         spdlog::trace("Searching for module {0} of type {1}", id, T::Type());
         for (const auto &i : this->modules) {
-            spdlog::trace("T:{0} id:{1}, test: {2}, {3}", T::Type(), id, i.module->GetType(), i.descriptor.id);
             if (i.enabled && i.descriptor.id == id && dynamic_cast<T *>(i.module.get()) != nullptr) {
                 return std::dynamic_pointer_cast<T>(i.module);
             }

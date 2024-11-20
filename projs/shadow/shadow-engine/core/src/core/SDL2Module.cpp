@@ -21,9 +21,7 @@ void SH::SDL2Module::PreInit() {
         //return 1;
     }
 
-    window = new ShadowWindow(1280, 720);
-
-    //SDL_SetRelativeMouseMode(SDL_TRUE);
+    window = new ShadowWindow(1280, 980);
 }
 
 void SH::SDL2Module::Update(int frame)
@@ -47,9 +45,6 @@ void SH::SDL2Module::Update(int frame)
 }
 
 void SH::SDL2Module::Init() {
-    // ShadowApplication::Get().GetEventBus().subscribe<Events::SDLEvent>([this](auto &&PH1) {
-    //     SDLEvent(std::forward<decltype(PH1)>(PH1));
-    // });
 }
 
 void SH::SDL2Module::Destroy() {

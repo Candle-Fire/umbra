@@ -23,11 +23,11 @@ namespace SH::Editor {
   public:
     EditorModule() {}
 
-    void RegisterMenu(std::string path, Menu m);
+    void RegisterMenu(std::string const & path, Menu m);
 
     void OverlayRender(SH::Events::OverlayRender &);
 
-    void DrawMenu();
+    void DrawMenu() const;
 
   private:
     void Init() override;
