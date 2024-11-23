@@ -3,42 +3,21 @@
 //
 #include "ecs.exp.h"
 
-class Position : public Component {
-public:
-  float x;
-  float y;
-  float z;
-};
+struct A {};
+struct B {};
+struct C {};
 
-class Mesh : public Component {
-
-};
-
-class HP : public Component {
-public:
-  int Hp;
-};
-
-class Player : public Entity {
-public:
-  Player(Id UUID) : Entity(UUID) {
-      auto *p = this->AddInternalChild<Position>();
-      p->x = 10;
-      this->AddInternalChild<Mesh>();
-      this->AddInternalChild<HP>();
-  }
-
-};
-
-static_assert(Scene::isEntity == true);
 
 int main() {
+
     EntityManager em;
+    auto& a = em.GetArchetype({
+        GetTypeId<A>().id,
+        GetTypeId<C>(TypeFlags::Flag).id,
+        GetTypeId<B>().id,
+    });
 
-    Scene *scene = em.Add<Scene>();
-    Player *player = em.AddChild<Player>(*scene);
-
-    em.DumpData();
+    PrintArchetype(a);
 
     return 0;
 }

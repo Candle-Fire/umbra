@@ -2,38 +2,28 @@ import gdb.printing
 
 
 class idPrinter:
-    """Print a foo object."""
+    """Print a TypeId object."""
 
     def __init__(self, val):
         self.val = val
 
     def to_string(self):
-        return (str(self.val["id"]) +
-                " | " + str(self.val["half"][0]) + "," + str(self.val["half"][1]))
+        return ("ID: " + str(self.val["id"]) + " Flags: " + str(self.val["flags"]))
 
-
-#        return self.val["id"]
-
-
-#    def children(self):
-#        yield "full", self.val["id"]
-#        yield "half", self.val["half"]
-
-
-class archetypePrinter:
-    """Print a foo object."""
-
+class TypeIdPairPrinter:
     def __init__(self, val):
         self.val = val
 
     def to_string(self):
-        return self.val["id"]
+        id = idPrinter(self.val["first"])
+        return (id.to_string() + " Column: " + "asd")
 
 
 def build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("experiment-ecs")
-    pp.add_printer('id', '^Id$', idPrinter)
-    #    pp.add_printer('archetype', '^Archetype$', archetypePrinter)
+    pp.add_printer('id', '^TypeId$', idPrinter)
+    pp.add_printer('id_pair', '^TypeId, int$', TypeIdPairPrinter)
+
     return pp
 
 

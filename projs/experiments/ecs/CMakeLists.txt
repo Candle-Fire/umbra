@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 add_executable(experiment-ecs)
 add_executable(experiment::ecs ALIAS experiment-ecs)
@@ -16,6 +16,8 @@ target_link_libraries(experiment-ecs
 
 
 FILE(GLOB_RECURSE SOURCES_TESTS
+        src/id_system.cpp
+        src/span_dynamic.cpp
         tests/*.cpp
 )
 
