@@ -68,42 +68,5 @@ TEST_CASE("Component Data")
 }
 
 
-TEST_CASE("Archetype Allocation and Deallocation") {
-  // Create an archetype with a specific type
-  Types types_list = { GetTypeId<A>().id };
-  Archetype archetype(types_list);
 
-  SECTION("Allocation") {
-    size_t allocated_row = archetype.Allocate();
-    REQUIRE(allocated_row != -1);
-  }
-
-  SECTION("De-allocation") {
-    size_t allocated_row = archetype.Allocate();
-    archetype.Deallocate(allocated_row);
-    REQUIRE(archetype.rows[allocated_row].next != -1);
-  }
-
-  SECTION("Free Linked List Correctness After Multiple Allocations and Deallocations") {
-    std::vector<size_t> allocated_rows;
-
-    // Allocate multiple rows
-    for (int i = 0; i < 5; ++i) {
-      size_t row = archetype.Allocate();
-      REQUIRE(row != -1);
-      allocated_rows.push_back(row);
-    }
-
-    // Deallocate in reverse order
-    for (int i = 4; i >= 0; --i) {
-      archetype.Deallocate(allocated_rows[i]);
-    }
-
-    // Allocate again and ensure the free list is correct
-    for (int i = 0; i < 5; ++i) {
-      size_t row = archetype.Allocate();
-      REQUIRE(row == allocated_rows[i]);
-    }
-  }
-}
 

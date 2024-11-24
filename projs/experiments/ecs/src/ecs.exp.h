@@ -153,7 +153,7 @@ public:
 
         assert(dest_column.element_size() == source_column.element_size() && "Element sizes don't match");
 
-        memcpy(dest, src, source_column.element_size());
+        std::memcpy(dest, src, source_column.element_size());
 
         ++source_index;
         ++dest_index;

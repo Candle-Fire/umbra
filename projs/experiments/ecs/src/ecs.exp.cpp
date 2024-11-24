@@ -32,10 +32,11 @@ Archetype::Archetype(const Types& types_list): id(next_id++)
 
   empty = 0;
   size_t next = 1;
-  for (int i = 0; i < PAGE_SIZE; ++i)
+  for (int i = 0; i < PAGE_SIZE-1; ++i)
   {
     rows.push_back({.next = next++});
   }
+  rows.push_back({.next = (size_t)-1});
 }
 
 
