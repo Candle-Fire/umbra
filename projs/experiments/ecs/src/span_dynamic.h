@@ -150,6 +150,12 @@ namespace SH
     {
       return end()--;
     }
+
+    iterator operator[](size_t n) const {
+      return iterator(p_start + n * item_size, item_size);
+    }
+
+    size_t element_size() const { return item_size; }
   };
 
   inline span_dynamic::iterator operator+(span_dynamic::iterator::difference_type n, span_dynamic::iterator i)

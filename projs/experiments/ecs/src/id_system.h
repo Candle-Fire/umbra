@@ -48,7 +48,7 @@ struct __attribute__((packed)) TypeId
 };
 static_assert(sizeof(TypeId) == sizeof(uint64_t));
 
-inline int operator<(const TypeId& lhs, const TypeId& rhs){ return lhs.id - rhs.id; }
+inline int operator<(const TypeId& lhs, const TypeId& rhs){ return rhs.id > lhs.id; }
 inline bool operator==(const TypeId& lhs, const TypeId& rhs) { return lhs.id == rhs.id; }
 
 template <>
@@ -65,7 +65,6 @@ struct TypeInfo
   std::string name;
   size_t size;
 };
-
 
 
 

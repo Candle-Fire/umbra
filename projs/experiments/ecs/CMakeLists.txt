@@ -18,6 +18,7 @@ target_link_libraries(experiment-ecs
 FILE(GLOB_RECURSE SOURCES_TESTS
         src/id_system.cpp
         src/span_dynamic.cpp
+        src/ecs.exp.cpp
         tests/*.cpp
 )
 

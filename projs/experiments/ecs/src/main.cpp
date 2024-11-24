@@ -3,21 +3,31 @@
 //
 #include "ecs.exp.h"
 
-struct A {};
-struct B {};
-struct C {};
+struct A : Entity
+{
+  char sentinel[9] = "Entity A";
+};
+
+struct Position : Component
+{
+  int x, y, z = 0;
+};
+struct C : Component {};
 
 
 int main() {
 
-    EntityManager em;
-    auto& a = em.GetArchetype({
-        GetTypeId<A>().id,
-        GetTypeId<C>(TypeFlags::Flag).id,
-        GetTypeId<B>().id,
-    });
+  EntityManager em;
 
-    PrintArchetype(a);
+  auto a = em.AddEntity();
 
-    return 0;
+  auto b = em.AddEntity();
+  b.AddComponent<Position>({.x = 10, .y = 20, .z = 30});
+
+
+
+
+  PrintEM(em);
+
+  return 0;
 }

@@ -1,58 +1,43 @@
-//
-// Created by dpeter99 on 22/11/24.
-//
 #include "ecs.exp.h"
 
 #include <iostream>
+#include "lib/rang.hpp"
 
 Archetype::Id Archetype::next_id = 0;
 
 Types sortTypes(Types t)
 {
-  std::ranges::sort(t, [](auto a, auto b) { return a.id < b.id; });
+  std::ranges::sort(t, [](auto a, auto b) { return a < b; });
   return t;
 }
 
 Archetype::Archetype(const Types& types_list): id(next_id++)
 {
   size_t next_c          = 0;
-  const auto sortedTypes = sortTypes(types_list);
-  std::ranges::for_each(sortedTypes, [&](const TypeId& type)
+  types = sortTypes(types_list);
+  std::ranges::for_each(types, [&](const TypeId& type)
   {
     if(test(type.flags, TypeFlags::Flag))
     {
-      this->types.insert({type, -1});
+      this->column_map.insert({type, -1});
     }
     else
     {
-      this->types.insert({type, next_c++});
-      TypeInfo into = GetTypeInfoById(type);
-      void* page    = malloc(into.size * 1024);
-      this->columns.push_back({page, into.size, 1024});
+      this->column_map.insert({type, next_c++});
+      const TypeInfo& info = GetTypeInfoById(type);
+      void* page    = malloc(info.size * PAGE_SIZE);
+      this->columns.push_back({page, info.size, PAGE_SIZE});
     }
   });
-}
 
-void PrintArchetype(const Archetype& a)
-{
-  std::cout << "Architype ID: " << a.id << std::endl;
-  std::cout << "Types:" << std::endl;
-  for (const auto& [type, column] : a.types)
+  empty = 0;
+  size_t next = 1;
+  for (int i = 0; i < PAGE_SIZE; ++i)
   {
-    std::cout << "\t"
-      << "Type: " << GetTypeNameByID(type) << " (" << type.id << ")"
-      <<" Column: " << column;
-    if(column >= 0)
-    {
-      std::cout << " Page: " << a.columns[column].begin().ptr();
-    }
-
-
-
-    std::cout << std::endl;
+    rows.push_back({.next = next++});
   }
-
 }
+
 
 
 
@@ -66,4 +51,63 @@ Archetype& EntityManager::GetArchetype(const Types& types)
   Archetype a(types);
   const auto res = archetypes.emplace(types, Archetype{types});
   return res.first->second;
+}
+
+
+
+
+void PrintArchetype(const Archetype& a)
+{
+  std::cout << "# Archetype ID: " << a.id << std::endl;
+  std::cout << "  Types:" << std::endl;
+  for (const auto& [type, column] : a.column_map)
+  {
+    std::cout << "  \t"
+      << "Type: " << GetTypeNameByID(type) << " (" << type.id << ")"
+      <<" Column: " << column;
+    if(column >= 0)
+    {
+      std::cout << " Page: " << a.columns[column].begin().ptr();
+    }
+
+    std::cout << std::endl;
+  }
+
+  for (int i = 0; i < a.rows.size(); ++i)
+  {
+    if(a.rows[i].next == -1)
+    {
+      std::cout << rang::fg::green << "█" << rang::style::reset;
+    }
+    else
+    {
+      std::cout << rang::fg::gray << "█" << rang::style::reset;
+    }
+    if((i+1) % (PAGE_SIZE/4) == 0)
+    {
+      std::cout << std::endl;
+    }
+  }
+  std::cout << std::endl;
+
+}
+
+void PrintEM(EntityManager& em)
+{
+  std::cout << "Entity Manager" << std::endl;
+
+  for (auto archetype : em.archetypes)
+  {
+    PrintArchetype(archetype.second);
+  }
+
+  std::cout << "----------------" << std::endl;
+  std::cout << "\tEntities: " << std::endl;
+
+  for (const auto& [id, record] : em.entities)
+  {
+    std::cout << "Entity: " << id
+              << " Arch: " << record.archetype->id
+              << " Row: " << record.row << std::endl;
+  }
 }
