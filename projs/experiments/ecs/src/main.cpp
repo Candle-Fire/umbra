@@ -8,11 +8,25 @@ struct A : Entity
   char sentinel[9] = "Entity A";
 };
 
-struct Position : Component
+struct Position final : Component
 {
   int x, y, z = 0;
+  Position(const int& x, const int& y, const int& z) : x(x), y(y), z(z) {}
+
+  void Print() const override
+  {
+    printf("Position (%d, %d, %d)\n", x, y, z);
+  }
 };
-struct C : Component {};
+struct Name final : Component
+{
+  char sentinel[5] = "Name";
+
+  void Print() const override
+  {
+    printf("Name: %s\n", sentinel);
+  }
+};
 
 
 int main() {
@@ -22,10 +36,9 @@ int main() {
   auto a = em.AddEntity();
 
   auto b = em.AddEntity();
-  b.AddComponent<Position>({.x = 10, .y = 20, .z = 30});
-
-
-
+  b.AddComponent<Position>({ 10, 20, 30})
+    .AddComponent<Name>({})
+    .RemoveComponent<Position>();
 
   PrintEM(em);
 

@@ -30,13 +30,13 @@ Archetype::Archetype(const Types& types_list): id(next_id++)
     }
   });
 
-  empty = 0;
+  next_free = 0;
   size_t next = 1;
   for (int i = 0; i < PAGE_SIZE-1; ++i)
   {
     rows.push_back({.next = next++});
   }
-  rows.push_back({.next = (size_t)-1});
+  rows.push_back({.next = (size_t)-1, .in_use = false});
 }
 
 
@@ -76,7 +76,7 @@ void PrintArchetype(const Archetype& a)
 
   for (int i = 0; i < a.rows.size(); ++i)
   {
-    if(a.rows[i].next == -1)
+    if(a.rows[i].in_use)
     {
       std::cout << rang::fg::green << "█" << rang::style::reset;
     }
@@ -110,5 +110,19 @@ void PrintEM(EntityManager& em)
     std::cout << "Entity: " << id
               << " Arch: " << record.archetype->id
               << " Row: " << record.row << std::endl;
+
+
+    for (auto map : record.archetype->column_map)
+    {
+      if(map.second >= 0)
+      {
+        std::cout << "\t";
+        const auto& comp = record.archetype->columns[map.second][record.row].as<Component>();
+        comp.Print();
+      }
+    }
+
+
+    std::cout << std::endl;
   }
 }

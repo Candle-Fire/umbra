@@ -44,7 +44,9 @@ class Entity
 
 class Component
 {
-
+public:
+  virtual ~Component() = default;
+  virtual void Print() const = 0;
 };
 
 // ####################################################
@@ -74,6 +76,7 @@ struct RowMeta
 {
   // EntityId id;
   size_t next;
+  bool in_use;
 };
 
 constexpr size_t PAGE_SIZE = 2*2*2*2*2*2;
@@ -92,7 +95,7 @@ public:
   ColumnMap column_map;
 
 
-  int empty;
+  int next_free;
   std::vector<RowMeta> rows;
   std::vector<SH::span_dynamic> columns;
 
@@ -113,13 +116,14 @@ public:
   */
   size_t Allocate()
   {
-    if(empty == -1)
+    if(next_free == -1)
     {
       return -1;
     }
-    auto row = empty;
-    empty = rows[row].next;
+    auto row = next_free;
+    next_free = rows[row].next;
     rows[row].next = -1;
+    rows[row].in_use = true;
     return row;
   }
 
@@ -127,8 +131,9 @@ public:
   void Deallocate(size_t row)
   {
     assert(row < rows.size() && "Invalid row index");
-    rows[row].next = empty;
-    empty = row;
+    rows[row].next = next_free;
+    rows[row].in_use = false;
+    next_free = row;
   }
 
   void CopyFrom(const Archetype &source, const size_t src_row, const size_t target_row) const
@@ -178,15 +183,15 @@ struct EntityRef
   EntityManager *em;
   EntityId id;
 
-  EntityRef(EntityManager *em, const EntityId& id) : em(em), id(id) {}
+  EntityRef(EntityManager *em, const EntityId &id) : em(em), id(id) {}
 
   template <typename T>
-  EntityRef& AddComponent(T&& val)
-  {
-    em->AddComponent(id, std::forward<T>(val));
-    return *this;
-  }
+  EntityRef &AddComponent(T &&val);
+
+  template <typename T>
+  EntityRef &RemoveComponent();
 };
+
 
 template <class T>
 struct EntityRefTyped : EntityRef
@@ -227,10 +232,10 @@ public:
     size_t row;
   };
 
-  EntityCreationResult CreateEntity(Types type_id)
+  EntityCreationResult CreateEntity(const Types &type_id)
   {
-    auto &a = GetArchetype(type_id);
-    auto row = a.Allocate();
+    auto &a        = GetArchetype(type_id);
+    const auto row = a.Allocate();
 
     EntityId id = GetEntityId();
 
@@ -276,10 +281,50 @@ public:
     archetype.CopyFrom(*record.archetype, record.row, target_row);
     record.archetype->Deallocate(record.row);
 
+    T* ptr = archetype.GetColumn(type_id)[target_row].as_ptr<T>();
+    new(ptr)T(value);
+
+    record.row = target_row;
+    record.archetype = &archetype;
+  }
+
+  template <class T>
+  void RemoveComponent(EntityId entity_id)
+  {
+    const TypeId type_id = GetTypeId<T>().id;
+    auto& record = entities[entity_id];
+
+    Types new_types = record.archetype->types;
+    std::erase(new_types, type_id);
+    new_types = sortTypes(new_types);
+
+    auto &archetype       = GetArchetype(new_types);
+    const auto target_row = archetype.Allocate();
+
+    archetype.CopyFrom(*record.archetype, record.row, target_row);
+
+    record.archetype->Deallocate(record.row);
+
     record.row = target_row;
     record.archetype = &archetype;
   }
 };
+
+
+
+template <typename T>
+EntityRef &EntityRef::AddComponent(T &&val)
+{
+  em->AddComponent(id, std::forward<T>(val));
+  return *this;
+}
+template <typename T>
+EntityRef &EntityRef::RemoveComponent()
+{
+  em->RemoveComponent<T>(id);
+  return *this;
+}
+
 
 
 void PrintArchetype(const Archetype &a);
