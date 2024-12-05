@@ -3,19 +3,29 @@
 #include <iostream>
 #include "lib/rang.hpp"
 
-Archetype::Id Archetype::next_id = 0;
 
+std::size_t std::hash<NodeType>::operator()(const NodeType& s) const noexcept
+{
+  return std::hash<uint64_t>{}(s.typeId);
+}
 Types sortTypes(Types t)
 {
   std::ranges::sort(t, [](auto a, auto b) { return a < b; });
   return t;
 }
 
-Archetype::Archetype(const Types& types_list): id(next_id++)
+Archetype::Id Archetype::next_id = 0;
+
+Archetype::Id GetNextId()
 {
-  size_t next_c          = 0;
+  return Archetype::next_id++;
+}
+
+Archetype::Archetype(const Types& types_list): id(GetNextId())
+{
+  size_t next_c = 0;
   types = sortTypes(types_list);
-  std::ranges::for_each(types, [&](const TypeId& type)
+  std::ranges::for_each(types, [&](const NodeType& type)
   {
     if(test(type.flags, TypeFlags::Flag))
     {
@@ -24,7 +34,7 @@ Archetype::Archetype(const Types& types_list): id(next_id++)
     else
     {
       this->column_map.insert({type, next_c++});
-      const TypeInfo& info = GetTypeInfoById(type);
+      const TypeInfo& info = GetTypeInfoById(type.typeId);
       void* page    = malloc(info.size * PAGE_SIZE);
       this->columns.push_back({page, info.size, PAGE_SIZE});
     }
@@ -42,20 +52,62 @@ Archetype::Archetype(const Types& types_list): id(next_id++)
 
 
 
-Archetype& EntityManager::GetArchetype(const Types& types)
+Archetype &EntityManager::GetArchetype(const Types &types)
 {
-  if(archetypes.contains(types))
+  if (archetypes.contains(types))
   {
     return archetypes.at(types);
   }
 
   Archetype a(types);
-  const auto res = archetypes.emplace(types, Archetype{types});
+  const auto res = archetypes.try_emplace(types, types);
   return res.first->second;
 }
 
+EntityManager::EntityCreationResult EntityManager::CreateEntity(const Types &type_id)
+{
+  auto &a        = GetArchetype(type_id);
+  const auto row = a.Allocate();
+
+  EntityId id = GetEntityId();
+
+  auto [fst, snd] = entities.emplace(id, EntityRecord{&a, row});
+  return {
+    .id        = id,
+    .archetype = &a,
+    .row       = row,
+  };
+}
+
+void EntityManager::MoveEntity(const EntityId &id, const Types &types, EntityCreationResult &result)
+{
+  auto &record = entities[id];
+
+  auto &archetype       = GetArchetype(types);
+  const auto target_row = archetype.Allocate();
+
+  archetype.CopyFrom(*record.archetype, record.row, target_row);
+
+  record.archetype->Deallocate(record.row);
+
+  record.row       = target_row;
+  record.archetype = &archetype;
+
+  result.id        = id;
+  result.archetype = &archetype;
+  result.row       = record.row;
+}
+
+EntityRef EntityManager::AddEntity()
+{
+  auto [id, a, row] = CreateEntity({});
+  return {this, id};
+}
 
 
+// ###################################
+// Print Helpers
+//###################################
 
 void PrintArchetype(const Archetype& a)
 {
@@ -64,7 +116,7 @@ void PrintArchetype(const Archetype& a)
   for (const auto& [type, column] : a.column_map)
   {
     std::cout << "  \t"
-      << "Type: " << GetTypeNameByID(type) << " (" << type.id << ")"
+      << "Type: " << GetTypeNameByID(type.typeId) << " (" << type.typeId << ")"
       <<" Column: " << column;
     if(column >= 0)
     {
@@ -117,11 +169,19 @@ void PrintEM(EntityManager& em)
       if(map.second >= 0)
       {
         std::cout << "\t";
-        const auto& comp = record.archetype->columns[map.second][record.row].as<Component>();
+        const auto& comp = record.archetype->columns[map.second][record.row].as<Component<>>();
         comp.Print();
       }
+      else
+      {
+        std::cout << "\t";
+        std::cout << GetTypeNameByID(map.first.typeId);
+        if (test(map.first.flags, TypeFlags::Relation))
+        {
+          std::cout << " -> " << map.first.entity;
+        }
+      }
     }
-
 
     std::cout << std::endl;
   }

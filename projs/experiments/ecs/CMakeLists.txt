@@ -26,5 +26,8 @@ add_executable(experiment-ecs-tests)
 target_link_libraries(experiment-ecs-tests
         Catch2::Catch2
 )
+target_compile_options(experiment-ecs-tests
+    PUBLIC -fconcepts-diagnostics-depth=4
+)
 target_sources(experiment-ecs-tests PUBLIC ${SOURCES_TESTS})
 target_include_directories(experiment-ecs-tests PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)

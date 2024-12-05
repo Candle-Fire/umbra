@@ -8,7 +8,7 @@ struct A : Entity
   char sentinel[9] = "Entity A";
 };
 
-struct Position final : Component
+struct Position final : Component<>
 {
   int x, y, z = 0;
   Position(const int& x, const int& y, const int& z) : x(x), y(y), z(z) {}
@@ -18,7 +18,7 @@ struct Position final : Component
     printf("Position (%d, %d, %d)\n", x, y, z);
   }
 };
-struct Name final : Component
+struct Name final : Component<>
 {
   char sentinel[5] = "Name";
 
@@ -28,7 +28,6 @@ struct Name final : Component
   }
 };
 
-
 int main() {
 
   EntityManager em;
@@ -36,9 +35,12 @@ int main() {
   auto a = em.AddEntity();
 
   auto b = em.AddEntity();
-  b.AddComponent<Position>({ 10, 20, 30})
-    .AddComponent<Name>({})
-    .RemoveComponent<Position>();
+  b.AddComponent<Position>({ 10, 22, 32})
+    .AddComponent<Name>({});
+
+  b.GetComponent<Position>().x = 100;
+
+  em.AddRelation<ChildOf>(b.id,a.id);
 
   PrintEM(em);
 

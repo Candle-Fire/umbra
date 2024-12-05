@@ -2,12 +2,7 @@
 
 std::unordered_map<std::string, TypeInfo> typeMap;
 
-TypeId next_id({.id = 1});
-
-std::size_t std::hash<TypeId>::operator()(const TypeId& s) const noexcept
-{
-  return std::hash<uint64_t>{}(s.id);
-}
+uint32_t next_id = 1;
 
 TypeInfo GetTypeInfoById(const TypeId& id)
 {
@@ -23,9 +18,4 @@ std::string GetTypeNameByID(TypeId id)
   {
     return i.second.id == id;
   })->first;
-}
-
-void __jumpTypeID(uint32_t n)
-{
-  next_id.id += n;
 }

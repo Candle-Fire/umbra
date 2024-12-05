@@ -1,29 +1,140 @@
+#pragma once
+
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <list>
+#include <map>
 #include <numeric>
 #include <ranges>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <map>
 
 #include "span_dynamic.h"
 
 #include "id_system.h"
 
-#include <cstring>
+#define __OUT__
+
+/**
+* This file contains the Entity System
+* The game world is built up from nodes
+* Each Node has type
+* There are N types of nodes
+* - Entites
+* - Components
+* - Flags
+* - Connections
+*/
+
+
+
+using EntityId = uint32_t;
+
+
+/**
+* Flag enum used to specify ECS node properties
+* it is a 4 bit field the est of the uint8 should not be used as it will be cut of
+*/
+enum class TypeFlags : std::uint8_t {
+  None     = 0,
+  Flag     = 1 << 1,
+  Relation = 1 << 2,
+  Unused   = 1 << 3,
+  Unused2  = 1 << 4,
+
+  SimpleRelation = Flag | Relation,
+};
+
+inline TypeFlags operator|(TypeFlags lhs, TypeFlags rhs) {
+  return static_cast<TypeFlags>(
+      static_cast<std::underlying_type_t<TypeFlags>>(lhs) |
+      static_cast<std::underlying_type_t<TypeFlags>>(rhs)
+  );
+}
+inline TypeFlags operator&(const TypeFlags& lhs, const TypeFlags& rhs)
+{
+  return static_cast<TypeFlags>(
+      static_cast<std::underlying_type_t<TypeFlags>>(lhs) &
+      static_cast<std::underlying_type_t<TypeFlags>>(rhs)
+  );
+}
+
+inline bool test(const TypeFlags& lhs, const TypeFlags& rhs)
+{
+  return static_cast<std::underlying_type_t<TypeFlags>>(lhs & rhs);
+}
+
+template <typename T>
+concept HasTypeFlags = requires
+{
+  T::Flags;
+  std::is_same_v<TypeFlags, decltype(T::Flags)>;
+};
+
+/**
+* Type id used by the Entity system to identify the type of the node
+* A node can be either :
+* - Simple data
+* - A connection type
+*/
+struct __attribute__((packed)) NodeType
+{
+  TypeId typeId   : 28;
+  TypeFlags flags : 4;
+  uint32_t entity;
+};
+static_assert(sizeof(NodeType) == sizeof(uint64_t));
+
+inline int operator<(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId > lhs.typeId; }
+inline bool operator==(const NodeType& lhs, const NodeType& rhs) { return lhs.typeId == rhs.typeId; }
+
+template <>
+struct std::hash<NodeType>
+{
+  std::size_t operator()(const NodeType& s) const noexcept;
+};
+
+template <HasTypeFlags T>
+NodeType GetNodeType()
+{
+  const auto id = GetTypeId<T>().id;
+  const TypeFlags flags = T::Flags;
+  const NodeType node = {
+    .typeId = id,
+    .flags = flags,
+    .entity = 0,
+  };
+  return node;
+}
+
+template <HasTypeFlags T>
+NodeType GetRelationType(const EntityId& other)
+{
+  const auto id = GetTypeId<T>().id;
+  const TypeFlags flags = T::Flags;
+  const NodeType node = {
+    .typeId = id,
+    .flags = flags,
+    .entity = other,
+  };
+  return node;
+}
+
+
+
 
 /*
- * Archetype : T1 (T2, T3, T4)
+ * Archetype : T1, (T2, T3, T4)
  * | self (T1)  | comp 1 (T2) | comp 2 (T3) | comp 3 (T4) |
  * | T1: 1      | T2: 1       | T3: 1       | T4: 1       |
  * | T1: 2      | T2: 2       | T3: 2       | T4: 2       |
  * | T1: 3      | T2: 3       | T3: 3       | T4: 3       |
  *
- * Archetype : (T1, T2, T3)
+ * Archetype : T1, (T2, T3)
  * | self (T1)  | comp 1 (T2) | comp 2 (T3) |
  * | T1: 4      | T2: 4       | T3: 4       |
  * | T1: 5      | T2: 5       | T3: 5       |
@@ -35,27 +146,54 @@
 // ################## Entity base classes #############
 // ####################################################
 
-using EntityId = uint32_t;
+template <TypeFlags F = TypeFlags::None>
+class Component
+{
+public:
+  static constexpr TypeFlags Flags = F;
 
-class Entity
+  virtual ~Component() = default;
+  virtual void Print() const = 0;
+};
+
+class Entity : Component<>
 {
 
 };
 
-class Component
+
+struct ChildOf final : Component<TypeFlags::SimpleRelation>
 {
-public:
-  virtual ~Component() = default;
-  virtual void Print() const = 0;
+  void Print() const override
+  {
+    printf("ChildOf");
+  }
 };
 
 // ####################################################
 // ################### Archetype ######################
 // ####################################################
 
-using Types = std::vector<TypeId>;
+// TODO: Find a better sorted storage for types
+using Types = std::vector<NodeType>;
 
 Types sortTypes(Types t);
+
+inline Types addType(const Types &t, const NodeType id)
+{
+  Types new_types = t;
+  new_types.push_back(id);
+  new_types = sortTypes(new_types);
+  return new_types;
+}
+
+inline Types removeType(const Types &t, const NodeType id)
+{
+  Types new_types = t;
+  std::erase(new_types, id);
+  new_types = sortTypes(new_types);
+  return new_types;
+}
 
 template <>
 struct std::hash<Types>
@@ -65,16 +203,16 @@ struct std::hash<Types>
     std::size_t seed = vec.size();
     for (auto &i : vec)
     {
-      seed ^= i.id + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      seed ^= i.typeId + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     return seed;
   }
 };
 
 
+
 struct RowMeta
 {
-  // EntityId id;
   size_t next;
   bool in_use;
 };
@@ -87,7 +225,7 @@ public:
   using Id = uint32_t;
   static Id next_id;
 
-  using ColumnMap = std::map<TypeId, int>;
+  using ColumnMap = std::map<NodeType, int>;
 
 
   Id id;
@@ -102,11 +240,11 @@ public:
 
   Archetype() = default;
 
-  Archetype(const std::initializer_list<TypeId> types_list) : Archetype(std::vector(types_list)) {}
+  Archetype(const std::initializer_list<NodeType> types_list) : Archetype(std::vector(types_list)) {}
 
   explicit Archetype(const Types &types_list);
 
-  SH::span_dynamic& GetColumn(TypeId id)
+  SH::span_dynamic& GetColumn(NodeType id)
   {
     return  columns[column_map.at(id)];
   }
@@ -190,6 +328,9 @@ struct EntityRef
 
   template <typename T>
   EntityRef &RemoveComponent();
+
+  template <typename T>
+  T& GetComponent();
 };
 
 
@@ -232,31 +373,16 @@ public:
     size_t row;
   };
 
-  EntityCreationResult CreateEntity(const Types &type_id)
-  {
-    auto &a        = GetArchetype(type_id);
-    const auto row = a.Allocate();
+  EntityCreationResult CreateEntity(const Types &type_id);
 
-    EntityId id = GetEntityId();
+  void MoveEntity(const EntityId &id, const Types &types, __OUT__ EntityCreationResult &result);
 
-    auto [fst, snd] = entities.emplace(id, EntityRecord{&a, row});
-    return {
-      .id = id,
-      .archetype = &a,
-      .row = row,
-    };
-  }
-
-  EntityRef AddEntity()
-  {
-    auto [id, a, row] = CreateEntity({});
-    return {this, id};
-  }
+  EntityRef AddEntity();
 
   template <class T>
   EntityRefTyped<T> AddEntity()
   {
-    TypeId type_id = GetTypeId<T>().id;
+    NodeType type_id = GetTypeId<T>().id;
     auto [id, a, row] = CreateEntity({type_id});
 
     T* ptr = a->GetColumn(type_id)[row].as_ptr<T>();
@@ -268,46 +394,41 @@ public:
   template <class T>
   void AddComponent(EntityId entity_id, T&& value)
   {
-    const TypeId type_id = GetTypeId<T>().id;
-
+    const NodeType type_id = GetNodeType<T>();
     auto& record = entities[entity_id];
-    Types new_types = record.archetype->types;
-    new_types.push_back(type_id);
-    new_types = sortTypes(new_types);
 
-    auto &archetype       = GetArchetype(new_types);
-    const auto target_row = archetype.Allocate();
+    Types new_types = addType(record.archetype->types, type_id);
 
-    archetype.CopyFrom(*record.archetype, record.row, target_row);
-    record.archetype->Deallocate(record.row);
+    EntityCreationResult res;
+    MoveEntity(entity_id, new_types, res);
 
-    T* ptr = archetype.GetColumn(type_id)[target_row].as_ptr<T>();
+    T* ptr = res.archetype->GetColumn(type_id)[res.row].as_ptr<T>();
     new(ptr)T(value);
-
-    record.row = target_row;
-    record.archetype = &archetype;
   }
 
   template <class T>
   void RemoveComponent(EntityId entity_id)
   {
-    const TypeId type_id = GetTypeId<T>().id;
+    const NodeType type_id = GetTypeId<T>().id;
     auto& record = entities[entity_id];
 
-    Types new_types = record.archetype->types;
-    std::erase(new_types, type_id);
-    new_types = sortTypes(new_types);
+    Types new_types = removeType(record.archetype->types, type_id);
 
-    auto &archetype       = GetArchetype(new_types);
-    const auto target_row = archetype.Allocate();
-
-    archetype.CopyFrom(*record.archetype, record.row, target_row);
-
-    record.archetype->Deallocate(record.row);
-
-    record.row = target_row;
-    record.archetype = &archetype;
+    EntityCreationResult res;
+    MoveEntity(entity_id, new_types, res);
   }
+
+  template <class T>
+  void AddRelation(EntityId entity_id, EntityId other)
+  {
+    const NodeType type_id = GetRelationType<T>(other);
+    auto& record = entities[entity_id];
+    Types new_types = addType(record.archetype->types, type_id);
+
+    EntityCreationResult res;
+    MoveEntity(entity_id, new_types, res);
+  }
+
 };
 
 
@@ -324,7 +445,13 @@ EntityRef &EntityRef::RemoveComponent()
   em->RemoveComponent<T>(id);
   return *this;
 }
-
+template <typename T>
+T& EntityRef::GetComponent()
+{
+  const auto& record = em->entities.at(id);
+  const auto& column = record.archetype->GetColumn(GetNodeType<T>());
+  return column[record.row].template as<T>();
+}
 
 
 void PrintArchetype(const Archetype &a);

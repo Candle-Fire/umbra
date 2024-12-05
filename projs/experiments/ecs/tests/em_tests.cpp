@@ -1,17 +1,33 @@
 #include "./ecs.exp.h"
 #include "catch2/catch.hpp"
 
-struct A {};
-struct Position {};
-struct C {};
+struct A : Component<>
+{
+  int a;
+  float b;
+  void Print() const override {};
+};
+struct B : Component<>
+{
+  void Print() const override {}
+};
+struct C : Component<>
+{
+  void Print() const override {}
+};
+struct Position : Component<>
+{
+  float x, y, z;
+  void Print() const override { printf("Pos: \n"); }
+};
 
 TEST_CASE("EM archetype storage") {
   SECTION("Gives the correct Archetype") {
     EntityManager em;
     auto& a = em.GetArchetype({
-        GetTypeId<A>().id,
-        GetTypeId<C>(TypeFlags::Flag).id,
-        GetTypeId<Position>().id,
+        GetNodeType<A>(),
+        GetNodeType<C>(),
+        GetNodeType<Position>(),
     });
 
     REQUIRE(a.id > 0);
@@ -20,15 +36,15 @@ TEST_CASE("EM archetype storage") {
   SECTION("Gives the same Archetype") {
     EntityManager em;
     auto& a = em.GetArchetype({
-        GetTypeId<A>().id,
-        GetTypeId<C>(TypeFlags::Flag).id,
-        GetTypeId<Position>().id,
+        GetNodeType<A>(),
+        GetNodeType<C>(),
+        GetNodeType<Position>(),
     });
 
     auto& b = em.GetArchetype({
-        GetTypeId<A>().id,
-        GetTypeId<C>(TypeFlags::Flag).id,
-        GetTypeId<Position>().id,
+        GetNodeType<A>(),
+        GetNodeType<C>(),
+        GetNodeType<Position>(),
     });
 
     REQUIRE(a.id == b.id);
@@ -39,9 +55,9 @@ TEST_CASE("EM archetype storage") {
   {
     EntityManager em;
     auto& a = em.GetArchetype({
-        GetTypeId<A>().id,
-        GetTypeId<C>(TypeFlags::Flag).id,
-        GetTypeId<Position>().id,
+        GetNodeType<A>(),
+        GetNodeType<C>(),
+        GetNodeType<Position>(),
     });
 
     for (auto [types, arch] : em.archetypes)
