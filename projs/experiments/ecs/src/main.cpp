@@ -29,20 +29,23 @@ struct Name final : Component<>
 };
 
 int main() {
-
   EntityManager em;
+  const auto a = em.AddEntity();
 
-  auto a = em.AddEntity();
-
-  auto b = em.AddEntity();
-  b.AddComponent<Position>({ 10, 22, 32})
-    .AddComponent<Name>({});
-
-  b.GetComponent<Position>().x = 100;
-
-  em.AddRelation<ChildOf>(b.id,a.id);
+  for (int i = 0; i < 10; ++i)
+  {
+    auto b = em.AddEntity();
+    b.AddComponent<Position>({ i, 22, 32})
+      .AddComponent<Name>({})
+      .AddRelation<ChildOf>(a);
+  }
 
   PrintEM(em);
+
+  auto s = System<Position>([](Position& position)
+  {
+    position.z += 10;
+  });
 
   return 0;
 }

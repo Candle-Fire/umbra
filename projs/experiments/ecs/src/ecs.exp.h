@@ -89,8 +89,12 @@ struct __attribute__((packed)) NodeType
 };
 static_assert(sizeof(NodeType) == sizeof(uint64_t));
 
-inline int operator<(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId > lhs.typeId; }
+inline int operator<(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId < lhs.typeId; }
+inline int operator<=(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId <= lhs.typeId; }
+inline int operator>(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId > lhs.typeId; }
+inline int operator>=(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId >= lhs.typeId; }
 inline bool operator==(const NodeType& lhs, const NodeType& rhs) { return lhs.typeId == rhs.typeId; }
+inline bool operator!=(const NodeType& lhs, const NodeType& rhs) { return lhs.typeId != rhs.typeId; }
 
 template <>
 struct std::hash<NodeType>
@@ -327,6 +331,9 @@ struct EntityRef
   EntityRef &AddComponent(T &&val);
 
   template <typename T>
+  EntityRef &AddRelation(const EntityRef& other);
+
+  template <typename T>
   EntityRef &RemoveComponent();
 
   template <typename T>
@@ -431,12 +438,16 @@ public:
 
 };
 
-
-
 template <typename T>
 EntityRef &EntityRef::AddComponent(T &&val)
 {
   em->AddComponent(id, std::forward<T>(val));
+  return *this;
+}
+template <typename T>
+EntityRef &EntityRef::AddRelation(const EntityRef& other)
+{
+  em->AddRelation<T>(id, other.id);
   return *this;
 }
 template <typename T>
@@ -452,6 +463,60 @@ T& EntityRef::GetComponent()
   const auto& column = record.archetype->GetColumn(GetNodeType<T>());
   return column[record.row].template as<T>();
 }
+
+
+class ISystem
+{
+public:
+  virtual ~ISystem() = default;
+  virtual  void Run(EntityManager& em) = 0;
+};
+
+template<class... T>
+class System : public ISystem{
+public:
+  Types query;
+  std::function<void(T&...)> action;
+
+  explicit System(const std::function<void(T &...)> &action) : action(action) { query = {GetNodeType<T>()...}; }
+
+  ~System() override;
+
+
+  void Run(EntityManager &em) override
+  {
+    for (auto archetype : em.archetypes)
+    {
+      if (std::ranges::includes(archetype.second.types, query))
+      {
+        std::vector<>
+      }
+    }
+  }
+};
+
+class SystemManager
+{
+  std::vector<ISystem> systems;
+
+  EntityManager& em;
+
+public:
+  explicit SystemManager(EntityManager &em) : em(em) {}
+
+  void addSystem(ISystem& system)
+  {
+    systems.push_back(system);
+  }
+
+  void runAllSystems()
+  {
+    for (ISystem &system : systems)
+    {
+      system.Run(em);
+    }
+  }
+};
 
 
 void PrintArchetype(const Archetype &a);
