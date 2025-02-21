@@ -123,33 +123,30 @@ namespace rx::internal {
 
     std::vector<uint8_t> debugTexts;                                                                                    // A buffer of texts used to send data to the console from the renderer.
 
-    SH::SpinLock mipperLock;                                                                                  // A lock used by the dynamic mipmap generator.
+    SH::SpinLock mipperLock;                                                                                            // A lock used by the dynamic mipmap generator.
     std::vector<std::pair<Texture, bool>> mipperList;                                                                   // A list of textures for the dynamic mipmap generator to process. pair<Texture, whether it has been processed yet>
     std::vector<std::pair<Texture, Texture>> decompressorList;                                                          // A list of textures for the decompressor to work on. pair<compressed texture, decompressed texture>
 
-    GPUBuffer luminanceBuffer;                                                                                          // A buffer for dynamic luminance compensation. Required by some shaders to exist. NVIDIA 10xx GPUs will error without such.
-
-    SH::Jobs::ExecutionContext pipelineJobContext[ENUMSIZE(defs::RenderPass)];                                              // Job contexts for processing PSOs.
+    SH::Jobs::ExecutionContext pipelineJobContext[ENUMSIZE(defs::RenderPass)];                                          // Job contexts for processing PSOs.
 
     PipelineState PSOOcclusion;                                                                                         // PSO for Occlusion Queries
-    PipelineState PSOBillboard[ENUMSIZE(defs::RenderPass)];                                                                 // PSO for billboard rendering, per render pass
+    PipelineState PSOBillboard[ENUMSIZE(defs::RenderPass)];                                                             // PSO for billboard rendering, per render pass
     PipelineState PSOBillboardWire;                                                                                     // PSO for billboard rendering of wires and lines.
     PipelineState PSOGatherBillboard;                                                                                   // PSO for capturing billboard-rendered pixels into a buffer
-    PipelineState PSOLightVisual[ENUMSIZE(defs::LightType)];                                                                // PSO for visualizing light-affected pixels into a buffer
-    PipelineState PSOLightVolumetric[ENUMSIZE(defs::LightType)];                                                            // PSO for rendering volumetric lights
+    PipelineState PSOLightVisual[ENUMSIZE(defs::LightType)];                                                            // PSO for visualizing light-affected pixels into a buffer
+    PipelineState PSOLightVolumetric[ENUMSIZE(defs::LightType)];                                                        // PSO for rendering volumetric lights
     PipelineState PSOLightmap;                                                                                          // PSO for rendering light maps
     PipelineState PSOLensFlare;                                                                                         // PSO for rendering lens flares
     PipelineState PSODownsampleDepth;                                                                                   // PSO for downsampling depth buffers
     PipelineState PSOUpsample;                                                                                          // PSO for bilateral upsampling
     PipelineState PSOUpsampleClouds;                                                                                    // PSO for upsampling volumetric clouds
     PipelineState PSOOutline;                                                                                           // PSO for rendering outlines of objects
-    PipelineState PSOSky[ENUMSIZE(defs::SkyRenderType)];                                                                    // PSO for sky rendering, per type
-    PipelineState PSODebug[ENUMSIZE(defs::DebugRenderType)];                                                                // PSO for debug rendering, per mode
+    PipelineState PSOSky[ENUMSIZE(defs::SkyRenderType)];                                                                // PSO for sky rendering, per type
+    PipelineState PSODebug[ENUMSIZE(defs::DebugRenderType)];                                                            // PSO for debug rendering, per mode
     PipelineState PSOWire;                                                                                              // PSO for wire (thin strips of pixels) rendering
     PipelineState PSOWireTess;                                                                                          // PSO for wire (thin strips of pixels) rendering, with tesselation
 
     RaytracingPipeline PSORTReflect;                                                                                    // PSO for ray-traced reflections
-
 
     /**
      * An instance of a mesh, with associated distance to the camera.
@@ -247,13 +244,13 @@ namespace rx::internal {
      * Use as an index into the array of pipeline state objects.
      */
     union RenderVariants {
-        struct __attribute__((packed)) { uint8_t pass : 4; uint8_t shader; uint8_t blend : 4; uint8_t cull : 2; uint8_t tesselation : 1; uint8_t alpha : 1; uint32_t sample : 4; } parts;
+        struct __attribute__((packed)) { uint8_t pass : 4; uint8_t shader; uint8_t blend : 4; uint8_t cull : 2; uint8_t tesselation : 1; uint8_t alpha : 1; uint32_t sample : 4; uint8_t mesh : 1;} parts;
         uint32_t data;
     };
 
-    std::unordered_map<uint32_t, PipelineState> PSOByVariant[ENUMSIZE(defs::RenderPass)][ENUMSIZE(defs::MaterialShaderType)]; // TODO: Material Component types
+    std::unordered_map<uint32_t, PipelineState> PSOByVariant[ENUMSIZE(defs::RenderPass)][ENUMSIZE(defs::MaterialShaderType)][2];
     inline PipelineState* GetPipelineForVariants(RenderVariants var) {
-        return &PSOByVariant[var.parts.pass][var.parts.shader][var.data];
+        return &PSOByVariant[var.parts.pass][var.parts.shader][var.parts.mesh][var.data];
     }
 
     defs::ShaderType VertexShaderFor(defs::RenderPass pass, bool tesselation, bool alpha, bool transparent) {

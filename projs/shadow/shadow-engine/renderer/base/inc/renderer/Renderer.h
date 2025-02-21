@@ -236,10 +236,8 @@ namespace rx {
         static void DownsampleDepthBuffer(const Texture& dest, ThreadCommands cmd);
 
         struct TiledLightResources {
-            DirectX::XMUINT3 tileCount = {};
-            GPUBuffer tileFrustums;
-            GPUBuffer tilesOpaque;
-            GPUBuffer tilesTransparent;
+            DirectX::XMUINT2 tileCount = {};
+            GPUBuffer entityTiles;
         };
 
         static void CreateTiledLightResources(TiledLightResources& res, DirectX::XMUINT2 resolution);

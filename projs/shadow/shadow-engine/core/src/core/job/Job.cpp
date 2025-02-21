@@ -108,7 +108,7 @@ namespace SH::Jobs {
 
         TaskGroup group { task, &context, 0, 0, 1, 0 };
 
-        if (queue.nThreads <= 1) {
+        if (queue.nThreads < 1) {
             group.Execute();
             return;
         }
@@ -135,7 +135,7 @@ namespace SH::Jobs {
             group.groupIdx = grp * groups;
             group.groupEnd = std::min(group.groupIdx + groups, jobs);
 
-            if (queue.nThreads <= 1)
+            if (queue.nThreads < 1)
                 group.Execute();
             else
                 queue.queues[queue.nextQueue.fetch_add(1) % queue.nThreads].Push(group);

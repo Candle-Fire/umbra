@@ -4,7 +4,6 @@
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 #include "shadow/util/Synchronization.h"
-#include <atomic>
 #include <deque>
 #include <mutex>
 
@@ -48,6 +47,8 @@ namespace rx {
         VkPhysicalDeviceMeshShaderPropertiesEXT meshShaderProps = {};                           // Properties of the physical device's support for mesh shaders.
         VkPhysicalDeviceMemoryProperties2 memoryProps = {};                                     // Properties of the physical device's graphics memory
         VkPhysicalDeviceDepthStencilResolveProperties depthStencilResolveProps = {};            // Properties of the physical device's support for depth stenciling.
+        VkPhysicalDeviceConservativeRasterizationPropertiesEXT conservativeRasterProps = {};    // Properties of the physical device's support for conservative
+        bool useConservativeRasterization = false;                                              // Whether Conservative Rasterization is used in the currently active physical device.
         VkPhysicalDeviceFeatures2 deviceFeatures2 = {};                                         // Optional Vulkan features that the physical device supports.
         VkPhysicalDeviceVulkan11Features deviceFeatures11 = {};                                 // Optional Vulkan 1.1 features that the physical device supports.
         VkPhysicalDeviceVulkan12Features deviceFeatures12 = {};                                 // Optional Vulkan 1.2 features that the physical device supports.
@@ -301,12 +302,13 @@ namespace rx {
             DescriptorPool bindPools[frameBuffers];                                               // The DescriptorBindPools for this thread, for each frame
             GPULinearAllocator frameAllocators[frameBuffers];                                     // The linear allocators for each frame
 
-            std::vector<std::pair<size_t, VkPipeline>> pipelines;                                 // A vectorized map of pipeline hash to PSO
+
+            std::vector<std::pair<PipelineHash, VkPipeline>> pipelines;                           // A vectorized map of pipeline hash to PSO
             const PipelineState* activePSO = nullptr;                                             // The active PSO
             const Shader* activeShader = nullptr;                                                 // The active (bound) shader - render or compute.
             const RaytracingPipeline* activeRT = nullptr;                                         // The active RayTracing acceleration structure (bounding volume hierarchy)
 
-            size_t prevPipelineHash = 0;                                                          // The hash of the pipeline that was previously bound to the current thread - for use with the vectorized map
+            PipelineHash prevPipelineHash = {};                                                   // The hash of the pipeline that was previously bound to the current thread - for use with the vectorized map
             ShadingRate prevShadeRate = {};                                                       // The Shading Rate that was previously bound to the current thread - for easy comparison
             std::vector<SwapChain> prevSwapchains;                                                // All Swap-Chains that were previously bound to the current thread.
             bool PSODirty = false;                                                                // Whether the Pipeline State Object has changed in a way that requires some form of re-initialization
@@ -334,7 +336,7 @@ namespace rx {
                 bindPools[bufIdx].Reset();
                 binds.Reset();
                 frameAllocators[bufIdx].Reset();
-                prevPipelineHash = 0;
+                prevPipelineHash = {};
                 activePSO = nullptr;
                 activeShader = nullptr;
                 activeRT = nullptr;
@@ -361,8 +363,8 @@ namespace rx {
             }
         };
 
-        std::vector<std::unique_ptr<VulkanThreadCommands>> cmds;                                // A list of all active and inactive Thread Commands, for all threads managed by the engine.
-        uint32_t cmdCount = 0;                                                                  // The number of active Thread Commands. Should always be == cmds.size(), unless a thread is currently initializing one.
+        std::vector<std::unique_ptr<VulkanThreadCommands>> cmds;                      // A list of all active and inactive Thread Commands, for all threads managed by the engine.
+        uint32_t cmdCount = 0;                                                        // The number of active Thread Commands. Should always be == cmds.size(), unless a thread is currently initializing one.
         SH::SpinLock cmdLock;                                                         // A lock to prevent more than one thread submitting the commands at a time.
 
         /**
@@ -384,11 +386,11 @@ namespace rx {
             uint32_t firstBindless = 0;
         };
 
-        mutable std::unordered_map<size_t, PSOLayout> PSOcache;                                 // A cache of all created Pipeline State Objects indexed by hash, for easy switching.
+        mutable std::unordered_map<PipelineHash, PSOLayout> PSOcache;                           // A cache of all created Pipeline State Objects indexed by hash, for easy switching.
         mutable std::mutex PSOcacheMutex;                                                       // A lock to prevent the PSO cache being modified during access.
 
         VkPipelineCache pipelineCache = VK_NULL_HANDLE;                                         // A Vulkan Pipeline Cache. Saves to disk for reuse, preventing long initialization times every startup.
-        std::unordered_map<size_t, VkPipeline> pipelines;                                       // A cache of VkPipeline objects (not Pipeline State Objects, see PSOcache for that)
+        std::unordered_map<PipelineHash, VkPipeline> pipelines;                                 // A cache of VkPipeline objects (not Pipeline State Objects, see PSOcache for that)
 
         /**
          * @brief Verify that all PSOs in the cache are valid.
@@ -440,7 +442,7 @@ namespace rx {
                 std::vector<int> freeList;
                 std::mutex lock;
 
-                void Init(VkDevice device, VkDescriptorType type, uint32_t descriptors) {
+                void Init(VulkanInterface* device, VkDescriptorType type, uint32_t descriptors) {
                     descriptors = std::min(descriptors, 500'000u);
 
                     VkDescriptorPoolSize size = {
@@ -456,7 +458,7 @@ namespace rx {
                         .pPoolSizes = &size,
                     };
 
-                    VkResult res = vkCreateDescriptorPool(device, &create, nullptr, &pool);
+                    VkResult res = vkCreateDescriptorPool(device->device, &create, nullptr, &pool);
                     assert(res == VK_SUCCESS);
 
                     VkDescriptorSetLayoutBinding binding = {
@@ -484,7 +486,7 @@ namespace rx {
                         .pBindings = &binding,
                     };
 
-                    res = vkCreateDescriptorSetLayout(device, &layoutCreate, nullptr, &setLayout);
+                    res = vkCreateDescriptorSetLayout(device->device, &layoutCreate, nullptr, &setLayout);
                     assert(res == VK_SUCCESS);
 
                     VkDescriptorSetAllocateInfo allocateInfo = {
@@ -494,11 +496,56 @@ namespace rx {
                         .pSetLayouts = &setLayout
                     };
 
-                    res = vkAllocateDescriptorSets(device, &allocateInfo, &set);
+                    res = vkAllocateDescriptorSets(device->device, &allocateInfo, &set);
                     assert(res == VK_SUCCESS);
 
                     for (int i = 0; i < (int)descriptors; i++)
                         freeList.push_back((int)descriptors - i - 1);
+
+                    if (type != VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR) {
+                        // We do a little memory leaking
+                        // Shader compiler might be dodgy, so we add safety buffers to prevent null pointers in all possible edge cases
+                        int idx = Allocate();
+                        VkWriteDescriptorSet write = {VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+                        write.descriptorType = type;
+                        write.dstBinding = 0;
+                        write.dstArrayElement = idx;
+                        write.descriptorCount = 1;
+                        write.dstSet = set;
+
+                        VkDescriptorImageInfo imageInfo = {};
+                        VkDescriptorBufferInfo bufferInfo = {};
+
+                        switch (type) {
+                            case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                                imageInfo.imageView = device->nullImageView2;
+                                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                                write.pImageInfo = &imageInfo;
+                                break;
+                            case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+                            case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+                                write.pTexelBufferView = &device->nullBufferView;
+                                break;
+                            case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                                bufferInfo = { device->nullBuffer, VK_WHOLE_SIZE };
+                                write.pBufferInfo = &bufferInfo;
+                                break;
+                            case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+                                imageInfo.imageView = device->nullImageView2;
+                                imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                                write.pImageInfo = &imageInfo;
+                                break;
+                            case VK_DESCRIPTOR_TYPE_SAMPLER:
+                                imageInfo.sampler = device->nullSampler;
+                                write.pImageInfo = &imageInfo;
+                                break;
+                            default:
+                                assert("Descriptor error in bindless heap: non acceleration structure descriptor type with non zero index");
+                                break;
+                        }
+
+                        vkUpdateDescriptorSets(device->device, 1, &write, 0, nullptr);
+                    }
                 }
 
                 void Destroy(VkDevice device) {
@@ -917,12 +964,19 @@ y;                                        \
 
         RenderPassMeta GetRenderPassMeta(ThreadCommands cmd) override {
             return GetThreadCommands(cmd).passMeta;
-        };
+        }
 
         // Get the allocator to be used for the current frame.
         GPULinearAllocator& GetAllocator(ThreadCommands cmd) override {
             return GetThreadCommands(cmd).frameAllocators[GetBufferIndex()];
-        };
+        }
+
+        VkDevice GetDevice();
+        VkPhysicalDevice GetPhysicalDevice();
+        VkInstance GetInstance();
+        VkQueue GetGraphicsQueue();
+        uint32_t GetGraphicsIndex();
+        VkImage GetTextureInternal(const rx::Texture* tex);
 
     };
 }

@@ -402,6 +402,7 @@ namespace rx {
             CARTOON,
             UNLIT,
             WATER,
+            INTERIOR,
             SIZE
         };
 
@@ -1948,6 +1949,19 @@ namespace rx {
         metaHolder(RaytracingPipelineMeta)
     };
 
+    descriptor PipelineHash {
+        const PipelineState* pso = {};
+        size_t hash = {};
+
+        constexpr bool operator==(const PipelineHash& other) const {
+            return pso == other.pso && hash == other.hash;
+        }
+
+        constexpr size_t GetHash() const {
+            return ((size_t) pso & (hash << 1)) >> 1;
+        }
+    };
+
     /**
      * An easy way to reference entries in tables output by the Ray Tracing shaders.
      */
@@ -2520,4 +2534,11 @@ struct enable_bitmask_operators<rx::ColorWrite> {
 template<>
 struct enable_bitmask_operators<rx::RenderPassFlags> {
     static const bool enable = true;
+};
+
+template <>
+struct hash<rx::PipelineHash> {
+    inline size_t operator()(const rx::PipelineHash& hash) const {
+        return hash.GetHash();
+    }
 };

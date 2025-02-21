@@ -765,7 +765,6 @@ namespace rx {
                 VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
                 std::vector<VkDescriptorSetLayoutBinding> bindings;
                 std::vector<VkImageViewType> types;
-                size_t hash = 0;
 
                 std::vector<TrackedBinding> bindless;
                 std::vector<VkDescriptorSet> bindlessSets;
@@ -1702,7 +1701,7 @@ namespace rx {
         if (!command.PSODirty) return;
 
         const auto* pso = command.activePSO;
-        size_t hash = command.prevPipelineHash;
+        PipelineHash hash = command.prevPipelineHash;
         auto internal = vulkan::structs::ToInternal(pso);
 
         VkPipeline pipeline = VK_NULL_HANDLE;
@@ -1889,6 +1888,8 @@ namespace rx {
         conditionalRenderingFeatures = {};
         depthClipEnableFeatures = {};
         samplerMinmaxProps = {};
+        conservativeRasterProps = {};
+        useConservativeRasterization = false;
 
         #define APPEND_PROPERTIES_CHAIN(x, y)   \
         x.sType = y;                          \
@@ -1918,6 +1919,11 @@ namespace rx {
 
         ENABLE_IF_AVAILABLE(VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
             APPEND_FEATURES_CHAIN(depthClipEnableFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT);
+        )
+
+        ENABLE_IF_AVAILABLE(VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
+            APPEND_PROPERTIES_CHAIN(conservativeRasterProps, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT);
+            useConservativeRasterization = true;
         )
 
         ENABLE_IF_AVAILABLE(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
@@ -1973,7 +1979,7 @@ namespace rx {
         return enabledExts;
     }
 
-    VulkanInterface::VulkanInterface(void* window, Validation val, RenderDeviceTypePreference pref) {
+    VulkanInterface::VulkanInterface(void* window, Validation val, RenderDeviceTypePreference pref): pipelines({}), PSOcache({}) {
         SH::Timer timer;
 
         VkResult res;
@@ -2101,6 +2107,7 @@ namespace rx {
         std::vector<const char*> enabledExts;
 
         bool deviceIsPreferred = false;
+        bool conservativeRaster = false;
         for (const auto& dev : devices) {
             deviceIsPreferred = false;
             enabledExts = ProcessPhysicalDevice(dev);
@@ -2227,6 +2234,8 @@ namespace rx {
             if (deviceFeatures2.features.sparseResidencyImage3D == VK_TRUE)
                 capabilities |= GraphicsDeviceCapability::SPARSE_TEXTURE3D;
         }
+        if (useConservativeRasterization)
+            capabilities |= GraphicsDeviceCapability::CONSERVATIVE_RASTERIZATION;
         if ((depthStencilResolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_MIN_BIT) && (depthStencilResolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_MAX_BIT))
             capabilities |= GraphicsDeviceCapability::DEPTH_RESOLVE_MIN_MAX;
         if ((depthStencilResolveProps.supportedStencilResolveModes & VK_RESOLVE_MODE_MIN_BIT) && (depthStencilResolveProps.supportedStencilResolveModes & VK_RESOLVE_MODE_MAX_BIT))
@@ -2551,19 +2560,19 @@ namespace rx {
         const uint32_t maxBindless = 100'000;
 
         if (deviceFeatures12.descriptorBindingSampledImageUpdateAfterBind == VK_TRUE) {
-            memoryManager->bindlessSamplers.Init(device, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256);
-            memoryManager->bindlessImages.Init(device, VK_DESCRIPTOR_TYPE_SAMPLER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindSampledImages / 4));
+            memoryManager->bindlessSamplers.Init(this, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256);
+            memoryManager->bindlessImages.Init(this, VK_DESCRIPTOR_TYPE_SAMPLER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindSampledImages / 4));
         }
         if (deviceFeatures12.descriptorBindingUniformTexelBufferUpdateAfterBind == VK_TRUE)
-            memoryManager->bindlessUniformTBuffers.Init(device, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindSampledImages / 4));
+            memoryManager->bindlessUniformTBuffers.Init(this, VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindSampledImages / 4));
         if (deviceFeatures12.descriptorBindingStorageBufferUpdateAfterBind == VK_TRUE)
-            memoryManager->bindlessStorageBuffers.Init(device, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageBuffers / 4));
+            memoryManager->bindlessStorageBuffers.Init(this, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageBuffers / 4));
         if (deviceFeatures12.descriptorBindingStorageImageUpdateAfterBind == VK_TRUE)
-            memoryManager->bindlessStorageImages.Init(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageImages / 4));
+            memoryManager->bindlessStorageImages.Init(this, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageImages / 4));
         if (deviceFeatures12.descriptorBindingStorageTexelBufferUpdateAfterBind == VK_TRUE)
-            memoryManager->bindlessStorageTBuffers.Init(device, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageImages / 4));
+            memoryManager->bindlessStorageTBuffers.Init(this, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, std::min(maxBindless, deviceProps12.maxDescriptorSetUpdateAfterBindStorageImages / 4));
         if (CheckCapability(GraphicsDeviceCapability::RAY_TRACING))
-            memoryManager->bindlessRT.Init(device, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 32);
+            memoryManager->bindlessRT.Init(this, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 32);
 
         // Load the pipeline cache from disk.
         SH::FileInput cacheFile;
@@ -3570,5 +3579,7 @@ namespace rx {
 
         vkCmdEndDebugUtilsLabelEXT(GetThreadCommands(cmd).GetCommandBuffer());
     }
+
+
 
 }
