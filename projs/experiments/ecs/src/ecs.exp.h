@@ -23,7 +23,6 @@
 * This file contains the Entity System
 * The game world is built up from nodes
 * Each Node has type
-* There are N types of nodes
 * - Entites
 * - Components
 * - Flags
@@ -31,6 +30,22 @@
 */
 
 
+/**
+ * Planned changes / known issues:
+ * - The Achetype class only supports a single page of data this will need to change
+ *   For this we need an iterator abstraction ove the pages
+ * - The EntityManager should be able to create entities with multiple components at once
+ * - The addition of types to archetypes should be cached in a map for each archetype
+ * - The Archetypes of a system should be cached, and only recomputed for the new archetypes
+ *
+ * Features:
+ * - Add dependency between systems
+ * - The systems should be ordered by the types they require
+ *   and allow for parallel execution of systems that don't depend on each other
+ * - add sparse components that are stored only by pointers to an outside storage
+ *   this will allow for components that are too big to be stored in the archetype
+ *
+*/
 
 using EntityId = uint32_t;
 
@@ -41,12 +56,12 @@ using EntityId = uint32_t;
 */
 enum class TypeFlags : std::uint8_t {
   None     = 0,
-  Flag     = 1 << 1,
-  Relation = 1 << 2,
-  Unused   = 1 << 3,
-  Unused2  = 1 << 4,
+  Flag     = 1 << 1, // Does not have a column in the archetype, has no data
+  Relation = 1 << 2, // The node is a relation to another node, the NodeType::entity field contains the id of the other node
+  Unused   = 1 << 3, // Reserved for future use (Probably sparse components)
+  Unused2  = 1 << 4, // Reserved for future use
 
-  SimpleRelation = Flag | Relation,
+  SimpleRelation = Flag | Relation, // A simple relation to another node
 };
 
 inline TypeFlags operator|(TypeFlags lhs, TypeFlags rhs) {
@@ -68,6 +83,9 @@ inline bool test(const TypeFlags& lhs, const TypeFlags& rhs)
   return static_cast<std::underlying_type_t<TypeFlags>>(lhs & rhs);
 }
 
+/**
+ * Concept to check if a type has a static member called Flags of type TypeFlags
+ */
 template <typename T>
 concept HasTypeFlags = requires
 {
@@ -84,9 +102,7 @@ concept HasTypeFlags = requires
 struct __attribute__((packed)) NodeType
 {
   TypeId typeId   : 28;
-#pragma GCC diagnostic ignored "-Wuninitialized"
   TypeFlags flags : 4;
-#pragma GCC diagnostic pop
   uint32_t entity;
 };
 static_assert(sizeof(NodeType) == sizeof(uint64_t));
@@ -134,6 +150,7 @@ NodeType GetRelationType(const EntityId& other)
 
 
 /*
+ * example of the data structure
  * Archetype : T1, (T2, T3, T4)
  * | self (T1)  | comp 1 (T2) | comp 2 (T3) | comp 3 (T4) |
  * | T1: 1      | T2: 1       | T3: 1       | T4: 1       |
@@ -185,6 +202,12 @@ using Types = std::vector<NodeType>;
 
 Types sortTypes(Types t);
 
+/**
+ * Create a new type list with the type added
+ * @param t The base type list to add to
+ * @param id The type to add
+ * @return A new type list with the type added
+ */
 inline Types addType(const Types &t, const NodeType id)
 {
   Types new_types = t;
@@ -193,17 +216,28 @@ inline Types addType(const Types &t, const NodeType id)
   return new_types;
 }
 
+/**
+ * Create a new type list with the type removed
+ * @param t The base type list to remove from
+ * @param id The type to remove
+ * @return A new type list with the type removed
+ */
 inline Types removeType(const Types &t, const NodeType id)
 {
   Types new_types = t;
   std::erase(new_types, id);
-  new_types = sortTypes(new_types);
+  new_types = sortTypes(new_types); //TODO: This is not necessary
   return new_types;
 }
 
 template <>
 struct std::hash<Types>
 {
+  /**
+   * Hash function for the Types list
+   * @param vec The list of types
+   * @return The hash of the list
+   */
   std::size_t operator()(const Types &vec) const noexcept
   {
     std::size_t seed = vec.size();
@@ -225,6 +259,12 @@ struct RowMeta
 
 constexpr size_t PAGE_SIZE = 2*2*2*2*2*2;
 
+/**
+ * Archetype is a collection of nodes with the same component types
+ * It stores the data in columns for each type
+ *
+ * TODO: Add support for multiple pages
+ */
 class Archetype
 {
 public:
