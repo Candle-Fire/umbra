@@ -37,7 +37,7 @@ using EntityId = uint32_t;
 
 /**
 * Flag enum used to specify ECS node properties
-* it is a 4 bit field the est of the uint8 should not be used as it will be cut of
+* it is a 4 bit field the rest of the uint8 should not be used as it will be cut of
 */
 enum class TypeFlags : std::uint8_t {
   None     = 0,
@@ -84,7 +84,9 @@ concept HasTypeFlags = requires
 struct __attribute__((packed)) NodeType
 {
   TypeId typeId   : 28;
+#pragma GCC diagnostic ignored "-Wuninitialized"
   TypeFlags flags : 4;
+#pragma GCC diagnostic pop
   uint32_t entity;
 };
 static_assert(sizeof(NodeType) == sizeof(uint64_t));
@@ -480,40 +482,62 @@ public:
 
   explicit System(const std::function<void(T &...)> &action) : action(action) { query = {GetNodeType<T>()...}; }
 
-  ~System() override;
-
-
-  void Run(EntityManager &em) override
+  ~System() override
   {
-    for (auto archetype : em.archetypes)
-    {
-      if (std::ranges::includes(archetype.second.types, query))
-      {
-        std::vector<>
+
+  }
+
+  void Run(EntityManager &em) override {
+    // Iterate over all archetypes in the EntityManager.
+    for (auto &pair : em.archetypes) {
+      Archetype &arch = pair.second;
+
+      // Check if the archetype contains all the requested types
+      bool matches = true;
+      for (const NodeType &req : query) {
+        auto it = arch.column_map.find(req);
+        // We require that the type is present and that it has a valid column (>= 0).
+        if (it == arch.column_map.end() || it->second < 0) {
+          matches = false;
+          break;
+        }
+      }
+      if (!matches)
+        continue;
+
+      // For each row in the archetype that is in use, invoke the action.
+      for (size_t row = 0; row < arch.rows.size(); ++row) {
+        if (!arch.rows[row].in_use)
+          continue;
+        // Call the system's action with each component reference.
+        action(
+            *reinterpret_cast<T*>(arch.columns[arch.column_map.at(GetNodeType<T>())][row].ptr())...
+        );
       }
     }
   }
+
 };
 
 class SystemManager
 {
-  std::vector<ISystem> systems;
+  std::vector<ISystem*> systems;
 
   EntityManager& em;
 
 public:
   explicit SystemManager(EntityManager &em) : em(em) {}
 
-  void addSystem(ISystem& system)
+  void addSystem(ISystem* system)
   {
     systems.push_back(system);
   }
 
   void runAllSystems()
   {
-    for (ISystem &system : systems)
+    for (ISystem *system : systems)
     {
-      system.Run(em);
+      system->Run(em);
     }
   }
 };

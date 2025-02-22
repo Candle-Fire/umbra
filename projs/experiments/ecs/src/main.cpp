@@ -30,6 +30,8 @@ struct Name final : Component<>
 
 int main() {
   EntityManager em;
+  SystemManager sm(em);
+
   const auto a = em.AddEntity();
 
   for (int i = 0; i < 10; ++i)
@@ -40,12 +42,16 @@ int main() {
       .AddRelation<ChildOf>(a);
   }
 
-  PrintEM(em);
-
   auto s = System<Position>([](Position& position)
   {
     position.z += 10;
   });
+
+  sm.addSystem(&s);
+
+  sm.runAllSystems();
+
+  PrintEM(em);
 
   return 0;
 }
