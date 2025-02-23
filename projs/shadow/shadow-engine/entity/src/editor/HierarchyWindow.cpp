@@ -1,4 +1,6 @@
-#include "shadow/entitiy/editor/HierarchyWindow.h"
+#include "shadow/entity/editor/HierarchyWindow.h"
+#include "shadow/entity/EntitySystem.h"
+#include "shadow/entity/graph/graph.h"
 
 namespace SH::Entities::Editor {
 

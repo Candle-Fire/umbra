@@ -1,4 +1,4 @@
-#include "shadow/entitiy/graph/graph.h"
+#include "shadow/entity/graph/graph.h"
 
 namespace SH::Entities {
 

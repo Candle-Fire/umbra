@@ -9,14 +9,6 @@ namespace SH::Events {
 
     Event_Impl(SDLEvent)
 
-    SHObject_Base_Impl(OverlayRender)
-
-    Event_Impl(OverlayRender)
-
-    SHObject_Base_Impl(PreRender)
-
-    Event_Impl(PreRender)
-
     SHObject_Base_Impl(Recreate)
 
     Event_Impl(Recreate)

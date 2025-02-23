@@ -1,6 +1,6 @@
 
-#include "shadow/entitiy/NodeManager.h"
-#include "shadow/entitiy/graph/graph.h"
+#include "shadow/entity/NodeManager.h"
+#include "shadow/entity/graph/graph.h"
 
 namespace SH::Entities {
 

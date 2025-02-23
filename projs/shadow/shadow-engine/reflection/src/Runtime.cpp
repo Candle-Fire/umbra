@@ -7,10 +7,10 @@ namespace Runtime {
   Runtime *Runtime::instance = nullptr;
 
   void Runtime::Boot(std::string path) {
-      //Create singleton instance
+      //Start singleton instance
       new Runtime();
 
-      //Create an assembly from the given path
+      //Start an assembly from the given path
       SH::Path const
           id = SH::Path("assembly:/" + std::filesystem::path(path).filename().replace_extension("").string());
 

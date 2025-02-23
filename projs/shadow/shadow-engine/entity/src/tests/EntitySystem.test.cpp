@@ -1,5 +1,5 @@
 
-#include "shadow/entitiy/EntitySystem.h"
+#include "shadow/entity/EntitySystem.h"
 /*
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include "catch2/catch.hpp"
@@ -8,7 +8,7 @@
 
 TEST_CASE("EntitySystem", "[EntitySystem]") {
 
-    // Create a new entity system
+    // Start a new entity system
     auto entitySystem = new ShadowEngine::Entities::EntitySystem();
     // Add test scene
     auto scene = entitySystem->GetWorld().AddScene<ShadowEngine::Entities::Scene>({"Generated Scene"});

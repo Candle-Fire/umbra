@@ -1,5 +1,6 @@
 find_package(SDL2 CONFIG REQUIRED)
 find_package(ImGui REQUIRED)
+find_package(Vulkan REQUIRED COMPONENTS dxc)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -33,6 +34,7 @@ target_link_libraries(shadow-engine
         #        ImGui
         GPUOpen::VulkanMemoryAllocator
         Vulkan::Vulkan
+        Vulkan::dxc_lib
 )
 
 target_compile_definitions(shadow-engine

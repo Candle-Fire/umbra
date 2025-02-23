@@ -1,147 +1,211 @@
 #include "shadow/core/PathID.h"
 #include <string>
-
-#define __STDC_WANT_LIB_EXT1__ 1
-#include <string.h>
 #include <algorithm>
 #include <stdexcept>
-
-#ifndef __STDC_LIB_EXT1__
-#define memcpy_s(dest, destsz, src, count) memcpy(dest, src, count)
-#endif
+#include <cstring>
+#include <filesystem>
 
 #include "shadow/util/string-helpers.h"
 
 namespace SH {
+    Path::Path() : path{} {}
 
-  Path::Path() : path{} {}
+    Path::Path(const std::string &str) {
+        set(normalise((std::string &) str));
+    }
 
-  Path::Path(const std::string &str) {
-      set(normalise((std::string &) str));
-  }
-
-  void Path::set(const std::string &str) {
+    void Path::set(const std::string &str) {
 #ifdef _WIN32
-      std::string temp = Util::Str::toLower((std::string &) str);
-      hash = PathHash(temp);
+        std::string temp = Util::Str::toLower((std::string &) str);
+        hash = PathHash(temp);
 #else
-      hash = PathHash(str);
+        hash = PathHash(str);
 #endif
-      path = str;
-  }
+        path = str;
+    }
 
-  Path &Path::operator=(const std::string &rhs) {
-      set(rhs);
-      return *this;
-  }
+    Path &Path::operator=(const std::string &rhs) {
+        set(rhs);
+        return *this;
+    }
 
-  bool Path::operator==(const std::string &rhs) const {
-      return path == rhs;
-  }
+    bool Path::operator==(const std::string &rhs) const {
+        return path == rhs;
+    }
 
-  bool Path::operator==(const SH::Path &rhs) const {
-      return path == rhs.path;
-  }
+    bool Path::operator==(const SH::Path &rhs) const {
+        return path == rhs.path;
+    }
 
-  bool Path::operator!=(const SH::Path &rhs) const {
-      return path != rhs.path;
-  }
+    bool Path::operator!=(const SH::Path &rhs) const {
+        return path != rhs.path;
+    }
 
-  std::string Path::normalise(std::string &id) {
-      size_t atPos = id.find('@');
-      size_t colonPos = id.rfind(':');
+    Path Path::operator+(const Path& rhs) const {
+        return { this->path + rhs.path };
+    }
 
-      // If no colon is present, the path is not valid
-      if (colonPos == std::string::npos) {
-          throw std::invalid_argument("Missing colon in path");
-      }
+    Path& Path::operator+=(const Path& rhs) {
+        path += rhs.path.c_str();
+        return *this;
+    }
 
-      std::string prelude, optionalNamespace, path;
+    std::string Path::normalise(std::string &id) {
+        size_t atPos = id.find('@');
+        size_t colonPos = id.rfind(':');
 
-      if (atPos != std::string::npos && atPos < colonPos) {
-          prelude = id.substr(0, atPos);
-          optionalNamespace = id.substr(atPos + 1, colonPos - atPos - 1);
-      } else {
-          prelude = id.substr(0, colonPos);
-      }
+        // If no colon is present, the path is not valid
+        if (colonPos == std::string::npos) {
+            throw std::invalid_argument("Missing colon in path");
+        }
 
-      path = id.substr(colonPos + 1);
+        std::string prelude, optionalNamespace, path;
 
-      // Replace backslashes with forward slashes in the path
-      std::replace(path.begin(), path.end(), '\\', '/');
+        if (atPos != std::string::npos && atPos < colonPos) {
+            prelude = id.substr(0, atPos);
+            optionalNamespace = id.substr(atPos + 1, colonPos - atPos - 1);
+        } else {
+            prelude = id.substr(0, colonPos);
+        }
 
-      if (optionalNamespace.empty()) {
-          return prelude + ":" + path;
-      } else {
-          return prelude + "@" + optionalNamespace + ":" + path;
-      }
-  }
+        path = id.substr(colonPos + 1);
 
-  std::string Path::getPrelude(std::string &path) {
-      return Util::Str::substr_range(path, 0, path.find_first_of('@'));
-  }
+        // Replace backslashes with forward slashes in the path
+        std::replace(path.begin(), path.end(), '\\', '/');
 
-  std::string Path::getDomain(const std::string &id) {
-      size_t atPos = id.find('@');
-      size_t colonPos = id.rfind(':');
+        if (optionalNamespace.empty()) {
+            return prelude + ":" + path;
+        } else {
+            return prelude + "@" + optionalNamespace + ":" + path;
+        }
+    }
 
-      // If no colon is present, the path is not valid
-      if (colonPos == std::string::npos) {
-          throw std::invalid_argument("Missing colon in path");
-      }
+    SH::Path Path::normalise() {
+        return { Path::normalise(this->path) };
+    }
 
-      // If '@' exists and is before the last ':', then extract namespace
-      if (atPos != std::string::npos && atPos < colonPos) {
-          return id.substr(atPos + 1, colonPos - atPos - 1);
-      }
+    std::string Path::getPrelude(std::string &path) {
+        return Util::Str::substr_range(path, 0, path.find_first_of('@'));
+    }
 
-      // No namespace (domain) found
-      return "";
-  }
+    SH::Path Path::getPrelude() {
+        return { getPrelude(path) };
+    }
 
-  std::string Path::getDirectory(const std::string &path) {
-      return Util::Str::substr_range(path, path.find_first_of(':') + 1, path.find_last_of('/'));
-  }
+    std::string Path::getDomain(const std::string &id) {
+        size_t atPos = id.find('@');
+        size_t colonPos = id.rfind(':');
 
-  std::string Path::getFilename(std::string &path) {
-      return path.substr(path.find_last_of('/') + 1);
-  }
+        // If no colon is present, the path is not valid
+        if (colonPos == std::string::npos) {
+            throw std::invalid_argument("Missing colon in path");
+        }
 
-  std::string Path::getExtension(std::string &path) {
-      return Util::Str::substr_range(path, path.find_last_of('.') + 1, path.length());
-  }
+        // If '@' exists and is before the last ':', then extract namespace
+        if (atPos != std::string::npos && atPos < colonPos) {
+            return id.substr(atPos + 1, colonPos - atPos - 1);
+        }
 
-  std::string Path::replaceExtension(std::string &path, std::string &newExt) {
-      return Util::Str::substr_range(path, 0, path.length() - newExt.length()).append(newExt);
-  }
+        // No namespace (domain) found
+        return "";
+    }
 
-  bool Path::hasExtension(std::string &path, std::string &ext) {
-      return path.rfind(ext) == (path.length() - ext.length());
-  }
-  bool Path::operator<(const Path &rhs) const {
-      return path < rhs.path;
-  }
+    SH::Path Path::getDomain() {
+        return { getDomain(path) };
+    }
 
-  Path::operator std::string() const {
-      return path;
-  }
+    std::string Path::getDirectory(const std::string &path) {
+        return Util::Str::substr_range(path, path.find_first_of(':') + 1, path.find_last_of('/'));
+    }
 
-  PathInfo::PathInfo(std::string &str) {
-      std::string normalised = Path::normalise(str);
+    SH::Path Path::getDirectory() {
+        return { getDirectory(path) };
+    }
 
-      std::string preludeS = Path::getPrelude(normalised);
-      memcpy_s(prelude, 10, preludeS.c_str(), preludeS.length());
-      std::string domainS = Path::getDomain(normalised);
-      memcpy_s(domain, 256, domainS.c_str(), domainS.length());
-      std::string directoryS = Path::getDirectory(normalised);
-      memcpy_s(directory, 256, directoryS.c_str(), directoryS.length());
-      std::string filenameS = Path::getFilename(normalised);
-      memcpy_s(baseName, 256, filenameS.c_str(), filenameS.length());
-      std::string extensionS = Path::getExtension(normalised);
-      memcpy_s(extension, 10, extensionS.c_str(), extensionS.length());
-  }
+    std::string Path::getFilename(std::string &path) {
+        return path.substr(path.find_last_of('/') + 1);
+    }
 
-  Path operator ""_id(const char *path, size_t length) {
-      return Path(path);
-  }
+    SH::Path Path::getFilename() {
+        return { getFilename(path) };
+    }
+
+    std::string Path::getExtension(std::string &path) {
+        return Util::Str::substr_range(path, path.find_last_of('.') + 1, path.length());
+    }
+
+    SH::Path Path::getExtension() {
+        return { getExtension(path) };
+    }
+
+    std::string Path::replaceExtension(std::string &path, const std::string &newExt) {
+        return Util::Str::substr_range(path, 0, path.length() - newExt.length()).append(newExt);
+    }
+
+    SH::Path& Path::replaceExtension(const std::string& newExt) {
+        replaceExtension(path, newExt);
+        return *this;
+    }
+
+    std::string Path::removeExtension(std::string& path) {
+        return Util::Str::substr_range(path, 0, path.find_last_of('.'));
+    }
+
+    SH::Path& Path::removeExtension() {
+        removeExtension(path);
+        return *this;
+    }
+
+    bool Path::hasExtension(std::string &path, std::string &ext) {
+        return path.rfind(ext) == (path.length() - ext.length());
+    }
+
+    bool Path::hasExtension(std::string& ext) {
+        return hasExtension(path, ext);
+    }
+
+    SH::Path& Path::makeAbsolute() {
+        auto fs = std::filesystem::absolute(path);
+        if (!fs.empty()) {
+            set(fs.generic_string());
+            return *this;
+        }
+    }
+
+    std::string Path::makeAbsolute(std::string& path) {
+        std::filesystem::path abs = absolute(std::filesystem::path(path));
+        if (!abs.empty())
+            return abs.generic_string();
+    }
+
+    bool Path::operator<(const Path &rhs) const {
+        return path < rhs.path;
+    }
+
+    Path::operator std::string() const {
+        return path;
+    }
+
+    Path::operator std::string&() {
+        return path;
+    }
+
+    PathInfo::PathInfo(std::string &str) {
+        std::string normalised = Path::normalise(str);
+
+        std::string preludeS = Path::getPrelude(normalised);
+        memcpy_s(prelude, 10, preludeS.c_str(), preludeS.length());
+        std::string domainS = Path::getDomain(normalised);
+        memcpy_s(domain, 256, domainS.c_str(), domainS.length());
+        std::string directoryS = Path::getDirectory(normalised);
+        memcpy_s(directory, 256, directoryS.c_str(), directoryS.length());
+        std::string filenameS = Path::getFilename(normalised);
+        memcpy_s(baseName, 256, filenameS.c_str(), filenameS.length());
+        std::string extensionS = Path::getExtension(normalised);
+        memcpy_s(extension, 10, extensionS.c_str(), extensionS.length());
+    }
+
+    Path operator ""_id(const char *path, size_t length) {
+        return Path(path);
+    }
 }
