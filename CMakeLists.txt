@@ -20,4 +20,4 @@ add_subdirectory(projs/extern)
 
 #add_subdirectory(projs/test-game)
 
-add_subdirectory(projs/experiments/ecs)
+add_subdirectory(projs/experiments/hc-ecs)
