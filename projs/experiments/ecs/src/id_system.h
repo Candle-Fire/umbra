@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 
-using TypeId = uint32_t;
+using TypeId = uint16_t;
 
 //inline int operator<(const TypeId& lhs, const TypeId& rhs){ return rhs > lhs; }
 //inline bool operator==(const TypeId& lhs, const TypeId& rhs) { return lhs == rhs; }
@@ -20,7 +20,7 @@ struct TypeInfo
 };
 extern std::unordered_map<std::string, TypeInfo> typeMap;
 
-extern uint32_t next_id;
+extern TypeId next_id;
 
 
 

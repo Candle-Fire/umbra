@@ -54,7 +54,7 @@ using EntityId = uint32_t;
 * Flag enum used to specify ECS node properties
 * it is a 4 bit field the rest of the uint8 should not be used as it will be cut of
 */
-enum class TypeFlags : std::uint8_t {
+enum class TypeFlags : std::uint16_t {
   None     = 0,
   Flag     = 1 << 1, // Does not have a column in the archetype, has no data
   Relation = 1 << 2, // The node is a relation to another node, the NodeType::entity field contains the id of the other node
@@ -100,9 +100,9 @@ concept HasTypeFlags = requires
 */
 struct NodeType
 {
-  TypeId typeId   : 28;
-  TypeFlags flags : 4;
-  uint32_t entity : 32;
+  TypeId typeId;
+  TypeFlags flags;
+  uint32_t entity;
 } __attribute__((packed));
 static_assert(sizeof(NodeType) == sizeof(uint64_t));
 

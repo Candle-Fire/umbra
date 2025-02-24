@@ -2,7 +2,7 @@
 
 std::unordered_map<std::string, TypeInfo> typeMap;
 
-uint32_t next_id = 1;
+TypeId next_id = 1;
 
 TypeInfo GetTypeInfoById(const TypeId& id)
 {
