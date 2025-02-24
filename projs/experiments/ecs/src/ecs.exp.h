@@ -59,7 +59,6 @@ enum class TypeFlags : std::uint8_t {
   Flag     = 1 << 1, // Does not have a column in the archetype, has no data
   Relation = 1 << 2, // The node is a relation to another node, the NodeType::entity field contains the id of the other node
   Unused   = 1 << 3, // Reserved for future use (Probably sparse components)
-  Unused2  = 1 << 4, // Reserved for future use
 
   SimpleRelation = Flag | Relation, // A simple relation to another node
 };
@@ -99,12 +98,12 @@ concept HasTypeFlags = requires
 * - Simple data
 * - A connection type
 */
-struct __attribute__((packed)) NodeType
+struct NodeType
 {
   TypeId typeId   : 28;
   TypeFlags flags : 4;
-  uint32_t entity;
-};
+  uint32_t entity : 32;
+} __attribute__((packed));
 static_assert(sizeof(NodeType) == sizeof(uint64_t));
 
 inline int operator<(const NodeType& lhs, const NodeType& rhs){ return rhs.typeId < lhs.typeId; }

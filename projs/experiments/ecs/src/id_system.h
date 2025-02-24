@@ -1,18 +1,9 @@
 #pragma once
 
-#include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <functional>
-#include <list>
-#include <numeric>
 #include <ranges>
 #include <unordered_map>
-#include <unordered_set>
-#include <vector>
-
-
-
 
 
 using TypeId = uint32_t;

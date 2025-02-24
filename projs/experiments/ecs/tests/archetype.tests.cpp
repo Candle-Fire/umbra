@@ -1,5 +1,5 @@
 #include "./ecs.exp.h"
-#include "catch2/catch.hpp"
+#include "catch2/catch_all.hpp"
 
 struct A : Component<>
 {

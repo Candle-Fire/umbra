@@ -1,5 +1,5 @@
 #include "span_dynamic.h"
-#include "catch2/catch.hpp"
+#include "catch2/catch_all.hpp"
 
 struct TestObject {
   int32_t a = 1;
