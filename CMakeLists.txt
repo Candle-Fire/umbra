@@ -14,10 +14,10 @@ include(shadow-modules.cmake)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
-add_subdirectory(projs/extern/fmt)
+add_subdirectory(projs/extern)
 
-add_subdirectory(projs/shadow)
+#add_subdirectory(projs/shadow)
 
-add_subdirectory(projs/test-game)
+#add_subdirectory(projs/test-game)
 
 add_subdirectory(projs/experiments/ecs)
