@@ -25,17 +25,13 @@ namespace sonic {
 
     for (size_t i = 0; i < len; i++) {
       const char c = string[i];
-      // Check for dashes not in the correct positions
-      if (i == 8 || i == 13 || i == 18 || i == 23) {
-        if (c != '-')
-          return false;
-      }
-      // Check for dashes in incorrect positions
-      if (c == '-') {
-        if (i != 8 && i != 13 && i != 18 && i != 23)
-          return false;
-      } else if (!isxdigit(c)) {
-        return false;
+      switch (i) {
+        case 8: case 13: case 18: case 23:
+          if (c != '-') { return false; }
+          break;
+        default:
+          if (!isxdigit(c)) { return false;}
+          break;
       }
     }
 
