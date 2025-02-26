@@ -25,6 +25,12 @@ namespace sonic {
 
     for (size_t i = 0; i < len; i++) {
       const char c = string[i];
+      // Check for dashes not in the correct positions
+      if (i == 8 || i == 13 || i == 18 || i == 23) {
+        if (c != '-')
+          return false;
+      }
+      // Check for dashes in incorrect positions
       if (c == '-') {
         if (i != 8 && i != 13 && i != 18 && i != 23)
           return false;
@@ -37,8 +43,10 @@ namespace sonic {
   }
 
   UUID::UUID(const char *str) {
+    Clear();
+    if (!IsValidUUID(str)) return;
+
     size_t len = strlen(str);
-    assert(len == 36);
 
     // Bytes are 2 characters, so track whether we're on the first or second. True if we "have" the first character in the byte.
     bool hasChar = false;
@@ -74,7 +82,4 @@ namespace sonic {
 #endif
     return id;
   }
-
-
-
 }

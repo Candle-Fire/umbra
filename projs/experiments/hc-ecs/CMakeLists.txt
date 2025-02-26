@@ -17,15 +17,15 @@ target_link_libraries(experiment-hc-ecs
 
 
 FILE(GLOB_RECURSE SOURCES_TESTS
-        src/id_system.cpp
-        src/span_dynamic.cpp
-        src/ecs.exp.cpp
+        src/*.cpp
         tests/*.cpp
 )
 
 add_executable(experiment-hc-ecs-tests)
 target_link_libraries(experiment-hc-ecs-tests
-        Catch2::Catch2
+        PRIVATE fmt::fmt-header-only
+        PRIVATE spdlog::spdlog_header_only
+        Catch2::Catch2WithMain
 )
 target_compile_options(experiment-hc-ecs-tests
     PUBLIC -fconcepts-diagnostics-depth=4
