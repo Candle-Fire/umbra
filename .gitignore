@@ -12,3 +12,4 @@ cmake-build-debug-msvc/
 cmake-build-debug-msvc-vs/
 out/
 .vs/
+.idea/

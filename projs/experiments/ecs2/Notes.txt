@@ -1,0 +1,49 @@
+  //  Columns are stored in Partitions.
+  // So why...? a single table has a single list of what type of columns are in it
+  // So we should store that somehwere? A list of column types...
+  // This is what my old NodeType was for..........
+  // std::vector<Column> columns;
+
+
+
+   * Fun fact: this is an ACTUAL database table, why link it to entities and components? :)
+   * Because I have ptsd from databses
+   *  Look at me. Look. Me. Eyes. Brain. I'm the DB Teacher now. It's okay, you can release your trauma :P
+   *  This is, coincidentally, my first time writing a DB from scratch, so I may take some time re-deriving these things, but we'll get there :P
+   *  When all is said and done, wiring our ECS into this system should be REALLY easy.
+   * we could also write an ECS from the get go.. XD
+   *  A high performance ECS is basically synonymous with a high capacity database / data storage system. It's all about where the data is placed and how it is managed.
+   *  A database happens to be the most closely aligned concept to that definition, and also very simple to program in isolation.
+   * I know, ECS == In memory db with some funky querries
+   *  The main advantage of writing this (and getting used to it, and using it) is that a database also solves some other problems in our code.
+   *  Assets management by means of database tables is trivial.
+   *  Assigning script elements by database association is not trivial but a lot easier than manually tracking things.
+   *  Creating associations between database tables not via relations but by shared indices and inter-links solves things like Component childing (via Attachment Sockets and related)
+   * I was thinking of doing an MC style registry with entites... to use it as a DB sortoff
+
+
+   * I thik this is what I call pages...
+    *  pages are an actual term in computing, be precise.
+    *  1 page = 4096 bytes.
+    * 1 partition = 1 file system on the HDD XD
+    *  "partitioned data storage" is also an actual term in computing, and is what most databases in the real world are built on.
+    * Did i ever mention my DB teacher was stupid??
+    *  Look at me. I'm the DB teacher now.
+    * :glare:
+    * :bolbshrug:
+
+
+    /*
+    is this how you want them to be?
+    so the table class itself is stored inside the allocation?
+
+    v table 1                                                     v table 2
+    [ (Table data [ ID, Pos, Light, Mesh, ID, Pos, Light, Mesh ]) (Table data [ ID, Pos, RigBody, Collider, ID, Pos, RigBody, Collider ]) ]
+        ^ row 1               ^ row 2                  ^ row 1                     ^ row 2
+    */
+
+         Well sure will look at the intel docs for those magick lines later
+         If you say there is a CPU instruction for this I guess :shrug: they keep adding new one
+        This one is from 1998, and was implemented prior to the existence of 64 bit processors.
+         As i said, I'm not up to date with the new stuff, this wasn't in ANSI C that i learned
+        yike

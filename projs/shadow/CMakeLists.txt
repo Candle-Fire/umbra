@@ -4,12 +4,9 @@ project(shadow)
 add_subdirectory(extern/dxmath)
 add_subdirectory(extern/glm)
 SET(SPDLOG_BUILD_PIC true)
-add_subdirectory(extern/spdlog)
 add_subdirectory(extern/dylib)
 add_subdirectory(extern/vulkan_memory_allocator)
-add_subdirectory(extern/catch2)
 include(extern/SDL2/CMakeLists.txt)
-
 
 # Core engine
 add_subdirectory(shadow-engine)
