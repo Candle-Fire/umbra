@@ -1,6 +1,8 @@
-#include "Identifiers.h"
 
 /**********************/
 /**    SONIC ECS     **/
 /**  GOTTA GO FAST.  **/
 /**********************/
+
+namespace sonic {
+}
