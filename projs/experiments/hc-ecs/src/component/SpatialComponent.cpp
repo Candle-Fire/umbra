@@ -1,6 +1,6 @@
-#include "Identifiers.h"
-
 /**********************/
 /**    SONIC ECS     **/
 /**  GOTTA GO FAST.  **/
 /**********************/
+
+#include <component/SpatialComponent.h>

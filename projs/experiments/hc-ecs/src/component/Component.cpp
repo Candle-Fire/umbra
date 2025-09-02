@@ -1,2 +1,2 @@
 
-#include "Component.h"
+#include <component/Component.h>
