@@ -45,7 +45,7 @@ void Renderer::StartRender()
   {
     const auto [pos, render] = entity;
 
-    SDL_FRect dest = {pos->x,pos->y, 16,16};
+    SDL_FRect dest = {pos->x, pos->y, 32,32};
 
     SDL_RenderTexture(renderer2d, texture, nullptr, &dest);
   }
@@ -64,6 +64,7 @@ void Renderer::StartRender()
 void Renderer::Render()
 {
 }
+
 
 void Renderer::Update()
 {

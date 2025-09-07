@@ -15,6 +15,7 @@ std::shared_ptr<SDL3Module> sdl3_module;
 std::shared_ptr<ImGUIModule> imgui_module;
 std::shared_ptr<Renderer> renderer;
 std::shared_ptr<Ecs> ecs;
+std::shared_ptr<InputManager> input_manager;
 
 
 
@@ -24,6 +25,7 @@ int main()
   imgui_module = std::make_shared<ImGUIModule>();
   renderer = std::make_shared<Renderer>();
   ecs = std::make_shared<Ecs>();
+  input_manager = std::make_shared<InputManager>();
 
   Init();
 
@@ -36,7 +38,9 @@ int main()
 
     for (auto comps : FilterEntities<Position, PlayerMovement>())
     {
-
+      auto [pos, mov] = comps;
+      pos->x += input_manager->movement.x * mov->speed;
+      pos->y += input_manager->movement.y * mov->speed;
     }
 
     StartRender();

@@ -31,5 +31,10 @@ class PlayerMovement : public  Component
 {
   SHObject_Base(PlayerMovement)
 public:
+explicit PlayerMovement(float speed)
+    : speed(speed)
+  {
+  }
+
   float speed = 1;
 };

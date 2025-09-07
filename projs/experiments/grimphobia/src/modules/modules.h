@@ -85,3 +85,21 @@ public:
   void Render() override;
 };
 extern std::shared_ptr<Renderer> renderer;
+
+class InputManager: public IModule
+{
+public:
+  struct {
+    bool forward;
+    bool back;
+    bool left;
+    bool right;
+  } key_state;
+  ImVec2 movement;
+
+  void Init() override;
+  void Update() override;
+  void Render() override;
+  void ProcessEvent(SDL_Event& event) override;
+};
+extern std::shared_ptr<InputManager> input_manager;

@@ -20,6 +20,7 @@ public:
   virtual ~Entity() = default;
 
   virtual void Init() = 0;
+  // virtual void Update() = 0;
 
   void AddComponent(Component* comp);
 
