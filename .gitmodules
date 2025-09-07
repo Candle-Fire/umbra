@@ -22,3 +22,12 @@
 [submodule "projs/extern/catch2"]
 	path = projs/extern/catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "projs/experiments/grimphobia/extern/SDL3"]
+	path = projs/experiments/grimphobia/extern/SDL3
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "projs/experiments/grimphobia/extern/ImGUI"]
+	path = projs/experiments/grimphobia/extern/ImGUI
+	url = https://github.com/ocornut/imgui
+[submodule "projs/experiments/grimphobia/extern/SDL3_image"]
+	path = projs/experiments/grimphobia/extern/SDL3_image
+	url = https://github.com/libsdl-org/SDL_image.git
