@@ -13,8 +13,8 @@ namespace SH::Editor {
 
   MODULE_ENTRY(SH::Editor::EditorModule, EditorModule)
 
-  /*
-  void EditorModule::OverlayRender(SH::Events::OverlayRender &) {
+
+  void EditorModule::ImGui(SH::Events::ImGui &) {
       static bool dockspaceOpen = true;
 
       ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar; //| ImGuiWindowFlags_NoDocking;
@@ -55,7 +55,7 @@ namespace SH::Editor {
       }
 
       ImGui::End();
-  } */
+  }
 
   void EditorModule::DrawMenu() {
 
@@ -80,8 +80,8 @@ namespace SH::Editor {
   }
 
   void EditorModule::Init() {
-      //SH::ShadowApplication::Get().GetEventBus()
-      //    .subscribe(this, &EditorModule::OverlayRender);
+      SH::ShadowApplication::Get().GetEventBus()
+          .subscribe(this, &EditorModule::ImGui);
 
       windows.push_back(std::make_shared<SceneView>());
       windows.push_back(std::make_shared<DebugWindows>());

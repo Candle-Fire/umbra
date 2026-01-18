@@ -13,4 +13,12 @@ namespace SH::Events {
 
     Event_Impl(Recreate)
 
+    SHObject_Base_Impl(ImGui)
+
+    Event_Impl(ImGui)
+
+    SHObject_Base_Impl(RenderGeometry)
+
+    Event_Impl(RenderGeometry)
+
 }

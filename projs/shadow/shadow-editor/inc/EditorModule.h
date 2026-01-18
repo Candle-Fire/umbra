@@ -27,6 +27,8 @@ namespace SH::Editor {
 
     void DrawMenu();
 
+    void ImGui(SH::Events::ImGui&);
+
   private:
     void Init() override;
 

@@ -35,8 +35,14 @@ void SH::Debug::DebugModule::DrawModuleWindow() {
         for (auto &module : m.GetModules()) {
             if (module.enabled)
                 ImGui::Text("%s", module.descriptor.name.c_str());
-            else
+             else
                 ImGui::TextDisabled("%s", module.descriptor.name.c_str());
+
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("ID: %s\nClass Name: %s\nAssembly: %s", module.descriptor.id.c_str(), module.descriptor.class_name.c_str(), module.descriptor.assembly.c_str());
+                ImGui::EndTooltip();
+            }
         }
 
     }
