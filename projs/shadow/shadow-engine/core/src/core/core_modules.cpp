@@ -45,5 +45,13 @@ extern "C" {
                          .class_name = "LoggerModule",
                          .assembly="assembly:/core"_id,
                      });
+
+    m.AddDescriptors( {
+                        .id="module:/assets",
+                        .name = "AssetManager",
+                        .class_name = "AssetManagerModule",
+                        .assembly="assembly:/core"_id,
+                        .dependencies={"module:/core"}
+    });
 }
 }
