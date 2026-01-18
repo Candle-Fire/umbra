@@ -1,198 +1,205 @@
-#include "shadow/assets/resource/Resource.h"
-#include "shadow/assets/fs/file.h"
-#include "shadow/assets/management/delegate.h"
-#include <shadow/assets/resource/ResourceManager.h>
+#include <shadow/assets/resource/Resource.h>
+#include "shadow/assets/resource/ResourceManager.h"
 #include <spdlog/spdlog.h>
 
 #include <utility>
 
-namespace SH {
-  const uint32_t ResourceHeader::MAGIC = 'VXIP';
+namespace SH::Asset {
+    const uint32_t ResourceHeader::MAGIC = 'SERF';
 
-  ResourceType::ResourceType(const std::string& name) {
-      hash = HeapHash(name);
-  }
+    ResourceType ResourceType::INVALID_RESOURCE = ResourceType("");
 
-  Resource::Resource(Path  path, ResourceTypeManager &manager)
-      : references(0),
-        emptyDependencies(0),
-        failedDependencies(0),
-        state(State::EMPTY),
-        desiredState(State::EMPTY),
-        path(std::move(path)),
-        size(),
-        callback(),
-        manager(manager),
-        handle(FileSystem::AsyncHandle::invalid()) {
-  }
+    ResourceType::ResourceType(char const* name) {
+        hash = HeapHash(name);
+    }
 
-  Resource::~Resource() = default;
+    Resource::Resource(SH::Path path, ResourceTypeManager& manager)
+        : references(0),
+          emptyDependencies(0),
+          failedDependencies(0),
+          state(State::EMPTY),
+          desiredState(State::EMPTY),
+          path(std::move(path)),
+          size(),
+          callback(),
+          manager(manager),
+          handle(FileSystem::AsyncHandle::invalid()) {
+    }
 
-  void Resource::refresh() {
-      if (state == State::EMPTY) return;
+    Resource::~Resource() = default;
 
-      const State old = state;
-      state = State::EMPTY;
-      callback.invoke(old, state, *this);
-      checkState();
-  }
+    void Resource::refresh() {
+        if (state == State::EMPTY) return;
 
-  void Resource::checkState() {
-      State old = state;
-      if (failedDependencies > 0 && state != State::FAILED) {
-          state = State::FAILED;
-      } else if (failedDependencies == 0) {
-          if (emptyDependencies > 0 && state != State::EMPTY)
-              state = State::EMPTY;
+        const State old = state;
+        state = State::EMPTY;
+        callback.invoke(old, state, *this);
+        checkState();
+    }
 
-          if (emptyDependencies == 0 && state != State::READY && desiredState != State::EMPTY) {
-              onReadying();
+    void Resource::checkState() {
+        State old = state;
+        if (failedDependencies > 0 && state != State::FAILED) {
+            state = State::FAILED;
+        }
+        else if (failedDependencies == 0) {
+            if (emptyDependencies > 0 && state != State::EMPTY)
+                state = State::EMPTY;
 
-              if (emptyDependencies != 0 || state == State::READY || desiredState == State::EMPTY)
-                  return;
+            if (emptyDependencies == 0 && state != State::READY && desiredState != State::EMPTY) {
+                onReadying();
 
-              if (failedDependencies != 0) {
-                  checkState();
-                  return;
-              }
+                if (emptyDependencies != 0 || state == State::READY || desiredState == State::EMPTY)
+                    return;
 
-              state = State::READY;
-          }
-      }
-      callback.invoke(old, state, *this);
-  }
+                if (failedDependencies != 0) {
+                    checkState();
+                    return;
+                }
 
-  void Resource::fileLoaded(size_t fileSize, const uint8_t *mem, bool success) {
-      handle = FileSystem::AsyncHandle::invalid();
-      if (desiredState != State::READY) return;
+                state = State::READY;
+            }
+        }
+        callback.invoke(old, state, *this);
+    }
 
-      if (!success) {
-          ResourceManager& owner = getManager().getOwner();
-          if (!hooked && owner.isHooked()) {
-              if (owner.onLoad(*this) == ResourceManager::LoadHook::Action::DEFERRED) {
-                  hooked = true;
-                  desiredState = State::READY;
-                  increaseReferences();
-                  return;
-              }
-          }
+    void Resource::fileLoaded(size_t fileSize, const uint8_t* mem, bool success) {
+        handle = FileSystem::AsyncHandle::invalid();
+        if (desiredState != State::READY) return;
 
-          --emptyDependencies;
-          ++failedDependencies;
-          checkState();
-          handle = FileSystem::AsyncHandle::invalid();
-          return;
-      }
+        if (!success) {
+            ResourceManager& owner = getManager().getOwner();
+            if (!hooked && owner.isHooked()) {
+                if (owner.onLoad(*this) == ResourceManager::LoadHook::Action::DEFERRED) {
+                    hooked = true;
+                    desiredState = State::READY;
+                    increaseReferences();
+                    return;
+                }
+            }
 
-      const auto* header = (const ResourceHeader*) mem;
+            --emptyDependencies;
+            ++failedDependencies;
+            checkState();
+            handle = FileSystem::AsyncHandle::invalid();
+            return;
+        }
 
-      if (size < sizeof(*header)) {
-          spdlog::error("Invalid resource: ", path.get(), ": size mismatch. Expected ", fileSize, ", got " , sizeof(*header));
-          failedDependencies++;
-      } else if (header->magic != ResourceHeader::MAGIC) {
-          spdlog::error("Invalid resource: " , path.get(), ": magic number mismatch. Expected " , ResourceHeader::MAGIC, ", got ", header->magic);
-          failedDependencies++;
-      } else if (header->version > 0) {
-          spdlog::error("Invalid resource: ", path.get(), ": verison mismatch. Expected 0, got ", header->version);
-          failedDependencies++;
-      } else {
-          // TODO: Compression?
-          if (!load(size - sizeof(*header), mem + sizeof(*header)))
-              failedDependencies++;
-          size = header->decompressedSize;
-      }
+        const auto* header = (const ResourceHeader*)mem;
 
-      emptyDependencies--;
-      checkState();
-      handle = FileSystem::AsyncHandle::invalid();
-  }
+        if (size < sizeof(*header)) {
+            spdlog::error("Invalid resource: ", path.get(), ": size mismatch. Expected ", fileSize, ", got ",
+                          sizeof(*header));
+            failedDependencies++;
+        }
+        else if (header->magic != ResourceHeader::MAGIC) {
+            spdlog::error("Invalid resource: ", path.get(), ": magic number mismatch. Expected ", ResourceHeader::MAGIC,
+                          ", got ", header->magic);
+            failedDependencies++;
+        }
+        else if (header->version > 0) {
+            spdlog::error("Invalid resource: ", path.get(), ": verison mismatch. Expected 0, got ", header->version);
+            failedDependencies++;
+        }
+        else {
+            // TODO: Compression?
+            if (!load(size - sizeof(*header), mem + sizeof(*header)))
+                failedDependencies++;
+            size = header->decompressedSize;
+        }
 
-  void Resource::performUnload() {
-      if (handle.valid()) {
-          FileSystem& fs = manager.getOwner().getFileSystem();
-          fs.cancelAsync(handle);
-          handle = FileSystem::AsyncHandle::invalid();
-      }
+        emptyDependencies--;
+        checkState();
+        handle = FileSystem::AsyncHandle::invalid();
+    }
 
-      hooked = false;
-      desiredState = State::EMPTY;
-      unload();
+    void Resource::performUnload() {
+        if (handle.valid()) {
+            FileSystem& fs = manager.getOwner().getFileSystem();
+            fs.cancelAsync(handle);
+            handle = FileSystem::AsyncHandle::invalid();
+        }
 
-      size = 0;
-      emptyDependencies = 1;
-      failedDependencies = 0;
-      checkState();
-  }
+        hooked = false;
+        desiredState = State::EMPTY;
+        unload();
 
-  void Resource::onCreated(Resource::State newState) {
-      state = newState;
-      desiredState = State::READY;
-      failedDependencies = state == State::FAILED ? 1 : 0;
-      emptyDependencies = 0;
-  }
+        size = 0;
+        emptyDependencies = 1;
+        failedDependencies = 0;
+        checkState();
+    }
 
-  void Resource::doLoad() {
-      if (desiredState == State::READY) return;
-      desiredState = State::READY;
+    void Resource::onCreated(Resource::State newState) {
+        state = newState;
+        desiredState = State::READY;
+        failedDependencies = state == State::FAILED ? 1 : 0;
+        emptyDependencies = 0;
+    }
 
-      if (handle.valid()) return;
+    void Resource::doLoad() {
+        if (desiredState == State::READY) return;
+        desiredState = State::READY;
 
-      FileSystem& fs = manager.getOwner().getFileSystem();
-      FileSystem::ContentCallback cb = makeDelegate<&Resource::fileLoaded>(this);
+        if (handle.valid()) return;
 
-      const PathHash hash = path.getHash();
-      Path resourcePath("./resources/" + std::to_string(hash.getHash()) + ".res");
-      handle = fs.readAsync(resourcePath, cb);
-  }
+        FileSystem& fs = manager.getOwner().getFileSystem();
+        FileSystem::ContentCallback cb = makeDelegate<&Resource::fileLoaded>(this);
 
-  void Resource::addDependency(Resource &dependent) {
-      dependent.callback.bind<&Resource::stateChanged>(this);
-      if (dependent.isEmpty()) emptyDependencies++;
-      if (dependent.isFailure()) failedDependencies++;
+        const PathHash hash = path.getHash();
+        Path resourcePath("./resources/" + std::to_string(hash.getHash()) + ".res");
+        handle = fs.readAsync(resourcePath, cb);
+    }
 
-      checkState();
-  }
+    void Resource::addDependency(Resource& dependent) {
+        dependent.callback.bind<&Resource::stateChanged>(this);
+        if (dependent.isEmpty()) emptyDependencies++;
+        if (dependent.isFailure()) failedDependencies++;
 
-  void Resource::removeDependency(Resource &dependent) {
-      dependent.callback.unbind<&Resource::stateChanged>(this);
-      if (dependent.isEmpty()) --emptyDependencies;
-      if (dependent.isFailure()) --failedDependencies;
+        checkState();
+    }
 
-      checkState();
-  }
+    void Resource::removeDependency(Resource& dependent) {
+        dependent.callback.unbind<&Resource::stateChanged>(this);
+        if (dependent.isEmpty()) --emptyDependencies;
+        if (dependent.isFailure()) --failedDependencies;
 
-  uint32_t Resource::decreaseReferences() {
-      --references;
-      if (references == 0 && manager.unloadEnabled)
-          performUnload();
+        checkState();
+    }
 
-      return references;
-  }
+    uint32_t Resource::decreaseReferences() {
+        --references;
+        if (references == 0 && manager.unloadEnabled)
+            performUnload();
 
-  void Resource::stateChanged(Resource::State old, Resource::State newState,
-                              Resource &) {
-      if (old == State::EMPTY) --emptyDependencies;
-      if (old == State::FAILED) --failedDependencies;
+        return references;
+    }
 
-      if (newState == State::EMPTY) ++emptyDependencies;
-      if (newState == State::FAILED) ++failedDependencies;
+    void Resource::stateChanged(Resource::State old, Resource::State newState,
+                                Resource&) {
+        if (old == State::EMPTY) --emptyDependencies;
+        if (old == State::FAILED) --failedDependencies;
 
-      checkState();
-  }
+        if (newState == State::EMPTY) ++emptyDependencies;
+        if (newState == State::FAILED) ++failedDependencies;
 
-  const ResourceType PrefabResource::TYPE("prefab");
+        checkState();
+    }
 
-  PrefabResource::PrefabResource(const Path &path,
-                                 ResourceTypeManager &resource_manager) : Resource(path, resource_manager) {}
+    const ResourceType PrefabResource::TYPE("prefab");
 
-  ResourceType PrefabResource::getType() const { return TYPE; }
+    PrefabResource::PrefabResource(const Path& path,
+                                   ResourceTypeManager& resource_manager) : Resource(path, resource_manager) {
+    }
 
-  void PrefabResource::unload() { data.clear(); }
+    ResourceType PrefabResource::getType() const { return TYPE; }
 
-  bool PrefabResource::load(size_t size, const uint8_t *mem) {
-      data.resize(size);
-      memcpy(data.dataMut(), mem, size);
-      hash = StableHash(mem, size);
-      return true;
-  }
+    void PrefabResource::unload() { data.clear(); }
+
+    bool PrefabResource::load(size_t size, const uint8_t* mem) {
+        data.resize(size);
+        memcpy(data.dataMut(), mem, size);
+        hash = StableHash(mem, size);
+        return true;
+    }
 }

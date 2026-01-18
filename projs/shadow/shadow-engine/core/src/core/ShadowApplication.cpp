@@ -5,6 +5,8 @@
 #include "runtime/Runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
+#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
 #include "shadow/core/convar.h"
 #include "shadow/log/LoggerModule.h"
@@ -62,8 +64,7 @@ namespace SH {
       }
 
       moduleManager.Init();
-
-  }
+}
 
   void ShadowApplication::Start() {
       SDL_Event event;

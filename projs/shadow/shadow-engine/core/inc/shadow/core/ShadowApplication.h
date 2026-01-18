@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "shadow/assets/resource/ResourceManager.h"
+
 namespace SH {
 
     /// <summary>
@@ -32,6 +34,7 @@ namespace SH {
 
         SH::Events::EventBus<0> eventBus;
 
+        SH::Asset::ResourceManager resourceManager;
         /// <summary>
         /// Represents the running state.
         /// </summary>
@@ -63,6 +66,8 @@ namespace SH {
         ModuleManager &GetModuleManager() { return moduleManager; };
 
         SH::Events::EventBus<0> GetEventBus() { return eventBus; };
+
+        SH::Asset::ResourceManager& GetResourceManager() { return resourceManager; }
 
         void Init();
 

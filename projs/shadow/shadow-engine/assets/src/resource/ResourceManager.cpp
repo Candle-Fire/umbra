@@ -4,7 +4,7 @@
 #include "shadow/assets/resource/ResourceManager.h"
 #include "shadow/assets/fs/path.h"
 
-namespace SH {
+namespace SH::Asset {
 
     void ResourceTypeManager::create(struct ResourceType type, struct ResourceManager &manager) {
         manager.add(type, this);
@@ -96,7 +96,6 @@ namespace SH {
     }
 
     ResourceTypeManager::ResourceTypeManager() :
-        resources(),
         owner(nullptr),
         unloadEnabled(true) {
 
@@ -107,7 +106,6 @@ namespace SH {
     }
 
     ResourceManager::ResourceManager() :
-        managers(),
         hook(nullptr),
         filesystem(nullptr) {
 
@@ -117,6 +115,11 @@ namespace SH {
 
     void ResourceManager::init(FileSystem &fs) {
         filesystem = &fs;
+    }
+
+    bool ResourceManager::loadRaw(const Path& requester, const Path& path, OutputMemoryStream& data) {
+        if (hook) hook->loadRaw(requester, path);
+        return filesystem->readSync(path, data);
     }
 
     Resource* ResourceManager::load(ResourceType type, const Path& path) {
@@ -135,11 +138,15 @@ namespace SH {
         return iter->second;
     }
 
-    void ResourceManager::LoadHook::continueLoad(Resource &res) {
+    void ResourceManager::LoadHook::continueLoad(Resource &res, bool success) {
         res.decreaseReferences();
         res.hooked = false;
-        res.desiredState = Resource::State::EMPTY;
-        res.doLoad();
+        if (success) {
+            res.desiredState = Resource::State::EMPTY;
+            res.doLoad();
+        } else {
+            res.state = Resource::State::FAILED;
+        }
     }
 
     void ResourceManager::setLoadHook(LoadHook *loadHook) {
