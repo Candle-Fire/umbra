@@ -10,14 +10,13 @@
 int main(int argc, char *argv[]) {
     RUNTIME_BOOT();
 
-    std::cout << "CWD: " << (char *) std::filesystem::current_path().c_str() << '\n';
-
-    std::cout << "argc == " << argc << '\n';
-
+    spdlog::set_level(spdlog::level::trace);
+    spdlog::debug("CWD: {}", std::filesystem::current_path().string());
+    spdlog::debug("argc == {}", argc);
     for (int ndx{}; ndx != argc; ++ndx) {
-        std::cout << "argv[" << ndx << "] == " << std::quoted(argv[ndx]) << '\n';
+        spdlog::debug("argv[{}] == {}", ndx, std::string(argv[ndx]));
     }
-    std::cout << "argv[" << argc << "] == " << static_cast<void *>(argv[argc]) << '\n';
+    spdlog::debug("argv[{}] == {}", argc, static_cast<void *>(argv[argc]));
     /*...*/
 
     SH::ShadowApplication app(argc, argv);

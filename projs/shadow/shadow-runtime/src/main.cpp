@@ -1,4 +1,4 @@
-//#include "core/ShadowApplication.h"
+#include "core/ShadowApplication.h"
 
 #include <iostream>
 #include <iomanip>

@@ -8,7 +8,7 @@ namespace SH::Editor {
     class SceneView : public EditorWindow{
     SHObject_Base(SceneView)
 
-    VulkanModule* renderer;
+    std::weak_ptr<VulkanModule> renderer;
 
     public:
         SceneView();

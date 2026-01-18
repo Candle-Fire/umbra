@@ -19,6 +19,8 @@ namespace Runtime {
 
       assembly.lib = Native::open(nullptr);
 
+      spdlog::debug("🧩 Loading assembly \"{}\"", id.get());
+
       instance->known_assemblies.insert(assembly);
   }
 
