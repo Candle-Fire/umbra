@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
+#include <cstdint>
 
-namespace ShadowEngine {
+namespace SH {
     // A custom OutputStream that can be implemented to output to any arbitrary data structure.
     // The idea is that it can write to a file, or into memory, or into a temporary buffer that is copied to both.
     // As opposed to the hardcoded streams that exist in C++, which have a single purpose for their entire lifetime.
@@ -9,6 +10,7 @@ namespace ShadowEngine {
         virtual bool write(const void* data, size_t size) = 0;
 
         OutputStream& operator<< (std::string& str);
+        OutputStream& operator<< (std::string const& str);
         OutputStream& operator<< (const char* str);
         OutputStream& operator<< (size_t val);
         OutputStream& operator<< (int64_t val);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <shadow/exports.h>
-#include "DirectXMath.h"
+#include <shadow/math/dxmath.h>
 
 namespace SH {
 

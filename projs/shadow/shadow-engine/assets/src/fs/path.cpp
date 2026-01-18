@@ -1,12 +1,10 @@
 
 #include <string>
 #include <shadow/assets/fs/path.h>
-#include <shadow/assets/str/string.h>
 #include <shadow/assets/fs/hash.h>
 #include <cstring>
-#include "shadow/util/string-helpers.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     Path::Path() : path {} { }
 
@@ -14,15 +12,6 @@ namespace ShadowEngine {
         set(normalise((std::string&) str));
     }
 
-    void Path::set(const std::string &str) {
-#ifdef _WIN32
-        std::string temp = SH::Util::Str::toLower((std::string&) str);
-        hash = PathHash(temp);
-#else
-        hash = PathHash(str);
-#endif
-        path = str;
-    }
 
     Path& Path::operator=(const std::string &rhs) {
         set(rhs);
@@ -33,13 +22,22 @@ namespace ShadowEngine {
         return path == rhs;
     }
 
-    bool Path::operator==(const ShadowEngine::Path &rhs) {
+    bool Path::operator==(const Path &rhs) {
         return path == rhs.path;
     }
 
-    bool Path::operator!=(const ShadowEngine::Path &rhs) {
+    bool Path::operator!=(const Path &rhs) {
         return path != rhs.path;
     }
+
+    bool Path::operator<(const Path& rhs) const {
+        return path < rhs.path;
+    }
+
+    Path operator ""_id(const char *path, size_t length) {
+        return Path(path);
+    }
+
 
     std::string Path::normalise(const std::string &str) {
         bool prevSlash = false;
@@ -49,9 +47,11 @@ namespace ShadowEngine {
         size_t len = str.length();
         size_t i = 0;
 
-        // Skip initial stuff.
+        // Skip initial stuff, copy in as normal
         size_t ind = str.find_first_of(":");
-        path += ind;
+        path += ind != str.npos ? ind + 2 : 0;
+        if (ind != str.npos) temp.append(str.substr(0, ind + 2));
+
         if (path[0] == '.' && (path[1] == '\\' || path[1] == '/'))
             path += 2;
 #ifdef _WIN32
@@ -68,7 +68,7 @@ namespace ShadowEngine {
             }
 
             // Convert backslashes to forward slashes.
-            temp.append(std::to_string(*path == '\\' ? '/' : *path));
+            temp.append(std::string(1, *path == '\\' ? '/' : *path));
 
             path++; i++; prevSlash = slash;
         }

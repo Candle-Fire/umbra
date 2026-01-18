@@ -31,10 +31,10 @@ namespace SH {
 
     std::vector<uint32_t> openBlocks;
     // Used as the data buffer.
-    ShadowEngine::OutputMemoryStream oms;
+    OutputMemoryStream oms;
     size_t begin = 0;
     size_t end = 0;
-    ShadowEngine::Mutex mut;
+    Mutex mut;
     std::string name;
     bool show = false;
     size_t threadID;
@@ -148,7 +148,7 @@ namespace SH {
         thread_local ThreadContext* ctx = [&]() {
           auto *newCtx = new ThreadContext(5 * 1024 * 1024);
           newCtx->threadID = ifsystem(pthread_self(), reinterpret_cast<size_t>(::GetCurrentThread()), pthread_self());
-          ShadowEngine::MutexGuard lock(mut);
+          MutexGuard lock(mut);
           contexts.push_back((newCtx));
           return newCtx;
         }();
@@ -160,7 +160,7 @@ namespace SH {
     std::vector<Profiler::CounterData> counters;
     // Child threads of the current.
     std::vector<ThreadContext*> contexts;
-    ShadowEngine::Mutex mut;
+    Mutex mut;
     // Whether the current thread is paused.
     bool paused = false;
     // Whether the current thread can be pre-empted.
@@ -207,7 +207,7 @@ namespace SH {
       };
 
       // Lock the context so that we can write data to it
-      ShadowEngine::MutexGuard lock(ctx.mut);
+      MutexGuard lock(ctx.mut);
       uint8_t* buffer = ctx.oms.dataMut();
       const size_t bufferSize = ctx.oms.size();
 
@@ -257,7 +257,7 @@ namespace SH {
           .value = val,
       };
 
-      ShadowEngine::MutexGuard lock(ctx.mut);
+      MutexGuard lock(ctx.mut);
       uint8_t *buffer = ctx.oms.dataMut();
       const size_t bufferSize = ctx.oms.size();
 
@@ -293,7 +293,7 @@ namespace SH {
       };
       assert(sizeof(header) + size <= 0xffff);
 
-      ShadowEngine::MutexGuard lock(ctx.mut);
+      MutexGuard lock(ctx.mut);
       uint8_t* buf = ctx.oms.dataMut();
       const size_t buf_size = ctx.oms.size();
 
@@ -533,14 +533,14 @@ namespace SH {
 
   void Profiler::ShowInProfiler(bool show) {
       ThreadContext* ctx = gInstance.getNewThreadContext();
-      ShadowEngine::MutexGuard lock(ctx->mut);
+      MutexGuard lock(ctx->mut);
 
       ctx->show = show;
   }
 
   void Profiler::SetThreadName(const char *name) {
       ThreadContext* ctx = gInstance.getNewThreadContext();
-      ShadowEngine::MutexGuard lock(ctx->mut);
+      MutexGuard lock(ctx->mut);
 
       ctx->name = name;
   }

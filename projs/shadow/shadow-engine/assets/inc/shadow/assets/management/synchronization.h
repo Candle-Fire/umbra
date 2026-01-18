@@ -6,7 +6,7 @@
 #include <pthread.h>
 #endif
 
-namespace ShadowEngine {
+namespace SH {
     // A simple synchronization system that allows one "accessing thread" at a time.
     struct alignas(8) Mutex {
         friend struct ConditionVariable;

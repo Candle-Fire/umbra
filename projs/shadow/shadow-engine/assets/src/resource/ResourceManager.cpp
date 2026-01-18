@@ -4,7 +4,7 @@
 #include "shadow/assets/resource/ResourceManager.h"
 #include "shadow/assets/fs/path.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     void ResourceTypeManager::create(struct ResourceType type, struct ResourceManager &manager) {
         manager.add(type, this);

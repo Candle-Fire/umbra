@@ -1,7 +1,8 @@
 #include "shadow/renderer/vulkan/vlkx/render/shader/Pipeline.h"
 #include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
-#include "shadow/util/File.h"
 #include <numeric>
+
+#include "shadow/assets/fs/file.h"
 
 namespace vlkx {
 
@@ -60,12 +61,16 @@ namespace vlkx {
     }
 
     ShaderModule::ShaderModule(const std::string &path) {
-        const shadowutil::FileData *file = shadowutil::loadFile(path);
+        SH::FileInput file {SH::Path(path)};
+        const uint8_t* buf = new uint8_t[file.size()];
+        file.read((void*)buf, file.size());
+
         const VkShaderModuleCreateInfo module{
             VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-            nullptr, 0, file->size, reinterpret_cast<const uint32_t *>(file->data.data())
+            nullptr, 0, file.size(), reinterpret_cast<const uint32_t *>(buf)
         };
 
+        file.close();
         if (vkCreateShaderModule(VulkanModule::getInstance()->getDevice()->logical, &module, nullptr, &shader)
             != VK_SUCCESS)
             throw std::runtime_error("Unable to create shader module");

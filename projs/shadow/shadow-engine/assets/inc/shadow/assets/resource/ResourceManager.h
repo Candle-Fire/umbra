@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 
-namespace ShadowEngine {
+namespace SH {
 
     /**
      * Handles all of the Resources of a single Type.

@@ -22,7 +22,7 @@ namespace SH {
 
   ShadowApplication *ShadowApplication::instance = nullptr;
 
-  std::unique_ptr<ShadowEngine::FileSystem> ShadowApplication::diskFS = ShadowEngine::FileSystem::createDiskFS("./");
+  std::unique_ptr<FileSystem> ShadowApplication::diskFS = FileSystem::createDiskFS(Path("./"));
 
   ShadowApplication::ShadowApplication(int argc, char *argv[]) {
       instance = this;

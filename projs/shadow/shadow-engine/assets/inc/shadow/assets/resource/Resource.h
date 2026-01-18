@@ -1,11 +1,11 @@
 #pragma once
 
+#include "shadow/assets/fs/file.h"
 #include "shadow/assets/fs/hash.h"
 #include "shadow/assets/fs/path.h"
-#include "shadow/assets/fs/file.h"
-#include <shadow/assets/management/delegate_list.h>
+#include "shadow/assets/management/delegate_list.h"
 
-namespace ShadowEngine {
+namespace SH {
 
   /**
    * A runtime-only struct that determines the type of a resource - whether it be a texture, mesh, animation, or other data.

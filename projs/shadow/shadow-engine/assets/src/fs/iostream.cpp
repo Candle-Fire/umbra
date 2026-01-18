@@ -2,14 +2,14 @@
 #include <cstring>
 #include "shadow/assets/fs/iostream.h"
 
-namespace ShadowEngine {
+namespace SH {
 
     OutputMemoryStream::OutputMemoryStream(void *data, size_t size)
         : buffer(static_cast<uint8_t *>(data)), capacity(size), usage(0) {}
 
     OutputMemoryStream::OutputMemoryStream() : buffer(), capacity(0), usage(0) {}
 
-    OutputMemoryStream::OutputMemoryStream(ShadowEngine::OutputMemoryStream &&str) noexcept {
+    OutputMemoryStream::OutputMemoryStream(OutputMemoryStream &&str) noexcept {
         capacity = str.capacity;
         buffer = str.buffer;
         usage = str.usage;
@@ -17,7 +17,7 @@ namespace ShadowEngine {
         str.free();
     }
 
-    OutputMemoryStream& OutputMemoryStream::operator=(ShadowEngine::OutputMemoryStream &&str) noexcept {
+    OutputMemoryStream& OutputMemoryStream::operator=(OutputMemoryStream &&str) noexcept {
         capacity = str.capacity;
         buffer = str.buffer;
         usage = str.usage;
@@ -26,7 +26,7 @@ namespace ShadowEngine {
         return *this;
     }
 
-    OutputMemoryStream& OutputMemoryStream::operator=(const ShadowEngine::OutputMemoryStream &rhs) noexcept {
+    OutputMemoryStream& OutputMemoryStream::operator=(const OutputMemoryStream &rhs) noexcept {
         usage = rhs.usage;
 
         if (rhs.capacity > 0) {
@@ -41,7 +41,7 @@ namespace ShadowEngine {
         return *this;
     }
 
-    OutputMemoryStream::OutputMemoryStream(const ShadowEngine::OutputMemoryStream &rhs) noexcept {
+    OutputMemoryStream::OutputMemoryStream(const OutputMemoryStream &rhs) noexcept {
         usage = rhs.usage;
 
         if (rhs.capacity > 0) {
@@ -58,6 +58,11 @@ namespace ShadowEngine {
     OutputMemoryStream::~OutputMemoryStream() = default;
 
     OutputStream &OutputStream::operator<<(std::string &str) {
+        write(str.data(), str.length());
+        return *this;
+    }
+
+    OutputStream &OutputStream::operator<<(std::string const& str) {
         write(str.data(), str.length());
         return *this;
     }
@@ -188,7 +193,7 @@ namespace ShadowEngine {
     InputMemoryStream::InputMemoryStream(const void *data, size_t size)
         : data(static_cast<const uint8_t *>(data)), capacity(size), position(0) {}
 
-    InputMemoryStream::InputMemoryStream(const ShadowEngine::OutputMemoryStream &blob)
+    InputMemoryStream::InputMemoryStream(const OutputMemoryStream &blob)
         : data(blob.data()), capacity(blob.size()), position(0) {}
 
     void InputMemoryStream::set(const void *newData, size_t size) {

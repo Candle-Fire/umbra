@@ -1,13 +1,11 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <memory>
 
 #include "dylib.hpp"
 
-#include "shadow/core/PathID.h"
 #include "runtime/native_loading.h"
+#include "shadow/assets/fs/path.h"
 
 namespace Runtime {
 

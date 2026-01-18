@@ -1,7 +1,10 @@
 #pragma once
 #include <string>
+#include <cstdint>
 
-namespace ShadowEngine {
+#include "spdlog/fmt/bundled/std.h"
+
+namespace SH {
 
     /**
      * A 64-bit hashing algorithm that uses the state of the allocation heap as a "salt".
@@ -21,6 +24,7 @@ namespace ShadowEngine {
 
         bool operator!= (const HeapHash& other) const { return hash != other.hash; }
         bool operator== (const HeapHash& other) const { return hash == other.hash; }
+        bool operator< (const HeapHash& other) const { return hash < other.hash; }
 
         size_t getHash() const { return hash; }
     private:
@@ -156,3 +160,25 @@ namespace ShadowEngine {
         }
     };
 }
+
+template<> struct fmt::formatter<SH::StableHash> {
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+
+    template <typename FormatContext>
+    auto format(const SH::StableHash& input, FormatContext& ctx) -> decltype(ctx.out()) {
+        return format_to(ctx.out(), "(%d)", input.getHash());
+    }
+};
+
+template<> struct fmt::formatter<SH::HeapHash> {
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        return ctx.end();
+    }
+
+    template <typename FormatContext>
+    auto format(const SH::HeapHash& input, FormatContext& ctx) -> decltype(ctx.out()) {
+        return format_to(ctx.out(), "(%d)", input.getHash());
+    }
+};

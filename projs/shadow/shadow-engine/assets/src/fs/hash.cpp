@@ -1,7 +1,7 @@
 #include <shadow/assets/fs/hash.h>
 #include <shadow/assets/fs/xxhash.h>
 
-namespace ShadowEngine {
+namespace SH {
 
   StableHash::StableHash(const void *data, uint32_t length) {
       hash = XXHash64::hash(data, length, 0);

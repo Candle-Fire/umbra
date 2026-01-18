@@ -6,14 +6,14 @@
 
 #include <utility>
 
-namespace ShadowEngine {
+namespace SH {
   const uint32_t ResourceHeader::MAGIC = 'VXIP';
 
   ResourceType::ResourceType(const std::string& name) {
       hash = HeapHash(name);
   }
 
-  Resource::Resource(ShadowEngine::Path  path, ShadowEngine::ResourceTypeManager &manager)
+  Resource::Resource(Path  path, ResourceTypeManager &manager)
       : references(0),
         emptyDependencies(0),
         failedDependencies(0),
@@ -124,7 +124,7 @@ namespace ShadowEngine {
       checkState();
   }
 
-  void Resource::onCreated(ShadowEngine::Resource::State newState) {
+  void Resource::onCreated(Resource::State newState) {
       state = newState;
       desiredState = State::READY;
       failedDependencies = state == State::FAILED ? 1 : 0;
@@ -145,7 +145,7 @@ namespace ShadowEngine {
       handle = fs.readAsync(resourcePath, cb);
   }
 
-  void Resource::addDependency(ShadowEngine::Resource &dependent) {
+  void Resource::addDependency(Resource &dependent) {
       dependent.callback.bind<&Resource::stateChanged>(this);
       if (dependent.isEmpty()) emptyDependencies++;
       if (dependent.isFailure()) failedDependencies++;
@@ -153,7 +153,7 @@ namespace ShadowEngine {
       checkState();
   }
 
-  void Resource::removeDependency(ShadowEngine::Resource &dependent) {
+  void Resource::removeDependency(Resource &dependent) {
       dependent.callback.unbind<&Resource::stateChanged>(this);
       if (dependent.isEmpty()) --emptyDependencies;
       if (dependent.isFailure()) --failedDependencies;
@@ -169,8 +169,8 @@ namespace ShadowEngine {
       return references;
   }
 
-  void Resource::stateChanged(ShadowEngine::Resource::State old, ShadowEngine::Resource::State newState,
-                              ShadowEngine::Resource &) {
+  void Resource::stateChanged(Resource::State old, Resource::State newState,
+                              Resource &) {
       if (old == State::EMPTY) --emptyDependencies;
       if (old == State::FAILED) --failedDependencies;
 
@@ -182,8 +182,8 @@ namespace ShadowEngine {
 
   const ResourceType PrefabResource::TYPE("prefab");
 
-  PrefabResource::PrefabResource(const ShadowEngine::Path &path,
-                                 ShadowEngine::ResourceTypeManager &resource_manager) : Resource(path, resource_manager) {}
+  PrefabResource::PrefabResource(const Path &path,
+                                 ResourceTypeManager &resource_manager) : Resource(path, resource_manager) {}
 
   ResourceType PrefabResource::getType() const { return TYPE; }
 

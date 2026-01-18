@@ -3,7 +3,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ShadowEngine {
+namespace SH {
 
     template <typename T> struct DelegateList;
 

@@ -7,11 +7,11 @@
 #include <windows.h>
 #include "shadow/assets/management/synchronization.h"
 
-namespace ShadowEngine { struct NewPlaceholder {}; }
-inline void* operator new(size_t, ShadowEngine::NewPlaceholder, void* where) { return where; }
-inline void operator delete(void*, ShadowEngine::NewPlaceholder,  void*) { }
+namespace SH { struct NewPlaceholder {}; }
+inline void* operator new(size_t, SH::NewPlaceholder, void* where) { return where; }
+inline void operator delete(void*, SH::NewPlaceholder,  void*) { }
 
-namespace ShadowEngine {
+namespace SH {
 
     Semaphore::Semaphore(int initCount, int maxCount) {
         id = ::CreateSemaphore(nullptr, initCount, maxCount, nullptr);
@@ -39,7 +39,7 @@ namespace ShadowEngine {
         ((CONDITION_VARIABLE*)data)->~CONDITION_VARIABLE();
     }
 
-    void ConditionVariable::sleep(ShadowEngine::Mutex &mut) {
+    void ConditionVariable::sleep(Mutex &mut) {
         ::SleepConditionVariableSRW((CONDITION_VARIABLE*) data, (SRWLOCK*) mut.data, INFINITE, 0);
     }
 

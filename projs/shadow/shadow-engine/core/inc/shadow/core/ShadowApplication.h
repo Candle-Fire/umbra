@@ -1,5 +1,4 @@
 #pragma once
-#include "ShadowWindow.h"
 #include "module-manager-v2.h"
 #include "shadow/exports.h"
 #include "imgui.h"
@@ -13,7 +12,8 @@
 namespace SH {
 
     /// <summary>
-    /// Represents the application
+    /// The globally-available engine core struct.
+    /// Provides an access point to core useful objects, such as the DFS corresponding to the application's physical file location, the event bus, and the module manager.
     /// </summary>
     class API ShadowApplication : SH::SHObject {
       SHObject_Base(ShadowApplication)

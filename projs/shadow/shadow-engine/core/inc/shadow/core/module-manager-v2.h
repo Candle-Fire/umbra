@@ -9,7 +9,7 @@
 
 #include "Module.h"
 #include "shadow/exports.h"
-#include "shadow/core/PathID.h"
+#include "shadow/assets/fs/path.h"
 #include "shadow/log/LoggerModule.h"
 
 using ID = std::string;

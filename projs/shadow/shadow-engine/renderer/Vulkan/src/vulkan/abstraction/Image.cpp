@@ -5,9 +5,9 @@
 #include <utility>
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "shadow/assets/fs/file.h"
 #include "shadow/util/stb_image.h"
 #include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
-#include "shadow/util/File.h"
 
 namespace vlkx {
     struct ImageConfig {
@@ -34,11 +34,14 @@ namespace vlkx {
     };
 
     ImageData loadImage(const std::string &path, int wantedChannels) {
-        shadowutil::FileData *data = shadowutil::loadFile(path);
+        SH::FileInput file {SH::Path(path)};
+        const uint8_t* data = new uint8_t[file.size()];
+        file.read((void*) data, file.size());
+
         int width, height, channels;
 
-        stbi_uc *stbData = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(data->data.data()),
-                                                 data->size,
+        stbi_uc *stbData = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(data),
+                                                 file.size(),
                                                  &width,
                                                  &height,
                                                  &channels,
@@ -52,8 +55,8 @@ namespace vlkx {
 
             case 3: {
                 stbi_image_free(stbData);
-                stbData = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(data->data.data()),
-                                                data->size,
+                stbData = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(data),
+                                                file.size(),
                                                 &width,
                                                 &height,
                                                 &channels,
@@ -65,6 +68,8 @@ namespace vlkx {
                 throw std::runtime_error(
                     "Trying to load image with unsupported number of channels: " + std::to_string(channels));
         }
+
+        file.close();
 
         return {{static_cast<uint32_t>(width), static_cast<uint32_t>(height), static_cast<uint32_t>(channels)},
                 reinterpret_cast<const char *>(stbData)};

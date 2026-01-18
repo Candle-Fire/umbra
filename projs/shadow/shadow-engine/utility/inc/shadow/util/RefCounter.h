@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 
+// vlkx
 namespace shadowutil {
 
     // An object wrapper that behaves like smart pointers.

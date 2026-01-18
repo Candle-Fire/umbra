@@ -247,28 +247,6 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
     }
 }
 
-/*void VulkanModule::PreRender(SH::Events::PreRender) {
-    if (editorEnabled) {
-        editorRenderCommands->executeSimple(editorRenderCommands->getFrame(),
-                                            [](const int frame) {
-                                                SH::ShadowApplication::Get().GetModuleManager().Update(frame);
-                                            },
-                                            [&](const VkCommandBuffer &buffer, int frame) {
-                                                renderPass->getPass()->execute(buffer, frame, {
-                                                    [&](const VkCommandBuffer &commands) {
-                                                        renderingGeometry = true;
-                                                        //ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::Render(const_cast<VkCommandBuffer&>(commands), frame));
-
-                                                        //ShadowEngine::ShadowApplication::Get().GetEventBus().fire(SH::Events::PostRender(const_cast<VkCommandBuffer&>(commands), frame));
-                                                        renderingGeometry = false;
-                                                    }
-                                                });
-                                            }
-        );
-
-    }
-}*/
-
 void VulkanModule::Destroy() {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplSDL2_Shutdown();

@@ -6,9 +6,8 @@
 #include <optional>
 #include <set>
 
-#include "shadow/core/PathID.h"
-
 #include "Assembly.h"
+#include "shadow/assets/fs/path.h"
 
 namespace Runtime {
 
