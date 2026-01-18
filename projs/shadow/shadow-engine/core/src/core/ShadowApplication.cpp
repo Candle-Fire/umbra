@@ -12,6 +12,7 @@
 #include "shadow/log/LoggerModule.h"
 #include "shadow/platform/console-setup.h"
 #include "shadow/assets/fs/file.h"
+#include "shadow/jobs/Job.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -55,6 +56,8 @@ namespace SH {
   void ShadowApplication::Init() {
       Runtime::Runtime::Get().AddAssembly({"assembly:/core"_id, "shadow-engine"});
       moduleManager.LoadModulesFromAssembly("assembly:/core"_id);
+
+      SH::Jobs::init();
 
       if (!game.empty()) {
           spdlog::info("Loading Game: {0}", game);
