@@ -21,9 +21,6 @@ namespace SH {
    *
    */
   struct Profiler {
-    // Stop the thread being profiled.
-    // Useful for scripting.
-    static API void Pause(bool paused);
     // Set a specific name for the current thread in the profiler.
     static API void SetThreadName(const char *name);
     // Set whether the current thread will show in the profiler.
@@ -31,17 +28,18 @@ namespace SH {
 
     // Start a new block. Will separate the named results out from all others.
     static API void Begin(const char *name);
+    // Tell the profiler that a new job is starting on the current thread. Will allow filtering by job type.
+    static API void Task(size_t signal);
     // Set a color for the current block.
     static API void BlockColor(DirectX::XMFLOAT3 c);
     // End the current block.
     static API void End();
     // End the current frame.
     static API void Frame();
-    // Tell the profiler that a new job is starting on the current thread. Will allow filtering by job type.
-    static API void PushJob(size_t signal);
     // Send arbitrary data to the profiler log.
     static API void PushString(const char *value);
     static API void PushInt(const char *key, int value);
+    static API void PushMutex(size_t id, size_t beginStart, size_t beginEnd, size_t exitStart, size_t exitEnd);
 
     // Create a counter; increase at whim.
     static API size_t MakeCounter(const char *key, float min);
@@ -112,6 +110,7 @@ namespace SH {
     struct CounterData {
       const char* name;
       float min;
+      float last = -1;
     };
 
     struct Counter {
@@ -125,17 +124,25 @@ namespace SH {
     };
 
     struct Job {
+      size_t id;
       size_t signal;
     };
 
     struct FiberWait {
       uint32_t ID;
       size_t signal;
-      bool mutex;
+    };
+
+    struct Mutex {
+      size_t mutex;
+      size_t enterStart;
+      size_t enterEnd;
+      size_t exitStart;
+      size_t exitEnd;
     };
 
     struct GPU {
-      const char* name;
+      char name[32];
       size_t timestamp;
       size_t profiler;
     };
@@ -158,7 +165,8 @@ namespace SH {
       GPUStats,
       Continue,
       Signal,
-      Counter
+      Counter,
+      Mutex
     };
 
     #pragma pack(1)
