@@ -69,12 +69,52 @@ namespace SH::Jobs {
             queue.threads.reserve(queue.nThreads);
 
             for (size_t i = 0; i < 256; i++)
-                queue.threadLookup[i] = i & queue.nThreads;
+                queue.threadLookup[i] = i % queue.nThreads;
 
-            for (size_t thread = 0; thread < 1; thread++) { //queue.nThreads; thread++) {
-                spdlog::debug("Setting up thread {} for priority {}.", thread, p == Priority::HIGHEST ? "highest" : p == Priority::LOW ? "lowest" : "stream");
-                std::thread& worker = queue.threads.emplace_back([thread, &queue] {
-                    spdlog::debug("Worker thread {} starting loop", thread);
+            for (size_t thread = 0; thread < queue.nThreads; thread++) { // thread < 1; thread++) {
+                //spdlog::debug("Setting up thread {} for priority {}.", thread, p == Priority::HIGHEST ? "highest" : p == Priority::LOW ? "lowest" : "stream");
+                std::thread& worker = queue.threads.emplace_back([thread, &queue, p] {
+#ifdef WIN32
+                    HANDLE wHandle = GetCurrentThread();
+                    // Set Thread Affinity within the thread, because pthread_gethandle isn't happy
+
+                    int core = p == Priority::STREAM ? internalState.nCores - 1 - thread : thread + 1;
+                    DWORD_PTR affinity = 1 << core;
+                    DWORD_PTR res = SetThreadAffinityMask(wHandle, affinity);
+                    if (!res) {
+                        LPVOID lpMsgBuf;
+                        DWORD dw = GetLastError();
+
+                        if (FormatMessage(
+                            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                            FORMAT_MESSAGE_FROM_SYSTEM |
+                            FORMAT_MESSAGE_IGNORE_INSERTS,
+                            NULL,
+                            dw,
+                            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                            (LPTSTR) &lpMsgBuf,
+                            0, NULL) == 0) {
+                                ExitProcess(dw);
+                            }
+                        spdlog::error("SetThreadAffinity returned {}", (const char*)lpMsgBuf);
+                    }
+                    assert(res);
+                    BOOL priorityRes = SetThreadPriority(wHandle,
+                        p == Priority::HIGHEST ? THREAD_PRIORITY_NORMAL :
+                        p == Priority::LOW ? THREAD_PRIORITY_LOWEST :
+                        /* p = Priority::STREAMING ? */ THREAD_PRIORITY_BELOW_NORMAL);
+
+                    assert(priorityRes);
+                    std::string threadName =
+                        std::string("SH::Job::") +
+                            (p == Priority::HIGHEST ? "" :
+                            p == Priority::LOW ? "Low::" :
+                            /*p == Priority::STREAMING*/ "Stream::") +
+                            std::to_string(thread);
+                    pthread_setname_np(pthread_self(), threadName.c_str());
+#endif
+
+                    //spdlog::debug("Worker thread {} starting loop", thread);
                     while (internalState.alive.load()) {
                         queue.execute(thread);
                         std::unique_lock lock(queue.wakeLocker);
@@ -82,29 +122,7 @@ namespace SH::Jobs {
                     }
                 });
 
-                auto handle = worker.native_handle();
-                int core = p == Priority::STREAM ? internalState.nCores - 1 - thread : thread + 1;
-
 #ifdef WIN32
-                HANDLE wHandle = pthread_gethandle(handle);
-                DWORD_PTR affinity = 1 << core;
-                DWORD_PTR res = SetThreadAffinityMask(pthread_gethandle(handle), affinity);
-                assert(res);
-
-                BOOL priorityRes = SetThreadPriority(wHandle,
-                    p == Priority::HIGHEST ? THREAD_PRIORITY_NORMAL :
-                    p == Priority::LOW ? THREAD_PRIORITY_LOWEST :
-                    /* p = Priority::STREAMING ? */ THREAD_PRIORITY_BELOW_NORMAL);
-
-                assert(priorityRes);
-                std::string threadName =
-                    std::string("SH::Job::") +
-                        (p == Priority::HIGHEST ? "" :
-                         p == Priority::LOW ? "Low::" :
-                         /*p == Priority::STREAMING*/ "Stream::") +
-                        std::to_string(thread);
-                pthread_setname_np(handle, threadName.c_str());
-
 #elif defined(PLATFORM_LINUX)
 
                 // TODO: cpuset for pthread_setaffinity, pthread_setname.

@@ -40,6 +40,10 @@ target_compile_definitions(shadow-engine
         EXPORTING_SH_ENGINE
 )
 
+target_compile_options(shadow-engine
+        PRIVATE
+        -pthread
+)
 if (TRUE)
 
     target_sources(shadow-engine PRIVATE

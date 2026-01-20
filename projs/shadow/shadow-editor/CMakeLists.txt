@@ -21,7 +21,7 @@ target_link_libraries(shadow-editor
 )
 
 target_link_options(shadow-editor
-        PRIVATE -Wl,--export-dynamic
+        PRIVATE -Wl,--export-all-symbols
 )
 
 add_custom_command(TARGET shadow-editor

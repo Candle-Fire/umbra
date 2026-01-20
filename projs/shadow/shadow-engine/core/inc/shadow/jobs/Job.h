@@ -135,7 +135,7 @@ namespace SH::Jobs {
          * @param firstQueue the first queue to perform work on, enabling skipping queues already processed.
          */
         inline void execute(size_t firstQueue) {
-            spdlog::trace("PriorityQueue::execute running, queue {}, lookup {}.", firstQueue, threadLookup[firstQueue]);
+            //spdlog::trace("PriorityQueue::execute running, queue {}, lookup {}.", firstQueue, threadLookup[firstQueue]);
             if (firstQueue >= nThreads) return;
             TaskGroup task;
             for (size_t i = 0; i < nThreads; i++) {
