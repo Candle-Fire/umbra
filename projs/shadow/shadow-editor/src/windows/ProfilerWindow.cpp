@@ -2,6 +2,7 @@
 #include <windows/ProfilerWindow.h>
 
 #include "imgui.h"
+#include "shadow/entitiy/editor/HierarchyWindow.h"
 #include "shadow/platform/Common.h"
 
 bool isOpen = false;
@@ -157,6 +158,28 @@ namespace SH::Editor::Profiler {
         return ThreadContextReader(data.dataMut() + blob.pos());
     }
 
+    template <typename Func>
+    void forEachThread(const Func& func) {
+        if (data.empty()) return;
+
+        InputMemoryStream blob(data);
+        uint32_t version = blob.read<uint32_t>();
+        uint32_t counters = blob.read<uint32_t>();
+        blob.skip(counters * sizeof(Profiler::Counter));
+        uint32_t count = blob.read<uint32_t>();
+        uint8_t* iter = (uint8_t*) blob.skip(0);
+
+        ThreadContextReader thread(iter);
+        func(thread);
+
+        iter = thread.next();
+        for (uint32_t i = 0; i < count; i++) {
+            ThreadContextReader reader(iter);
+            func(reader);
+            iter = reader.next();
+        }
+    }
+
     void makeVisible() {
         isOpen = true;
     }
@@ -206,8 +229,142 @@ namespace SH::Editor::Profiler {
         ImGui::End();
     }
 
-    void drawFlameGraph() {
+    void load() {
 
+    }
+
+    void save() {
+
+    }
+
+    void insertStrings() {
+
+    }
+
+    void prepare() {
+
+    }
+
+    void cacheBlocks() {
+
+    }
+
+    void snapshot() {
+        data.clear();
+        // SH::Profiler::Serialize(data);
+        insertStrings();
+        prepare();
+        cacheBlocks();
+    }
+
+    void drawCounters(float fromX, float toX) {
+
+    }
+
+    void drawThread(ThreadContextReader& ctx, float fromX, float toX) {
+
+    }
+
+    void drawContextSwitches(float fromX, float toX) {
+
+    }
+
+    void drawFrameMarkers(float fromx, float toX, float y, size_t& startTime) {
+
+    }
+
+    void drawGPU(float fromX, float toX) {
+
+    }
+
+    void timeline(float fromX, float toX, float top, float bottom, size_t startTime) {
+
+    }
+
+
+    void drawFlameGraph() {
+        if (ImGui::Button(ICON_FA_DOWNLOAD))
+            snapshot();
+
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_COGS)) ImGui::OpenPopup("Advanced Profiler Functions");
+        if (ImGui::BeginPopup("Advanced Profiler Functions")) {
+            if (ImGui::MenuItem("Load Saved Profile")) load();
+            if (ImGui::MenuItem("Save Current Profile")) save();
+            ImGui::Checkbox("Show Frame Markers", &showFrames);
+            ImGui::Checkbox("Show Mutex Markers", &showMutexes);
+            ImGui::Checkbox("Show Context Switch Markers", &showContextSwitches);
+            ImGui::Text("Zoom: %f", range / double(100000));
+            if (ImGui::MenuItem("Reset Zoom")) range = 100000;
+
+            if (ImGui::BeginMenu("Threads")) {
+                size_t threadCtr = 0;
+                forEachThread([&](const ThreadContextReader& ctx) {
+                    auto thread = threads.find(ctx.id);
+                    if (thread != threads.end()) {
+                        ImGui::Checkbox(std::string(ctx.name).append(" (").append(std::to_string(ctx.id)).append(")").c_str(), &thread->second.show);
+                        threadCtr++;
+                    }
+                });
+                if (!threadCtr) {
+                    ImGui::Text("No profiler information for any threads loaded.");
+                    ImGui::Text("Try using the snapshot (download) button to the left of this menu.");
+                    ImGui::Text("Alternatively, load a saved profile.");
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndPopup();
+        }
+
+        if (data.empty()) return;
+
+        size_t freq = SH::Profiler::GetFrequency();
+        ImGui::SameLine();
+        ImGui::Text("%.3f ms", 1000 * float(range / double(freq)));
+        float timelineY = ImGui::GetCursorScreenPos().y;
+        // Vertical spacer between buttons, text, and the actual content.
+        ImGui::Dummy(ImVec2(-1, ImGui::GetTextLineHeightWithSpacing()));
+
+        const float fromY = ImGui::GetCursorScreenPos().y;
+        const float fromX = ImGui::GetCursorScreenPos().x;
+        const float toX = fromX + ImGui::GetContentRegionAvail().x;
+        size_t viewStart = end - range;
+        size_t timelineStart = viewStart;
+
+        if (ImGui::BeginChild("CPU GPU")) {
+            ImDrawList* list = ImGui::GetWindowDrawList();
+            list->ChannelsSplit(2);
+
+            drawCounters(fromX, toX);
+            forEachThread([&](ThreadContextReader& ctx) { drawThread(ctx, fromX, toX); });
+            drawContextSwitches(fromX, toX);
+            drawFrameMarkers(fromX, toX, fromY, timelineStart);
+            drawGPU(fromX, toX);
+
+            if (ImGui::IsMouseHoveringRect(ImVec2(fromX, fromY), ImVec2(toX, ImGui::GetCursorScreenPos().y))) {
+                if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+                    end -= size_t(ImGui::GetIO().MouseDelta.x / (toX - fromX)) * range;
+                    cacheBlocks();
+                }
+
+                // Zoom
+                if (ImGui::GetIO().KeyCtrl) {
+                    size_t cursor = (((ImGui::GetMousePos().x - fromX) / (toX - fromX)) * range) + viewStart;
+                    if (ImGui::GetIO().MouseWheel > 0 && range > 1) {
+                        range >>= 1;
+                        end = ((end - cursor) >> 1) + cursor;
+                    } else if (ImGui::GetIO().MouseWheel < 0) {
+                        range <<= 1;
+                        end = ((end - cursor) << 1) + cursor;
+                    }
+                    cacheBlocks();
+                }
+            }
+            list->ChannelsMerge();
+        }
+        ImGui::EndChild();
+
+        timeline(fromX, toX, timelineY, ImGui::GetCursorScreenPos().y, timelineStart);
     }
 
     void drawGPU() {

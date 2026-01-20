@@ -7,6 +7,9 @@
 #include "shadow/assets/resource/Resource.h"
 #include "shadow/profile/Profiler.h"
 
+#define ICON_FA_DOWNLOAD "\uf019"
+#define ICON_FA_COGS "\uf085"
+
 namespace SH::Editor::Profiler {
 
     struct ThreadData {
@@ -120,7 +123,7 @@ namespace SH::Editor::Profiler {
     void timeline(float fromX, float toX, float top, float bottom, size_t startTime);
     void drawCounters(float fromX, float toX);
     void drawResources();
-    void drawThreads(ThreadContextReader& ctx, float fromX, float toX);
+    void drawThread(ThreadContextReader& ctx, float fromX, float toX);
     void drawContextSwitches(float fromX, float toX);
     void drawGPU();
     void drawGPUGraph(size_t time, float fromX, float toX);
