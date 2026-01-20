@@ -3,6 +3,8 @@
 #include <shadow/exports.h>
 #include <shadow/math/dxmath.h>
 
+#include "shadow/assets/fs/iostream.h"
+
 namespace SH {
 
   /**
@@ -25,6 +27,9 @@ namespace SH {
     static API void SetThreadName(const char *name);
     // Set whether the current thread will show in the profiler.
     static API void ShowInProfiler(bool show);
+
+    // Output most of the stored compiler data to binary format, for saving or viewing in the Editor.
+    static API void Export(OutputMemoryStream& blob);
 
     // Start a new block. Will separate the named results out from all others.
     static API void Begin(const char *name);

@@ -1,3 +1,5 @@
+#include <crtdbg.h>
+#include <map>
 #include <shadow/profile/Profiler.h>
 #include <vector>
 #include "shadow/assets/fs/iostream.h"
@@ -5,6 +7,7 @@
 #include "shadow/assets/management/synchronization.h"
 #include <shadow/core/Thread.h>
 #include <shadow/platform/Common.h>
+#include "shadow/event-bus/events.h"
 
 #ifdef _WIN32
 #define INITGUID
@@ -74,6 +77,10 @@ namespace SH {
                 Page* next = nullptr;
                 uint32_t size = 0;
             };
+
+            Page() {
+                memset(buffer, 0, 4096 - sizeof(header));
+            }
 
             Header header;
             uint8_t buffer[4096 - sizeof(header)];
@@ -242,7 +249,6 @@ namespace SH {
         ThreadContext global;
     } gInstance;
 
-
     template <bool lock>
     static void Flush(ThreadContext& ctx) {
         if constexpr (lock) ctx.mut.enter();
@@ -329,7 +335,92 @@ namespace SH {
         ctx.bufferPtr += bytesToWrite;
 
         if constexpr (lock) ctx.mut.exit();
-    };
+    }
+
+    void ExportThreadStrings(std::vector<const char*>* strings, const ThreadContext& ctx) {
+        ThreadContext::Page* page = ctx.firstPage;
+        while (page) {
+            uint32_t idx = 0;
+            while (idx < page->header.size) {
+                Profiler::Event header;
+                memcpy(&header, &page->buffer[idx], sizeof(header));
+
+                switch (header.type) {
+                case Profiler::EventType::Begin: {
+                    Profiler::Block b;
+                    memcpy(&b, &page->buffer[idx + sizeof(Profiler::Event)], sizeof(b));
+                    if (std::find(strings->begin(), strings->end(), b.name) == strings->end())
+                        strings->push_back(b.name);
+                    break;
+                }
+                case Profiler::EventType::Int: {
+                    Profiler::Int i;
+                    memcpy(&i, &page->buffer[idx + sizeof(Profiler::Event)], sizeof(i));
+                    if (std::find(strings->begin(), strings->end(), i.key) == strings->end())
+                        strings->push_back(i.key);
+                    break;
+                }
+                default: break;
+                }
+
+                idx += header.size;
+            }
+            page = page->header.next;
+        }
+    }
+
+    void ExportStrings(OutputMemoryStream& blob) {
+        std::vector<const char*> strings;
+
+        ExportThreadStrings(&strings, gInstance.global);
+        for (const ThreadContext* ctx : gInstance.contexts)
+            ExportThreadStrings(&strings, *ctx);
+
+        blob.write(strings.size());
+        for (const char* iter : strings) {
+            blob.write((size_t) iter);
+            blob.write(iter, strlen(iter) + 1);
+        }
+    }
+
+    void ExportThread(OutputMemoryStream& blob, ThreadContext& thread) {
+        MutexGuard lock(thread.mut);
+
+        Flush<false>(thread);
+        blob.write(thread.name);
+        blob.write((uint32_t) thread.threadID);
+        blob.write(thread.show);
+        uint32_t size = 0;
+        const ThreadContext::Page* page = thread.firstPage;
+        // Iterate first to get the number of pages.
+        while (page) {
+            size += page->header.size;
+            page = page->header.next;
+        }
+        blob.write(size);
+        // Iterate again to write each page size out.
+        page = thread.firstPage;
+        while (page) {
+            blob.write(page->buffer, page->header.size);
+            page = page->header.next;
+        }
+
+        _CrtDumpMemoryLeaks();
+    }
+
+    void Profiler::Export(OutputMemoryStream& blob) {
+        MutexGuard lock(gInstance.mut);
+
+        blob.write(1);
+        blob.write((uint32_t) gInstance.counters.size());
+        blob.write(gInstance.counters.data(), gInstance.counters.size() * sizeof(Profiler::CounterData));
+        blob.write((uint32_t) gInstance.contexts.size());
+        ExportThread(blob, gInstance.global);
+        for (ThreadContext* ctx : gInstance.contexts)
+            ExportThread(blob, *ctx);
+
+        ExportStrings(blob);
+    }
 
 #ifdef _WIN32
 
