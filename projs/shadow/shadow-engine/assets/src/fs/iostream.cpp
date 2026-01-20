@@ -1,6 +1,9 @@
 
-#include <cstring>
+#include <cstdint>
+#include <string>
 #include "shadow/assets/fs/iostream.h"
+
+#include <cstring>
 
 namespace SH {
 
@@ -9,20 +12,16 @@ namespace SH {
 
     OutputMemoryStream::OutputMemoryStream() : buffer(), capacity(0), usage(0) {}
 
-    OutputMemoryStream::OutputMemoryStream(OutputMemoryStream &&str) noexcept {
-        capacity = str.capacity;
-        buffer = str.buffer;
-        usage = str.usage;
-
+    OutputMemoryStream::OutputMemoryStream(OutputMemoryStream &&str) noexcept : buffer(str.buffer), capacity(str.capacity), usage(str.usage) {
         str.free();
     }
 
-    OutputMemoryStream& OutputMemoryStream::operator=(OutputMemoryStream &&str) noexcept {
-        capacity = str.capacity;
-        buffer = str.buffer;
-        usage = str.usage;
+    OutputMemoryStream& OutputMemoryStream::operator=(OutputMemoryStream &&rhs) noexcept {
+        capacity = rhs.capacity;
+        buffer = rhs.buffer;
+        usage = rhs.usage;
 
-        str.free();
+        rhs.free();
         return *this;
     }
 
@@ -30,7 +29,7 @@ namespace SH {
         usage = rhs.usage;
 
         if (rhs.capacity > 0) {
-            buffer = (uint8_t*)malloc(rhs.capacity);
+            buffer = new uint8_t[rhs.capacity];
             memcpy(buffer, rhs.buffer, rhs.capacity);
             capacity = rhs.capacity;
         } else {
@@ -41,11 +40,9 @@ namespace SH {
         return *this;
     }
 
-    OutputMemoryStream::OutputMemoryStream(const OutputMemoryStream &rhs) noexcept {
-        usage = rhs.usage;
-
+    OutputMemoryStream::OutputMemoryStream(const OutputMemoryStream &rhs) noexcept : usage(rhs.usage) {
         if (rhs.capacity > 0) {
-            buffer = (uint8_t*)malloc(rhs.capacity);
+            buffer = new uint8_t[rhs.capacity];
             memcpy(buffer, rhs.buffer, rhs.capacity);
             capacity = rhs.capacity;
         } else {
@@ -53,9 +50,6 @@ namespace SH {
             capacity = 0;
         }
     }
-
-
-    OutputMemoryStream::~OutputMemoryStream() = default;
 
     OutputStream &OutputStream::operator<<(std::string &str) {
         write(str.data(), str.length());
@@ -110,10 +104,11 @@ namespace SH {
 
     void OutputMemoryStream::resize(size_t size) {
         if (size > 0) {
-            auto* newbuffer = (uint8_t*)malloc(size);
+            auto* newbuffer = new uint8_t[size];
             memcpy(newbuffer, buffer, usage);
             capacity = size;
             delete[] buffer;
+            buffer = newbuffer;
         } else {
             delete[] buffer;
             capacity = 0;
@@ -176,7 +171,7 @@ namespace SH {
     void OutputMemoryStream::reserve(size_t size) {
         if (size < capacity) return;
 
-        auto* temp = static_cast<uint8_t *>(malloc(size));
+        auto* temp = new uint8_t[size];
         memcpy(temp, buffer, capacity);
         delete[] buffer;
         buffer = temp;
@@ -184,7 +179,7 @@ namespace SH {
     }
 
     uint8_t *OutputMemoryStream::release() {
-        auto* temp = static_cast<uint8_t *>(malloc(usage));
+        auto* temp = new uint8_t[usage];
         memcpy(temp, buffer, usage);
         free();
         return temp;
@@ -207,7 +202,7 @@ namespace SH {
             position = capacity;
         }
 
-        return (const void*) pos;
+        return pos;
     }
 
     bool InputMemoryStream::read(void *out, size_t size) {

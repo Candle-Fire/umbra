@@ -82,16 +82,16 @@ namespace SH {
         std::vector<Block> openBlocks;
         // Used as the data buffer.
         uint8_t buffer[sizeof(Page::buffer)];
-        uint32_t bufferPtr;
+        uint32_t bufferPtr = 0;
 
         Mutex mut;
-        Page* firstPage;
-        Page* lastPage;
-        size_t pages;
+        Page* firstPage = nullptr;
+        Page* lastPage = nullptr;
+        size_t pages = 0;
 
         std::string name;
         bool show = false;
-        size_t threadID;
+        size_t threadID = 0;
     };
 
     // This ifdef contains a bunch of the infrastructure necessary for performance monitoring under Windows.
@@ -425,6 +425,7 @@ namespace SH {
         GPUScope& s = gInstance.scopes.emplace_back();
         s.name = name;
         scopeID = gInstance.scopes.size() - 1;
+        return s;
     }
 
     void Profiler::BeginGPU(const char* name, size_t time, size_t profiler) {

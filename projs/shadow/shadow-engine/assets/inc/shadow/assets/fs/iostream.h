@@ -1,12 +1,14 @@
 #pragma once
 #include <string>
 #include <cstdint>
+#include <shadow/exports.h>
 
 namespace SH {
     // A custom OutputStream that can be implemented to output to any arbitrary data structure.
     // The idea is that it can write to a file, or into memory, or into a temporary buffer that is copied to both.
     // As opposed to the hardcoded streams that exist in C++, which have a single purpose for their entire lifetime.
-    struct OutputStream {
+    struct API OutputStream {
+        virtual ~OutputStream() = default;
         virtual bool write(const void* data, size_t size) = 0;
 
         OutputStream& operator<< (std::string& str);
@@ -24,7 +26,7 @@ namespace SH {
     // A custom InputStream that can be implemented to read from any arbitrary data structure.
     // The idea is that it can read from a file, or from memory, or from a temporary buffer that is merged from both.
     // As opposed to the hardcoded streams that exist in C++, which have a single purpose for their entire lifetime.
-    struct InputStream {
+    struct API InputStream {
         virtual bool read(void* buffer, size_t size) = 0;
         virtual const void* getBuffer() const = 0;
         virtual size_t size() const = 0;
@@ -34,13 +36,12 @@ namespace SH {
     };
 
     // A custom OutputStream that writes to memory.
-    struct OutputMemoryStream final : OutputStream {
-
+    struct API OutputMemoryStream final : OutputStream {
         OutputMemoryStream();
         OutputMemoryStream(void* data, size_t size);
         OutputMemoryStream(OutputMemoryStream&& str) noexcept;
         OutputMemoryStream(const OutputMemoryStream& rhs) noexcept;
-        ~OutputMemoryStream();
+        ~OutputMemoryStream() = default;
 
         OutputMemoryStream& operator= (const OutputMemoryStream& rhs) noexcept;
         OutputMemoryStream& operator= (OutputMemoryStream&& rhs) noexcept;
@@ -83,7 +84,7 @@ namespace SH {
     }
 
     // A custom InputStream that writes from memory.
-    struct InputMemoryStream final : InputStream {
+    struct API InputMemoryStream final : InputStream {
         InputMemoryStream(const void* data, size_t size);
         explicit InputMemoryStream(const OutputMemoryStream& blob);
 

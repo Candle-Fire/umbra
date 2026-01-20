@@ -1,7 +1,7 @@
 #include "../../inc/windows/DebugWindows.h"
-#include "imgui.h"
 #include "shadow/core/ShadowApplication.h"
 #include "../../inc/EditorModule.h"
+#include "windows/ProfilerWindow.h"
 
 namespace SH::Editor {
 
@@ -30,11 +30,16 @@ namespace SH::Editor {
             .clk=[this]() {
                 debugModule.lock()->w_imguiDemo = true;
             }});
+        editormodule->RegisterMenu("Windows/Profiler", Menu {
+            .clk=[]() {
+                SH::Editor::Profiler::makeVisible();
+            }});
     }
 
     void DebugWindows::Draw() {
         debugModule.lock()->DrawModuleWindow();
         debugModule.lock()->DrawTimeWindow();
         debugModule.lock()->DrawImguiDemo();
+        Editor::Profiler::draw();
     }
 }
