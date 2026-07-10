@@ -7,7 +7,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "shadow/core/ShadowApplication.h"
-#include "shadow/core/SDL2Module.h"
+#include "shadow/core/SDL3Module.h"
 #include "shadow/renderer/vulkan/vlkx/render/render_pass/ScreenRenderPass.h"
 #include <shadow/renderer/vulkan/vlkx/vulkan/SwapChain.h>
 #include "shadow/core/module-manager-v2.h"
@@ -327,7 +327,7 @@ void VulkanModule::initVulkan(SDL_Window *window) {
 
     validators->setupDebugCallback(validationRequired, vulkan);
 
-    if (SDL_Vulkan_CreateSurface(window, vulkan, &surface) != SDL_TRUE)
+    if (SDL_Vulkan_CreateSurface(window, vulkan, &surface) != true)
         throw std::runtime_error("Unable to create Vulkan Surface");
 
     this->device = new VulkanDevice();

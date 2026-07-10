@@ -1,4 +1,4 @@
-find_package(SDL2 CONFIG REQUIRED)
+#find_package(SDL3 CONFIG REQUIRED)
 find_package(ImGui REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -26,7 +26,7 @@ add_subdirectory(tests)
 target_link_libraries(shadow-engine
         PUBLIC
         DirectXMath
-        SDL2::SDL2
+        SDL3::SDL3
         glm::glm
         spdlog::spdlog
         dylib
@@ -48,7 +48,7 @@ if (TRUE)
             ${imgui_SOURCE_DIR}/imgui_draw.cpp
             ${imgui_SOURCE_DIR}/imgui_tables.cpp
             ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
             ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp
     )
 

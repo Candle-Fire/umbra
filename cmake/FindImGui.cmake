@@ -1,5 +1,5 @@
 set(CMAKE_CXX_STANDARD 20)
-find_package(SDL2 REQUIRED)
+#find_package(SDL3 REQUIRED)
 find_package(Vulkan REQUIRED)
 
 SET(imgui_SOURCE_DIR ${CMAKE_SOURCE_DIR}/projs/shadow/extern/imgui)

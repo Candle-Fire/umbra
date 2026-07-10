@@ -37,3 +37,5 @@ target_shadow_module(shadow-engine
         SOURCES ${SOURCES}
         INCLUDE_DIR ${IncludeDirs}
 )
+
+add_subdirectory(SDL3)

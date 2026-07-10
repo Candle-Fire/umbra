@@ -5,9 +5,9 @@
 #include "runtime/Runtime.h"
 #include "shadow/core/ShadowApplication.h"
 #include "shadow/core/Time.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/abstraction/Commands.h"
-#include "shadow/renderer/vulkan/vlkx/vulkan/VulkanModule.h"
 
+#include "shadow/core/convar.h"
+#include "shadow/log/LoggerModule.h"
 #include "shadow/platform/console-setup.h"
 
 #define CATCH(x) \
@@ -21,17 +21,13 @@ namespace SH {
 
   ShadowApplication *ShadowApplication::instance = nullptr;
 
-  std::unique_ptr<vlkx::RenderCommand> renderCommands;
-
-  std::weak_ptr<VulkanModule> renderer;
-
   ShadowApplication::ShadowApplication(int argc, char *argv[]) {
       instance = this;
 
       if (argc > 1) {
           for (size_t i = 0; i < argc; i++) {
               std::string param(argv[i]);
-              if (param == "-debug") {
+              if (param == "-trace") {
                   this->debug = true;
               }
               if (param == "-game") {
@@ -40,10 +36,10 @@ namespace SH {
           }
       }
 
-      if (this->debug)
-          spdlog::set_level(spdlog::level::debug);
+      auto cvarmgr = ConVarManager::Get();
+      cvarmgr->ParseArgs(argc, argv);
 
-      spdlog::set_level(spdlog::level::trace);
+      InitBasicLogger();
 
       InitConsole();
   }
@@ -63,10 +59,6 @@ namespace SH {
       }
 
       moduleManager.Init();
-
-      renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
-
-      renderCommands = std::make_unique<vlkx::RenderCommand>(2);
   }
 
   void ShadowApplication::Start() {
@@ -76,18 +68,12 @@ namespace SH {
               SH::Events::SDLEvent e(event);
               SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
               //eventBus.fire(e);
-              if (event.type == SDL_QUIT)
+              if (event.type == SDL_EVENT_QUIT)
                   running = false;
           }
 
           eventBus.fire(SH::Events::PreRender());
 
-          if (!renderer.expired()) {
-              auto r = renderer.lock();
-              r->BeginRenderPass(renderCommands);
-          }
-
-          renderCommands->nextFrame();
           Time::UpdateTime();
       }
 

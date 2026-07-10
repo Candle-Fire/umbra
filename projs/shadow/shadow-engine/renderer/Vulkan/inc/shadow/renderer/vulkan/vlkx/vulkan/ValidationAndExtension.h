@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <iostream>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 class ValidationAndExtension {
 public:

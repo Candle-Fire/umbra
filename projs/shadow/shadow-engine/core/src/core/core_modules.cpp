@@ -18,9 +18,9 @@ extern "C" {
                      });
 
     m.AddDescriptors({
-                         .id="module:/platform/sdl2",
-                         .name = "SDL2",
-                         .class_name = "SDL2Module",
+                         .id="module:/platform/sdl3",
+                         .name = "SDL3",
+                         .class_name = "SDL3Module",
                          .assembly="assembly:/core"_id,
                          .dependencies={"module:/core"},
                      });

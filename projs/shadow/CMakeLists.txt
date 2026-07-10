@@ -9,6 +9,7 @@ add_subdirectory(extern/dylib)
 add_subdirectory(extern/vulkan_memory_allocator)
 add_subdirectory(extern/catch2)
 include(extern/SDL2/CMakeLists.txt)
+include(extern/SDL3/CMakeLists.txt)
 
 
 # Core engine
@@ -18,4 +19,4 @@ add_subdirectory(shadow-engine)
 add_subdirectory(shadow-runtime)
 
 # Editor executable
-add_subdirectory(shadow-editor)
+#add_subdirectory(shadow-editor)
