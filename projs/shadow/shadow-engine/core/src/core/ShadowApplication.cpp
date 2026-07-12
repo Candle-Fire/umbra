@@ -27,6 +27,10 @@ namespace SH {
 
   std::unique_ptr<FileSystem> ShadowApplication::diskFS = FileSystem::createDiskFS(Path("./"));
 
+  std::unique_ptr<vlkx::RenderCommand> renderCommands;
+
+  std::weak_ptr<VulkanModule> renderer;
+
   ShadowApplication::ShadowApplication(int argc, char *argv[]) {
       instance = this;
 
@@ -67,7 +71,13 @@ namespace SH {
       }
 
       moduleManager.Init();
-}
+
+      resourceManager.init(*diskFS);
+
+      renderer = moduleManager.GetById<VulkanModule>("module:/renderer/vulkan");
+
+      renderCommands = std::make_unique<vlkx::RenderCommand>(2);
+  }
 
   void ShadowApplication::Start() {
       SDL_Event event;
@@ -82,7 +92,13 @@ namespace SH {
 
           //eventBus.fire(SH::Events::PreRender());
 
-          Timer::UpdateTime();
+          if (!renderer.expired()) {
+              auto r = renderer.lock();
+              r->BeginRenderPass(renderCommands);
+          }
+
+          renderCommands->nextFrame();
+          SH::Timer::UpdateTime();
       }
 
       //moduleManager.Destroy();

@@ -1,7 +1,6 @@
 #include <shadow/core/Thread.h>
 
 #include <pthread.h>
-#include <cstdint>
 #include "shadow/profile/Profiler.h"
 #include <sched.h>
 
@@ -15,7 +14,7 @@ namespace SH {
     pthread_t handle;
     const char* name;
     Thread* owner;
-    ShadowEngine::ConditionVariable cv;
+    ConditionVariable cv;
   };
 
   static void* threadFunction(void* ptr) {
@@ -23,7 +22,7 @@ namespace SH {
       pthread_setname_np(pthread_self(), impl->name);
       SH::Profiler::SetThreadName(impl->name);
       uint32_t ret = 0xFFFFFFFF;
-      if (!impl->forceExit) ret = impl->owner->Task();
+      if (!impl->forceExit) ret = impl->owner->Run();
       impl->finished = true;
       impl->running = false;
 
@@ -45,13 +44,13 @@ namespace SH {
       delete implementation;
   }
 
-  void Thread::Wait(struct ShadowEngine::Mutex &mut) {
+  void Thread::Wait(Mutex &mut) {
       assert(pthread_self() == implementation->handle);
       implementation->cv.sleep(mut);
   }
 
   void Thread::Notify() {
-      implementation->cv.wakeup();
+      implementation->cv.wake();
   }
 
   bool Thread::Start(const char *name, bool extended) {

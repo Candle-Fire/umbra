@@ -20,7 +20,7 @@ namespace SH {
     class API ShadowApplication : SH::SHObject {
       SHObject_Base(ShadowApplication)
     public:
-      static std::unique_ptr<ShadowEngine::FileSystem> diskFS;
+      static std::unique_ptr<FileSystem> diskFS;
       /// <summary>
         /// This is the singleton instance
         /// </summary>

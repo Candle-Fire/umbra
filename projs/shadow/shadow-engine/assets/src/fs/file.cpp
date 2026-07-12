@@ -1,5 +1,6 @@
 #include "shadow/assets/fs/file.h"
 
+#include <dirent.h>
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <filesystem>
@@ -9,123 +10,203 @@
 
 #include "shadow/assets/str/string.h"
 #include "shadow/core/Time.h"
+#include "shadow/platform/Common.h"
 #include "shadow/profile/Profiler.h"
 
+namespace SH {
 #ifdef _WIN32
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#endif
 
-namespace SH {
     // Because fuck Linux? Need platform-specific source files!
 
     FileInput::FileInput() {
-        handle = (void*)INVALID_HANDLE_VALUE;
+        handle = ifsystem(nullptr, (void*)INVALID_HANDLE_VALUE);
     }
 
     FileInput::FileInput(const Path& path) {
-        handle = (HANDLE)CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-                                    FILE_ATTRIBUTE_NORMAL, nullptr);
+        handle = ifsystem(
+            fopen(path.c_str(), "rb"),
+            (HANDLE)CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                                    FILE_ATTRIBUTE_NORMAL, nullptr)
+        );
     }
 
     FileInput::~FileInput() {
-        if (INVALID_HANDLE_VALUE != (HANDLE)handle) {
+        if (ifsystem(handle != nullptr, (handle !=INVALID_HANDLE_VALUE))) {
             close();
         }
     }
 
     FileOutput::FileOutput() {
         error = false;
-        handle = (void*)INVALID_HANDLE_VALUE;
+        handle = ifsystem(nullptr, (void*)INVALID_HANDLE_VALUE);
     }
 
     FileOutput::~FileOutput() {
-        if (handle != INVALID_HANDLE_VALUE) { flush(); close(); }
+        if (ifsystem(handle != nullptr, handle != INVALID_HANDLE_VALUE)) {
+            flush();
+            close();
+        }
     }
 
     FileOutput::FileOutput(const Path& path) {
-        handle = (HANDLE)CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
-                                    FILE_ATTRIBUTE_NORMAL, nullptr);
-        error = handle == INVALID_HANDLE_VALUE;
+        handle = ifsystem(
+            fopen(path.c_str(), "wb"),
+            (HANDLE)CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
+                                    FILE_ATTRIBUTE_NORMAL, nullptr)
+        );
+        error = handle == ifsystem(nullptr, INVALID_HANDLE_VALUE);
     }
 
 
     bool FileOutput::open(const Path& path) {
-        handle = (HANDLE)CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
-                                    FILE_ATTRIBUTE_NORMAL, nullptr);
-        return INVALID_HANDLE_VALUE != handle;
-    }
-
-    bool FileOutput::touch(const Path& path) {
-        handle = (HANDLE)CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
-                                    FILE_ATTRIBUTE_NORMAL, nullptr);
-        if (handle == INVALID_HANDLE_VALUE) return false;
-        size_t written = 0;
-        WriteFile((HANDLE)handle, 0, (DWORD)1, (LPDWORD)&written, nullptr);
-        error = error | (written != 0);
-        CloseHandle((HANDLE)handle);
+        handle = ifsystem(
+            fopen(path.c_str(), "wb"),
+            (HANDLE)CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
+                                    FILE_ATTRIBUTE_NORMAL, nullptr)
+        );
+        error = handle == ifsystem(nullptr, INVALID_HANDLE_VALUE);
         return !error;
     }
 
-    bool FileInput::open(const Path& path) {
-        handle = (HANDLE)CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+    bool FileOutput::touch(const Path& path) {
+        ifsystem(
+            FILE* f = fopen(path.c_str(), "a");
+            fclose(f);
+            return true;,
+
+            handle = (HANDLE)CreateFile(path.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
                                     FILE_ATTRIBUTE_NORMAL, nullptr);
-        return INVALID_HANDLE_VALUE != handle;
+            if (handle == INVALID_HANDLE_VALUE) return false;
+            size_t written = 0;
+            WriteFile((HANDLE)handle, 0, (DWORD)1, (LPDWORD)&written, nullptr);
+            error = error | (written != 0);
+            CloseHandle((HANDLE)handle);
+            return !error;
+        )
+    }
+
+    bool FileInput::open(const Path& path) {
+        handle = ifsystem(
+            fopen(path.c_str(), "rb"),
+            (HANDLE)CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                                    FILE_ATTRIBUTE_NORMAL, nullptr)
+        );
+        return handle != ifsystem(nullptr, INVALID_HANDLE_VALUE);
     }
 
     void FileInput::close() {
-        if (INVALID_HANDLE_VALUE != (HANDLE)handle) {
-            CloseHandle((HANDLE)handle);
-            handle = (void*)INVALID_HANDLE_VALUE;
+        if (handle != ifsystem(nullptr, INVALID_HANDLE_VALUE)) {
+            ifsystem(fclose((FILE*)handle), CloseHandle((HANDLE)handle));
+            handle = ifsystem(nullptr, (void*)INVALID_HANDLE_VALUE);
         }
     }
 
     void FileOutput::close() {
-        if (INVALID_HANDLE_VALUE != (HANDLE)handle) {
-            CloseHandle((HANDLE)handle);
-            handle = (void*)INVALID_HANDLE_VALUE;
+        if (handle != ifsystem(nullptr, INVALID_HANDLE_VALUE)) {
+            ifsystem(fclose((FILE*)handle), CloseHandle((HANDLE)handle));
+            handle = ifsystem(nullptr, (void*)INVALID_HANDLE_VALUE);
         }
     }
 
     size_t FileInput::size() const {
         assert(INVALID_HANDLE_VALUE != handle);
-        return GetFileSize((HANDLE)handle, 0);
+        ifsystem(
+            long pos = ftell((FILE*)handle);
+            fseek((FILE*)handle, 0, SEEK_END);
+            size_t size = (size_t)ftell((FILE*)handle);
+            fseek((FILE*)handle, pos, SEEK_SET);
+            return size;,
+
+            return GetFileSize((HANDLE)handle, 0);
+        )
+
     }
 
     size_t FileInput::pos() {
         assert(INVALID_HANDLE_VALUE != handle);
-        return SetFilePointer((HANDLE)handle, 0, nullptr, FILE_CURRENT);
+        return ifsystem(ftell((FILE*)handle), SetFilePointer((HANDLE)handle, 0, nullptr, FILE_CURRENT));
     }
 
     bool FileInput::seek(size_t pos) {
         assert(INVALID_HANDLE_VALUE != handle);
-        LARGE_INTEGER distance;
-        distance.QuadPart = pos;
-        return SetFilePointer((HANDLE)handle, distance.u.LowPart, &distance.u.HighPart, FILE_BEGIN) !=
-            INVALID_SET_FILE_POINTER;
+        ifsystem(
+            return fseek((FILE*)handle, pos, SEEK_SET) == 0;,
+
+            LARGE_INTEGER distance;
+            distance.QuadPart = pos;
+            return SetFilePointer((HANDLE)handle, distance.u.LowPart, &distance.u.HighPart, FILE_BEGIN) !=
+                INVALID_SET_FILE_POINTER;
+        )
     }
 
     bool FileInput::read(void* data, size_t size) {
         assert(INVALID_HANDLE_VALUE != handle);
-        DWORD read = 0;
-        BOOL success = ReadFile((HANDLE)handle, data, (DWORD)size, (LPDWORD)&read, nullptr);
-        return success && size == read;
+        ifsystem(
+            size_t read = fread(data, size, 1, (FILE*)handle);
+            return read == 1;,
+
+            DWORD read = 0;
+            BOOL success = ReadFile((HANDLE)handle, data, (DWORD)size, (LPDWORD)&read, nullptr);
+            return success && size == read;
+        )
     }
 
     void FileOutput::flush() {
         assert(handle != nullptr);
-        FlushFileBuffers((HANDLE)handle);
+        ifsystem(fflush((FILE*)handle), FlushFileBuffers((HANDLE)handle));
     }
 
     bool FileOutput::write(const void* data, size_t size) {
         assert(handle != INVALID_HANDLE_VALUE);
-        size_t written = 0;
-        WriteFile((HANDLE)handle, data, (DWORD)size, (LPDWORD)&written, nullptr);
-        error = error | size != written;
-        return !error;
+        ifsystem(
+            const size_t res = fwrite(data, size, 1, (FILE*)handle);
+            return res == 1;,
+
+            size_t written = 0;
+            WriteFile((HANDLE)handle, data, (DWORD)size, (LPDWORD)&written, nullptr);
+            error = error | size != written;
+            return !error;
+        )
     }
 
-#endif
+
+    bool FileIterator::getNext(FileInfo* f) {
+        ifsystem(
+            if (!handle) return false;
+            auto* dir = (DIR*)handle;
+            auto* dirent = readdir(dir);
+            if (!dirent) return false;
+
+            f->directory = dirent->d_type == DT_DIR;
+            f->filename = std::string(dirent->d_name);
+            return true;,
+
+            if (offset == 0) {
+                FILE_INFO_BY_HANDLE_CLASS classType = isFirstElement ? FileIdBothDirectoryRestartInfo : FileIdBothDirectoryInfo;
+                isFirstElement = false;
+                if (!GetFileInformationByHandleEx(handle, classType, buffer, sizeof(buffer))) {
+                    auto err = GetLastError();
+                    return false;
+                }
+            }
+
+            FILE_ID_BOTH_DIR_INFO* dirInfo = (FILE_ID_BOTH_DIR_INFO*) (buffer + offset);
+            if (dirInfo->FileNameLength == 0) return false;
+
+            f->filename = SH::Str::toShort(dirInfo->FileName);
+            f->directory = (dirInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+            offset += dirInfo->NextEntryOffset;
+            if (dirInfo->NextEntryOffset == 0) offset = 0;
+            return true;
+        )
+    };
+
+
 
     /**
      * An async operation to be performed.
@@ -157,26 +238,6 @@ namespace SH {
         return a;
     }
 
-    bool FileIterator::getNext(FileInfo* f) {
-        if (offset == 0) {
-            FILE_INFO_BY_HANDLE_CLASS classType = isFirstElement ? FileIdBothDirectoryRestartInfo : FileIdBothDirectoryInfo;
-            isFirstElement = false;
-            if (!GetFileInformationByHandleEx(handle, classType, buffer, sizeof(buffer))) {
-                auto err = GetLastError();
-                return false;
-            }
-        }
-
-        FILE_ID_BOTH_DIR_INFO* dirInfo = (FILE_ID_BOTH_DIR_INFO*) (buffer + offset);
-        if (dirInfo->FileNameLength == 0) return false;
-
-        f->filename = SH::Str::toShort(dirInfo->FileName);
-        f->directory = (dirInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-
-        offset += dirInfo->NextEntryOffset;
-        if (dirInfo->NextEntryOffset == 0) offset = 0;
-        return true;
-    };
 
     // The FileSystem that operates on raw on-disk files.
     struct DiskFS : FileSystem {
@@ -245,7 +306,7 @@ namespace SH {
             return res;
         }
 
-        bool readSync(const Path& path, struct OutputMemoryStream& content) override {
+        bool readSync(const Path& path, OutputMemoryStream& content) override {
             ProfileFunction();
             FileInput file;
             Path fullPath = basePath / path;
@@ -343,10 +404,15 @@ namespace SH {
             return std::filesystem::last_write_time(path.get()).time_since_epoch().count();
         }
 
-        SH::FileIterator* iterateDirectory(const Path& p) override {
-            std::wstring wpath = SH::Str::toWide(p.get());
-            HANDLE h = CreateFileW(wpath.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-            if (h == INVALID_HANDLE_VALUE) return nullptr;
+
+        FileIterator* iterateDirectory(const Path& p) override {
+            ifsystem(
+                auto* h = opendir(p.c_str());,
+
+                std::wstring wpath = SH::Str::toWide(p.get());
+                HANDLE h = CreateFileW(wpath.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                if (h == INVALID_HANDLE_VALUE) return nullptr;
+            )
 
             auto* iter = new FileIterator();
             iter->offset = 0;
@@ -355,10 +421,11 @@ namespace SH {
             return iter;
         }
 
-        void destroyIterator(SH::FileIterator* iter) override {
-            CloseHandle(iter->handle);
+        void destroyIterator(FileIterator* iter) override {
+            ifsystem(closedir((DIR*)iter->handle), CloseHandle(iter->handle));
             delete iter;
         }
+
 
         void processCallbacks() override {
             ProfileFunction();
@@ -430,6 +497,10 @@ namespace SH {
             }
 
             return true;
+        }
+
+        FileIterator* iterateDirectory(const Path& dir) override {
+            assert(false); // not implemented for vfs yet
         }
 
         struct PackFile {

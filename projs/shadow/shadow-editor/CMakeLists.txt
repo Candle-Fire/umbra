@@ -13,15 +13,11 @@ target_sources(shadow-editor PUBLIC ${SOURCES})
 
 target_include_directories(shadow-editor
         PUBLIC inc/
-        PRIVATE ${SDL2_INCLUDE_DIRS})
+        PRIVATE ${SDL3_INCLUDE_DIRS})
 
 target_link_libraries(shadow-editor
-        PRIVATE SDL2::SDL2main
+        PRIVATE SDL3::SDL3
         PUBLIC shadow-engine
-)
-
-target_link_options(shadow-editor
-        PRIVATE -Wl,--export-all-symbols
 )
 
 add_custom_command(TARGET shadow-editor

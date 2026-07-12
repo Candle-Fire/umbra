@@ -107,6 +107,10 @@ namespace SH {
     PathInfo::PathInfo(const std::string &str) {
         std::string normalised = Path::normalise(str);
 
+#ifndef __STDC_LIB_EXT1__
+#define memcpy_s(a,b,c,d) memcpy(a,c,d)
+#endif
+
         std::string preludeS = Path::getPrelude(normalised);
         memcpy_s(prelude, 10, preludeS.c_str(), preludeS.length());
         std::string domainS = Path::getDomain(normalised);

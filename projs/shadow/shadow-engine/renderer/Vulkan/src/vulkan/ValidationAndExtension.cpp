@@ -38,7 +38,7 @@ bool ValidationAndExtension::checkValidationSupport() {
 std::vector<const char *> ValidationAndExtension::getRequiredExtensions(SDL_Window *window, bool validationsRequired) {
 
     unsigned int count;
-    SDL_Vulkan_GetInstanceExtensions(window, &count, nullptr);
+    const char* const* exts = SDL_Vulkan_GetInstanceExtensions(&count);
 
     std::vector<const char *> extensions = {
         #ifdef __APPLE__
@@ -46,11 +46,8 @@ std::vector<const char *> ValidationAndExtension::getRequiredExtensions(SDL_Wind
         #endif
         "VK_KHR_get_physical_device_properties2"
     };
-
-    size_t additional_extension_count = extensions.size();
-    extensions.resize(additional_extension_count + count);
-
-    SDL_Vulkan_GetInstanceExtensions(window, &count, extensions.data() + additional_extension_count);
+    for (int i = 0; i < count; i++)
+        extensions.push_back(exts[i]);
 
     if (validationsRequired) {
         extensions.push_back("VK_EXT_debug_report"); // Add debug report if we want to validate

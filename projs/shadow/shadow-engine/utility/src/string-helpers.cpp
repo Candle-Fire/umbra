@@ -1,6 +1,9 @@
 
-#include <stringapiset.h>
 #include "shadow/util/string-helpers.h"
+
+#include <codecvt>
+#include <cstring>
+#include <locale>
 
 namespace SH::Util::Str {
 

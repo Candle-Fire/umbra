@@ -1,11 +1,11 @@
-#include <crtdbg.h>
+
+#include <atomic>
 #include <map>
 #include <shadow/profile/Profiler.h>
 #include <vector>
 #include "shadow/assets/fs/iostream.h"
 #include "shadow/core/Time.h"
 #include "shadow/assets/management/synchronization.h"
-#include <shadow/core/Thread.h>
 #include <shadow/platform/Common.h>
 #include "shadow/event-bus/events.h"
 
@@ -17,7 +17,7 @@
 #include <evntcons.h>
 #include <atomic>
 #include <cstring>
-
+#include <crtdbg.h>
 #endif
 
 namespace SH {
@@ -140,7 +140,7 @@ namespace SH {
         TraceTask() {
         }
 
-        void Destroy() {
+        void destroy() {
         }
 
         int handle;
@@ -158,7 +158,7 @@ namespace SH {
 
         ~Instance() {
             CloseTrace(task.handle);
-            task.Join();
+            task.destroy();
             for (ThreadContext* ctx : contexts)
                 delete ctx;
         }
@@ -405,7 +405,7 @@ namespace SH {
             page = page->header.next;
         }
 
-        _CrtDumpMemoryLeaks();
+        ifsystem(,_CrtDumpMemoryLeaks());
     }
 
     void Profiler::Export(OutputMemoryStream& blob) {
@@ -449,6 +449,7 @@ namespace SH {
         Write<true>(gInstance.global, rec.timestamp, Profiler::EventType::ContextSwitch, rec);
     };
 #endif
+
 
     size_t Profiler::MakeCounter(const char* key, float min) {
         MutexGuard lock(gInstance.mut);

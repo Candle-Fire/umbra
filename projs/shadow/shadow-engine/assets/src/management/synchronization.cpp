@@ -1,5 +1,8 @@
 
 // This doesn't work on Linux. Sucks to be you? dpeter won't let me do system-specific source files.
+#include "shadow/assets/management/synchronization.h"
+
+#include <cassert>
 #ifdef _WIN32
 
 #include <intrin.h>
@@ -70,3 +73,82 @@ namespace SH {
 }
 
 #endif
+
+namespace SH {
+    ConditionVariable::ConditionVariable() {
+        const int res = pthread_cond_init(&cond, nullptr);
+        assert(res == 0);
+    }
+
+    ConditionVariable::~ConditionVariable() {
+        const int res = pthread_cond_destroy(&cond);
+        assert(res == 0);
+    }
+
+    void ConditionVariable::sleep(Mutex& mut) {
+        const int res = pthread_cond_wait(&cond, &mut.mutex);
+        assert(res == 0);
+    }
+
+    void ConditionVariable::wake() {
+        const int res = pthread_cond_signal(&cond);
+        assert(res == 0);
+    }
+
+    Semaphore::Semaphore(int initcount, int maxcount) {
+        id.count = initcount;
+        int res = pthread_mutex_init(&id.mutex, nullptr);
+        assert(res == 0);
+        res = pthread_cond_init(&id.cond, nullptr);
+        assert(res == 0);
+    }
+
+    Semaphore::~Semaphore() {
+        int res = pthread_mutex_destroy(&id.mutex);
+        assert(res == 0);
+        res = pthread_cond_destroy(&id.cond);
+        assert(res == 0);
+    }
+
+    void Semaphore::raise() {
+        int res = pthread_mutex_lock(&id.mutex);
+        assert(res == 0);
+        res = pthread_cond_signal(&id.cond);
+        assert(res == 0);
+        id.count = id.count + 1;
+        res = pthread_mutex_unlock(&id.mutex);
+        assert(res == 0);
+    }
+
+    void Semaphore::wait() {
+        int res = pthread_mutex_lock(&id.mutex);
+        assert(res == 0);
+        while (id.count <= 0) {
+            res = pthread_cond_wait(&id.cond, &id.mutex);
+            assert(res == 0);
+        }
+        id.count = id.count - 1;
+        res = pthread_mutex_unlock(&id.mutex);
+        assert(res == 0);
+    }
+
+    Mutex::Mutex() {
+        const int res = pthread_mutex_init(&mutex, nullptr);
+        assert(res == 0);
+    }
+
+    Mutex::~Mutex() {
+        const int res = pthread_mutex_destroy(&mutex);
+        assert(res == 0);
+    }
+
+    void Mutex::enter() {
+        const int res = pthread_mutex_lock(&mutex);
+        assert(res == 0);
+    }
+
+    void Mutex::exit() {
+        const int res = pthread_mutex_unlock(&mutex);
+        assert(res == 0);
+    }
+}

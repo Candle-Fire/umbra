@@ -7,7 +7,7 @@ extern "C" {
                          .name = "Vulkan",
                          .class_name = "VulkanModule",
                          .assembly="assembly:/core"_id,
-                         .dependencies={"module:/platform/sdl2"},
+                         .dependencies={"module:/platform/sdl3"},
                      });
 
     m.AddDescriptors({

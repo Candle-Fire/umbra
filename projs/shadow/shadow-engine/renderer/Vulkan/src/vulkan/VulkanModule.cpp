@@ -7,12 +7,14 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "shadow/core/ShadowApplication.h"
-#include "shadow/core/SDL3Module.h"
+#include "SDL3Module.h"
 #include "shadow/renderer/vulkan/vlkx/render/render_pass/ScreenRenderPass.h"
 #include <shadow/renderer/vulkan/vlkx/vulkan/SwapChain.h>
 #include "shadow/core/module-manager-v2.h"
 
 #include <functional>
+
+#include "imgui_impl_sdl3.h"
 
 #define CATCH(x) \
     try { x } catch (std::exception& e) { spdlog::error(e.what()); exit(0); }
@@ -65,12 +67,11 @@ void VulkanModule::Recreate() {
             SDL_Event event;
             while (true) {
                 while (SDL_PollEvent(&event)) {
-                    if (event.type == SDL_WINDOWEVENT
-                        && (event.window.event == SDL_WINDOWEVENT_MAXIMIZED
-                            || event.window.event == SDL_WINDOWEVENT_SHOWN
-                            || event.window.event == SDL_WINDOWEVENT_RESIZED
-                            || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED
-                            || event.window.event == SDL_WINDOWEVENT_RESTORED))
+                    if (event.window.type == SDL_EVENT_WINDOW_MAXIMIZED
+                            || event.window.type == SDL_EVENT_WINDOW_SHOWN
+                            || event.window.type == SDL_EVENT_WINDOW_RESIZED
+                            || event.window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+                            || event.window.type == SDL_EVENT_WINDOW_RESTORED)
                         return;
                 }
             }
@@ -89,13 +90,11 @@ void VulkanModule::Recreate() {
 void VulkanModule::PreInit() {
     spdlog::info("Vulkan Renderer Module loading..");
 
-    auto shApp = SH::ShadowApplication::Get();
+    SH::ModuleManager &moduleManager = SH::ShadowApplication::Get().GetModuleManager();
 
-    SH::ModuleManager &moduleManager = shApp.GetModuleManager();
+    auto sdl3module = moduleManager.GetById<SH::SDL3Module>("module:/platform/sdl3").lock();
 
-    auto sdl2module = moduleManager.GetById<SH::SDL2Module>("module:/platform/sdl2").lock();
-
-    CATCH(initVulkan(sdl2module->window->sdlWindowPtr);)
+    CATCH(initVulkan(sdl3module->window->sdlWindowPtr);)
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -131,7 +130,7 @@ void VulkanModule::PreInit() {
     vkCreateDescriptorPool(getDevice()->logical, &pool_info, VK_NULL_HANDLE, &imGuiPool);
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForVulkan(wnd);
+    ImGui_ImplSDL3_InitForVulkan(wnd);
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = getVulkan();
     init_info.PhysicalDevice = getDevice()->physical;
@@ -140,11 +139,11 @@ void VulkanModule::PreInit() {
     init_info.Queue = getDevice()->graphicsQueue;
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = imGuiPool;
-    init_info.Subpass = 1;
     init_info.MinImageCount = getSwapchain()->images.size();
     init_info.ImageCount = getSwapchain()->images.size();
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
+    init_info.PipelineInfoMain.Subpass = 1;
+    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.CheckVkResultFn = nullptr;
 
     if (editorEnabled) {
@@ -168,10 +167,9 @@ void VulkanModule::PreInit() {
     editorPass = std::make_unique<vlkx::ScreenRenderPassManager>(vlkx::RendererConfig{2, swapchain->images, true});
     editorPass->initializeRenderPass();
 
-    ImGui_ImplVulkan_Init(&init_info);
+    init_info.PipelineInfoMain.RenderPass = **editorPass.get()->getPass();
 
-    VkTools::immediateExecute([](const VkCommandBuffer &commands) { ImGui_ImplVulkan_CreateFontsTexture(); },
-                              getDevice());
+    ImGui_ImplVulkan_Init(&init_info);
 
     if (editorEnabled) {
         editorRenderPlanes.resize(editorContentFrames.size());
@@ -201,13 +199,12 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
                                             frame,
                                             {
                                                 // Render our model
-                                                [this](const VkCommandBuffer &commands) {
+                                                [this, frame] (const VkCommandBuffer &commands) {
                                                     if (!editorEnabled) {
                                                         renderingGeometry =
                                                             true;
-                                                        //ShadowEngine::ShadowApplication::Get().GetModuleManager().Render(
-                                                        //    const_cast<VkCommandBuffer &>(commands),
-                                                        //    frame);
+                                                        SH::ShadowApplication::Get().GetEventBus().fire(SH::Events::RenderGeometry(frame, const_cast<VkCommandBuffer&>(commands)));
+
                                                         //ShadowEngine::ShadowApplication::Get().GetModuleManager().LateRender(
                                                         //    const_cast<VkCommandBuffer &>(commands),
                                                         //    frame);
@@ -218,10 +215,10 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
                                                 // Render ImGUI
                                                 [&](const VkCommandBuffer &commands) {
                                                     ImGui_ImplVulkan_NewFrame();
-                                                    ImGui_ImplSDL2_NewFrame();
+                                                    ImGui_ImplSDL3_NewFrame();
                                                     ImGui::NewFrame();
 
-                                                    //SH::ShadowApplication::Get().GetEventBus().fire(SH::Events::OverlayRender());
+                                                    SH::ShadowApplication::Get().GetEventBus().fire(SH::Events::ImGui());
 
                                                     ImGui::Render();
                                                     ImGuiIO &io = ImGui::GetIO();
@@ -249,7 +246,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
 
 void VulkanModule::Destroy() {
     ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 }
 
@@ -305,7 +302,7 @@ void VulkanModule::initVulkan(SDL_Window *window) {
 
     validators->setupDebugCallback(validationRequired, vulkan);
 
-    if (SDL_Vulkan_CreateSurface(window, vulkan, &surface) != true)
+    if (SDL_Vulkan_CreateSurface(window, vulkan, nullptr, &surface) != true)
         throw std::runtime_error("Unable to create Vulkan Surface");
 
     this->device = new VulkanDevice();

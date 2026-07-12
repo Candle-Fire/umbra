@@ -1,11 +1,9 @@
 #pragma once
 
 #ifdef __linux__
-#define ifsystem(linux,windows,apple) linux
+#define ifsystem(linux,windows) linux
 #elif __WIN32
-#define ifsystem(linux,windows,apple) windows
-#elif __APPLE__
-#define ifsystem(linux,windows,apple) apple
+#define ifsystem(linux,windows) windows
 #endif
 
 // Clang on macOS has __GNUC__ defined to 4, for some reason.

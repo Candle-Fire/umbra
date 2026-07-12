@@ -21,4 +21,4 @@ add_subdirectory(shadow-engine)
 add_subdirectory(shadow-runtime)
 
 # Editor executable
-#add_subdirectory(shadow-editor)
+add_subdirectory(shadow-editor)

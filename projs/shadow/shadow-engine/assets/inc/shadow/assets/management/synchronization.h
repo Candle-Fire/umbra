@@ -38,7 +38,7 @@ namespace SH {
 #else
         struct {
             pthread_mutex_t mutex;
-            pthread_mutex_cond cond;
+            pthread_cond_t cond;
             volatile int32_t count;
         } id;
 #endif

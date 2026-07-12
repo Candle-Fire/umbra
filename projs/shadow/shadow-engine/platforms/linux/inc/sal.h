@@ -2438,9 +2438,6 @@ extern "C" {
      that the buffer pointer is either NULL or points to a NULL-terminated string.
     */
 
-#define __valid                 _Valid_impl_
-#define __notvalid              _Notvalid_impl_
-#define __maybevalid            _Maybevalid_impl_
 
     /*
      __readableTo(extent) p
@@ -2605,9 +2602,6 @@ extern "C" {
 #define __readonly
 #define __notreadonly
 #define __maybereadonly
-#define __valid
-#define __notvalid
-#define __maybevalid
 #define __readableTo(extent)
 #define __elem_readableTo(size)
 #define __byte_readableTo(size)

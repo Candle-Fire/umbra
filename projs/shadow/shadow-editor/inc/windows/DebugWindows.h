@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "../EditorWindow.h"
 #include "shadow/debug/DebugModule.h"
 

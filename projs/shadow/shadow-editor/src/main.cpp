@@ -36,7 +36,7 @@ extern "C" {
                          .name = "Editor",
                          .class_name = "EditorModule",
                          .assembly="assembly:/shadow-editor"_id,
-                         .dependencies={"module:/platform/sdl2"},
+                         .dependencies={"module:/platform/sdl3", "module:/renderer/vulkan"},
                      });
 }
 #pragma clang diagnostic pop

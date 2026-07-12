@@ -2,7 +2,6 @@
 
 #include <shadow/exports.h>
 #include <shadow/math/dxmath.h>
-
 #include "shadow/assets/fs/iostream.h"
 
 namespace SH {
