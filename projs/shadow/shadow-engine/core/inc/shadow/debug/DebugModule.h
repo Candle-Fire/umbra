@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL_events.h>
-#include <imgui.h>
 #include "shadow/core/Module.h"
 #include "shadow/event-bus/events.h"
 

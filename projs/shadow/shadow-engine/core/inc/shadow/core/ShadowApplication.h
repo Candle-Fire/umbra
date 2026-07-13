@@ -2,7 +2,6 @@
 #include "module-manager-v2.h"
 #include "shadow/exports.h"
 #include "imgui.h"
-//#include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
 #include "shadow/event-bus/event_bus.h"
 #include "shadow/assets/fs/file.h"
@@ -17,7 +16,7 @@ namespace SH {
     /// The globally-available engine core struct.
     /// Provides an access point to core useful objects, such as the DFS corresponding to the application's physical file location, the event bus, and the module manager.
     /// </summary>
-    class API ShadowApplication : SH::SHObject {
+    class API ShadowApplication : SHObject {
       SHObject_Base(ShadowApplication)
     public:
       static std::unique_ptr<FileSystem> diskFS;

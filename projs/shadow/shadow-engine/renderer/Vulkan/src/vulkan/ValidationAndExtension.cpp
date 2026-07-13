@@ -1,5 +1,6 @@
 #include "shadow/renderer/vulkan/vlkx/vulkan/ValidationAndExtension.h"
-#include <SDL3/SDL.h>
+
+#include <iostream>
 #include <SDL3/SDL_vulkan.h>
 
 ValidationAndExtension::ValidationAndExtension() {}

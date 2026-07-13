@@ -1,6 +1,5 @@
 
 #include <atomic>
-#include <map>
 #include <shadow/profile/Profiler.h>
 #include <vector>
 #include "shadow/assets/fs/iostream.h"
@@ -449,7 +448,6 @@ namespace SH {
         Write<true>(gInstance.global, rec.timestamp, Profiler::EventType::ContextSwitch, rec);
     };
 #endif
-
 
     size_t Profiler::MakeCounter(const char* key, float min) {
         MutexGuard lock(gInstance.mut);
