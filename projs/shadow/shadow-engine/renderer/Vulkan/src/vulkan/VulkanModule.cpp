@@ -56,26 +56,35 @@ VkExtent2D VulkanModule::GetRenderExtent() {
         return swapchain->extent;
 }
 
+static bool window = false;
+static bool recreating = false;
+
+void VulkanModule::sdlevent(SH::Events::SDLEvent &s) {
+    if (s.event.window.type == SDL_EVENT_WINDOW_MAXIMIZED
+                            || s.event.window.type == SDL_EVENT_WINDOW_SHOWN
+                            || s.event.window.type == SDL_EVENT_WINDOW_RESIZED
+                            || s.event.window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+                            || s.event.window.type == SDL_EVENT_WINDOW_RESTORED) {
+        window = true;
+        if (!recreating) Recreate();
+    }
+}
+
+void waitForWindow() {
+    window = false;
+    for (;!window;) {}
+}
+
 void VulkanModule::Recreate() {
+    spdlog::trace("recreating draw area..");
+    recreating = true;
     vkDeviceWaitIdle(device->logical);
 
     device->swapChain = device->checkSwapchain(device->physical, surface);
 
     if (device->swapChain.capabilities.currentExtent.width == 0
         && device->swapChain.capabilities.currentExtent.height == 0) {
-        []() {
-            SDL_Event event;
-            while (true) {
-                while (SDL_PollEvent(&event)) {
-                    if (event.window.type == SDL_EVENT_WINDOW_MAXIMIZED
-                            || event.window.type == SDL_EVENT_WINDOW_SHOWN
-                            || event.window.type == SDL_EVENT_WINDOW_RESIZED
-                            || event.window.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
-                            || event.window.type == SDL_EVENT_WINDOW_RESTORED)
-                        return;
-                }
-            }
-        }();
+        waitForWindow();
     }
 
     device->swapChain = device->checkSwapchain(device->physical, surface);
@@ -85,6 +94,7 @@ void VulkanModule::Recreate() {
 
     renderPass->initializeRenderPass();
     editorPass->initializeRenderPass();
+    recreating = false;
 }
 
 void VulkanModule::PreInit() {
@@ -240,7 +250,7 @@ void VulkanModule::BeginRenderPass(const std::unique_ptr<vlkx::RenderCommand> &c
         );
 
     if (res.has_value()) {
-        SH::ShadowApplication::Get().GetEventBus().fire(SH::Events::Recreate());
+        Recreate();
     }
 }
 
@@ -293,7 +303,6 @@ void VulkanModule::initVulkan(SDL_Window *window) {
     validators = new ValidationAndExtension();
 
     spdlog::info("Initializing Infinity Drive rendering engine");
-    spdlog::default_logger()->set_level(spdlog::level::debug);
 
     if (!validators->checkValidationSupport())
         throw std::runtime_error("Validation not available");
@@ -349,6 +358,8 @@ VkDescriptorSet VulkanModule::getEditorRenderPlanes() {
 }
 
 void VulkanModule::Init() {
-    //SH::ShadowApplication::Get().GetEventBus()
-    //    .subscribe<SH::Events::PreRender>(std::bind(&VulkanModule::PreRender, this, std::placeholders::_1));
+    SH::ShadowApplication::Get().GetEventBus().subscribe<SH::Events::SDLEvent>([this]<typename T0>(T0 &&PH1) {
+        sdlevent(std::forward<T0>(PH1));
+    });
+    SH::ShadowApplication::Get().GetEventBus().subscribe<SH::Events::Recreate>([this]<typename T0>(T0 &&ev) { Recreate(); });
 }

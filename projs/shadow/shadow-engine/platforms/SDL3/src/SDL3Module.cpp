@@ -2,8 +2,8 @@
 #include "shadow/core/ShadowWindow.h"
 #include "shadow/core/module-manager-v2.h"
 #include "spdlog/spdlog.h"
-//#include "imgui_impl_sdl2.h"
 
+#include "imgui_impl_sdl3.h"
 #include "shadow/core/ShadowApplication.h"
 
 SHObject_Base_Impl(SH::SDL3Module)
@@ -28,6 +28,7 @@ void SH::SDL3Module::Init() {
 }
 
 void SH::SDL3Module::SDLEvent(SH::Events::SDLEvent &sdl_event) {
+    ImGui_ImplSDL3_ProcessEvent(&sdl_event.event);
 }
 
 void SH::SDL3Module::Destroy() {

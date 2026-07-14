@@ -76,6 +76,7 @@ public:
   const std::unique_ptr<vlkx::ScreenRenderPassManager> &getRenderPass();
 
 private:
+  void sdlevent(SH::Events::SDLEvent& e);
   bool editorEnabled = false;
   std::vector<VkDescriptorSet> editorRenderPlanes;
   std::vector<std::unique_ptr<vlkx::Image>> editorContentFrames;

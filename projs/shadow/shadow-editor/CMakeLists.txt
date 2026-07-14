@@ -20,6 +20,10 @@ target_link_libraries(shadow-editor
         PUBLIC shadow-engine
 )
 
+target_link_options(shadow-editor
+        PRIVATE -Wl,--export-dynamic
+)
+
 add_custom_command(TARGET shadow-editor
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/vlkx-resources ${CMAKE_CURRENT_BINARY_DIR}/vlkx-resources

@@ -83,9 +83,7 @@ namespace SH {
       SDL_Event event;
       while (running) {
           while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-              SH::Events::SDLEvent e(event);
-              SH::Events::EventDispatcher<SH::Events::SDLEvent>::call(e);
-              //eventBus.fire(e);
+              eventBus.fire(Events::SDLEvent(event));
               if (event.type == SDL_EVENT_QUIT)
                   running = false;
           }

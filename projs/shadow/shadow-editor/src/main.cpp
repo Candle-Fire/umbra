@@ -7,10 +7,11 @@
 #include <iomanip>
 #include <cstdlib>
 
+#include <SDL3/SDL_main.h>
+
 int main(int argc, char *argv[]) {
     RUNTIME_BOOT();
 
-    spdlog::set_level(spdlog::level::trace);
     spdlog::debug("CWD: {}", std::filesystem::current_path().string());
     spdlog::debug("argc == {}", argc);
     for (int ndx{}; ndx != argc; ++ndx) {
