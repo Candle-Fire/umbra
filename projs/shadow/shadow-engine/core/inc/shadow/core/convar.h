@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <string>
 
+#include "shadow/util/linked_list.h"
+
 class ConVar;
 extern ConVar *firstVarInAssembly;
 
@@ -11,11 +13,11 @@ class ConVar
 
   std::uint64_t data = 0;
 
-  ConVar* next;
-
   std::string name;
   std::string description;
 public:
+  ConVar* next;
+
   ConVar(const std::string& name, std::uint64_t default_value, const std::string& description) noexcept;
 
   void SetValue(char* value);
@@ -27,11 +29,13 @@ public:
 
 class ConVarManager
 {
-  ConVar *first;
+  linked_list<ConVar> convars;
 
   ConVarManager();
 
 public:
+  void AddConVars(ConVar* first);
+
   static ConVarManager* Get();
 
   ConVar* GetByName(std::string name);

@@ -19,9 +19,14 @@ std::uint64_t ConVar::GetValue()
   return this->data;
 }
 
-ConVarManager::ConVarManager(): first(firstVarInAssembly)
+ConVarManager::ConVarManager(): convars(firstVarInAssembly)
 {
 
+}
+
+void ConVarManager::AddConVars(ConVar* first)
+{
+  this->convars.concat({first});
 }
 
 ConVarManager* ConVarManager::Get()
@@ -32,13 +37,12 @@ ConVarManager* ConVarManager::Get()
 
 ConVar* ConVarManager::GetByName(std::string name)
 {
-  auto current = first;
-  while (current != nullptr)
+  for (ConVar* convar : convars)
   {
-    if (current->name == name)
-      return current;
-    current = current->next;
+    if (convar->name == name)
+      return convar;
   }
+
   return nullptr;
 }
 

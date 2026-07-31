@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 4.2)
 
 include(FetchContent)
 
@@ -16,4 +16,4 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 add_subdirectory(projs/shadow)
 
-#add_subdirectory(projs/test-game)
+add_subdirectory(projs/test-game)
