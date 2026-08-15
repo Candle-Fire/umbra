@@ -8,10 +8,10 @@
 
 namespace SH {
 
-  void ModuleManager::LoadModule(ModuleHolder &holder) {
+    void ModuleManager::LoadModule(ModuleHolder &holder) {
       auto assembly = Runtime::Runtime::Get().GetAssembly(holder.descriptor.assembly);
       if (!assembly.has_value() || !assembly.value()->IsLoaded()) {
-          spdlog::error("❌ Assembly \"{0}\" for module:\"{1}\" is unknown or not loaded",
+          this->logger.error("❌ Assembly \"{0}\" for module:\"{1}\" is unknown or not loaded",
                         holder.descriptor.assembly.get(),
                         holder.descriptor.id);
           holder.enabled = false;
@@ -22,7 +22,7 @@ namespace SH {
       const std::string &symbolName = holder.descriptor.class_name + "_entry";
 
       if (!assembly_value.HasSymbol(symbolName)) {
-          spdlog::error("❌ Could not find the entry for module \"{0}\"", holder.descriptor.id);
+          this->logger.error("❌ Could not find the entry for module \"{0}\"", holder.descriptor.id);
           holder.enabled = false;
           return;
       }
@@ -32,7 +32,7 @@ namespace SH {
           module_init(&holder.module);
       }
       catch (std::exception &e) {
-          spdlog::error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id,
+          this->logger.error("❌ Error while running the entry for module \"{0}\" Error: {1}", holder.descriptor.id,
                         e.what());
           holder.enabled = false;
           return;
@@ -44,7 +44,7 @@ namespace SH {
   void ModuleManager::Init() {
 
       for (const auto &i : this->modules) {
-          spdlog::debug("\"{0}\" is registered", i.descriptor.id);
+          this->logger.trace("\"{0}\" is registered", i.descriptor.id);
       }
 
       //Sort
@@ -53,10 +53,10 @@ namespace SH {
 
       //Load
       for (auto &i : this->modules) {
-          spdlog::trace("Loading {0}", i.descriptor.id);
+          this->logger.trace("Loading {0}", i.descriptor.id);
           auto a = Runtime::Runtime::Get().GetAssembly(i.descriptor.assembly);
           if (!a.has_value()) {
-              spdlog::error("❌ Assembly \"{0}\" for module:\"{1}\" is not known",
+              this->logger.error("❌ Assembly \"{0}\" for module:\"{1}\" is not known",
                             i.descriptor.assembly.get(),
                             i.descriptor.id);
               continue;
@@ -65,21 +65,21 @@ namespace SH {
 
           this->LoadModule(i);
           if (i.enabled)
-              spdlog::trace("Module {0}({1}) created", i.module->GetName(), i.descriptor.id);
+              this->logger.trace("Module {0}({1}) created", i.module->GetName(), i.descriptor.id);
       }
 
       this->SortModules();
       this->PrintModuleInfo();
 
       //PreInit
-      spdlog::info("Running PreInit");
+      this->logger.info("Running PreInit");
       for (auto &holder : this->modules) {
           if (holder.enabled) {
               try {
                   holder.module->PreInit();
               }
               catch (const std::exception &e) {
-                  spdlog::error("❌ Error while running PreInit for module \"{0}\" Error: {1}", holder.descriptor.id,
+                  this->logger.error("❌ Error while running PreInit for module \"{0}\" Error: {1}", holder.descriptor.id,
                                 e.what());
               }
           }
@@ -88,14 +88,14 @@ namespace SH {
       this->SortModules();
       this->PrintModuleInfo();
 
-      spdlog::info("Running Init");
+      this->logger.info("Running Init");
       for (auto &holder : this->modules) {
           if (holder.enabled) {
               try {
                   holder.module->Init();
               }
               catch (const std::exception &e) {
-                  spdlog::error("❌ Error while running Init for module \"{0}\" Error: {1}", holder.descriptor.id,
+                  this->logger.error("❌ Error while running Init for module \"{0}\" Error: {1}", holder.descriptor.id,
                                 e.what());
               }
           }
@@ -103,7 +103,7 @@ namespace SH {
 
       //Sort
       this->SortModules();
-      this->PrintModuleInfo();
+      this->PrintModuleInfo(spdlog::level::debug);
 
       this->finalized = true;
   }
@@ -115,18 +115,18 @@ namespace SH {
 
               if (it != modules.end()) {
                   if (!it->enabled) {
-                      spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
+                      this->logger.error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
                       module_holder.enabled = false;
                   } else
                       Dfs(*it, sorted);
               } else
-                  spdlog::info("Module {0} is missing, required by {1}", u, module_holder.descriptor.id);
+                  this->logger.info("Module {0} is missing, required by {1}", u, module_holder.descriptor.id);
 
           } else {
               auto it = std::ranges::find_if(sorted, ModulePredicate(u));
               if (it != sorted.end()) {
                   if (!it->enabled) {
-                      spdlog::error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
+                      this->logger.error("Module {0} is disabled, required by {1}", u, module_holder.descriptor.id);
                       module_holder.enabled = false;
                   }
               }
@@ -153,7 +153,7 @@ namespace SH {
 
       auto assembly_optional = Runtime::Runtime::Get().GetAssembly(id);
       if (!assembly_optional.has_value() || !assembly_optional.value()->IsLoaded()) {
-          spdlog::error("❌ Assembly \"{0}\" is unknown or not loaded", id.get());
+          this->logger.error("❌ Assembly \"{0}\" is unknown or not loaded", id.get());
           return;
       }
       const Runtime::Assembly &assembly = *assembly_optional.value();
@@ -161,7 +161,7 @@ namespace SH {
       const std::string &symbolName = "assembly_entry";
 
       if (!assembly.HasSymbol(symbolName)) {
-          spdlog::error("❌ Could not find the entry for assembly \"{0}\"({1})", id.get(), assembly.GetID().get());
+          this->logger.error("❌ Could not find the entry for assembly \"{0}\"({1})", id.get(), assembly.GetID().get());
           return;
       }
       try {
@@ -170,7 +170,7 @@ namespace SH {
           module_init(*this);
       }
       catch (std::exception &e) {
-          spdlog::error("❌ Error while running the entry for assembly \"{0}\" Error: {1}", id.get(), e.what());
+          this->logger.error("❌ Error while running the entry for assembly \"{0}\" Error: {1}", id.get(), e.what());
           return;
       }
   }
@@ -183,10 +183,10 @@ namespace SH {
       }
   }
 
-  void ModuleManager::DeactivateModule(Module *module_ptr, bool force) {
-      spdlog::info("Deactivating module {0}", module_ptr->GetType());
+  void ModuleManager::DeactivateModule(Module *module_ptr, const bool force) {
+      this->logger.info("Deactivating module {0}", module_ptr->GetType());
       if (!this->finalized || force) {
-          auto m = std::find_if(ITERATE(this->modules), [&](const ModuleHolder &item) {
+          const auto m= std::ranges::find_if(this->modules, [&](const ModuleHolder &item) {
             return item.module.get() == module_ptr;
           });
           if (m != this->modules.end()) {
@@ -196,7 +196,7 @@ namespace SH {
   }
 
   bool ModuleManager::IsModuleActive(const ID &id) {
-      auto m = std::find_if(ITERATE(this->modules), ModulePredicate(id));
+      auto m = std::ranges::find_if(this->modules, ModulePredicate(id));
       return m != this->modules.end() && m->enabled;
   }
 
@@ -206,13 +206,17 @@ namespace SH {
   }
 
   void ModuleManager::PrintModuleInfo() {
-      spdlog::info("Module info:");
-      for (const auto &i : this->modules) {
-          spdlog::info("Module {0}({1}) is {2}",
-                       i.descriptor.name,
-                       i.descriptor.id,
-                       i.enabled ? "enabled" : "disabled");
-      }
+      PrintModuleInfo(spdlog::level::level_enum::trace);
   }
 
+  void ModuleManager::PrintModuleInfo(spdlog::level::level_enum level)
+  {
+      this->logger.log(level,"Module info:");
+      for (const auto &i : this->modules) {
+        this->logger.log(level,"└ Module {0}({1}) is {2}",
+                     i.descriptor.name,
+                     i.descriptor.id,
+                     i.enabled ? "enabled" : "disabled");
+      }
+  }
 }

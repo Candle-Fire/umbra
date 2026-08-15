@@ -1,42 +1,72 @@
 #pragma once
+#include <memory>
+
+#include "shadow/core/convar.h"
 #include "shadow/core/Module.h"
-
-
-// Core log macros
-#define SH_CORE_TRACE(...)    ::ShadowEngine::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define SH_CORE_INFO(...)     ::ShadowEngine::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define SH_CORE_WARN(...)     ::ShadowEngine::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define SH_CORE_ERROR(...)    ::ShadowEngine::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define SH_CORE_CRITICAL(...) ::ShadowEngine::Log::GetCoreLogger()->critical(__VA_ARGS__)
-
-// Client log macros
-#define SH_TRACE(...)         ::ShadowEngine::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define SH_INFO(...)          ::ShadowEngine::Log::GetClientLogger()->info(__VA_ARGS__)
-#define SH_WARN(...)          ::ShadowEngine::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define SH_ERROR(...)         ::ShadowEngine::Log::GetClientLogger()->error(__VA_ARGS__)
-#define SH_CRITICAL(...)      ::ShadowEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_sinks.h"
 
 namespace SH {
 
-    class LoggerModule;
+  extern ConVar var_logLevel;
 
-    LoggerModule *Logger;
+  void InitBasicLogger();
 
-    class LoggerModule : SH::Module {
+  class LoggerModule : SH::Module {
 
-      SHObject_Base(LoggerModule)
+    SHObject_Base(LoggerModule)
 
-      public:
-        LoggerModule() {
-            SH::Logger = this;
-        }
+    std::shared_ptr<spdlog::sinks::sink> console_sink;
 
-        void Init() override {
-            Module::Init();
+    public:
+      LoggerModule();
 
-        }
+      void Init() override;
 
-    };
+      static std::shared_ptr<LoggerModule> Get();
+  };
 
+
+  class Logger
+  {
+    std::string source;
+    std::shared_ptr<spdlog::logger> logger;
+
+  public:
+    Logger(std::string name);
+
+    template<typename... Args>
+    void log(spdlog::level::level_enum level, spdlog::format_string_t<Args...> fmt, Args &&...args) const
+    {
+      this->logger->log(level, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename... Args>
+    void trace(spdlog::format_string_t<Args...> fmt, Args &&...args) const
+    {
+      this->log(spdlog::level::trace, fmt, std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void debug(spdlog::format_string_t<Args...> fmt, Args &&...args) const
+    {
+      this->log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void info(spdlog::format_string_t<Args...> fmt, Args &&...args) const
+    {
+      this->log(spdlog::level::info, fmt, std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void warn(spdlog::format_string_t<Args...> fmt, Args &&...args) const
+    {
+      this->log(spdlog::level::warn, fmt, std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void error(spdlog::format_string_t<Args...> fmt, Args &&...args) const
+    {
+      this->log(spdlog::level::err, fmt, std::forward<Args>(args)...);
+    }
+
+  };
 }
 

@@ -10,6 +10,7 @@
 #include "Module.h"
 #include "shadow/exports.h"
 #include "shadow/core/PathID.h"
+#include "shadow/log/LoggerModule.h"
 
 using ID = std::string;
 
@@ -20,7 +21,7 @@ using ID = std::string;
 */
 /// @brief This is a helper for creating module specific entry points. This is dodgy.
 /// Only change if you know what you are doing.
-/// This creates a C linkage exported function. The function gets a pointer to a shared_ptr and puts a new pointer to the module into it.
+/// This creates a C linkage exported function. The function gets a pointer to a shared_ptr of the module and populates it to a new shared_ptr to the module.
 /// It is used by the module manager to create modules.
 #define MODULE_ENTRY(name, shortname) extern "C" { void EXPORT shortname ## _entry(std::shared_ptr<name>* ptr){*ptr = std::make_shared<name>();} }
 
@@ -34,7 +35,7 @@ namespace SH {
   struct ModuleDescriptor {
     /// @brief The logical ID of the module eg.: "module:/renderer/vulkan"
     ID id;
-    /// @brief The human readable name for the module
+    /// @brief The human-readable name for the module
     std::string name;
     /// @brief The class that should be created for this module
     std::string class_name;
@@ -59,6 +60,8 @@ namespace SH {
 
   /// @brief Central manager for runtime loaded engine modules
   class API ModuleManager {
+
+    Logger logger{"Module manager"};
 
     /// @brief List of all of the known modules
     /// These modules can be active, inactive or not even loaded
@@ -90,6 +93,7 @@ namespace SH {
     void SortModules();
 
     void PrintModuleInfo();
+    void PrintModuleInfo(spdlog::level::level_enum level);
 
   public:
 

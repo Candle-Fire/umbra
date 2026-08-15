@@ -38,14 +38,14 @@ namespace SH::Entities {
     }
 
     void Node::RemoveChild(const rtm_ptr<NodeBase> &child, bool internal) {
-        if (internal)
-            this->internal_hierarchy.erase(
-                std::remove(this->internal_hierarchy.begin(),
-                            this->internal_hierarchy.end(), child),
-                this->internal_hierarchy.end());
-        else
-            this->hierarchy.erase(std::remove(this->hierarchy.begin(), this->hierarchy.end(), child),
-                                  this->hierarchy.end());
+        // if (internal)
+        //     this->internal_hierarchy.erase(
+        //         std::remove(this->internal_hierarchy.begin(),
+        //                     this->internal_hierarchy.end(), child),
+        //         this->internal_hierarchy.end());
+        // else
+        //     this->hierarchy.erase(std::remove(this->hierarchy.begin(), this->hierarchy.end(), child),
+        //                           this->hierarchy.end());
     }
 
     SHObject_Base_Impl(Actor)
