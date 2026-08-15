@@ -9,7 +9,7 @@ ConVar::ConVar(const std::string& name, std::uint64_t default_value, const std::
   firstVarInAssembly = this;
 }
 
-void ConVar::SetValue(char* value)
+void ConVar::SetValue(const char* value)
 {
   this->data = std::atoi(value);
 }
@@ -19,14 +19,12 @@ std::uint64_t ConVar::GetValue()
   return this->data;
 }
 
-ConVarManager::ConVarManager(): convars(firstVarInAssembly)
-{
-
-}
+ConVarManager::ConVarManager(): convars(firstVarInAssembly) {}
 
 void ConVarManager::AddConVars(ConVar* first)
 {
   this->convars.concat({first});
+  this->UpdateConVars();
 }
 
 ConVarManager* ConVarManager::Get()
@@ -53,16 +51,34 @@ void ConVarManager::ParseArgs(int argc, char* argv[])
     return;
   }
 
-  for (size_t i = 0; i < argc; i++) {
+  for (size_t i = 1; i < argc; i++) {
     std::string param(argv[i]);
     if (param.starts_with("-V"))
     {
-      if (const auto var = this->GetByName(param.substr(2)); var != nullptr)
-      {
-        var->SetValue(argv[i+1]);
-      }
-    }
+      size_t const pos = param.find('=');
+      auto name = param.substr(2, pos-2);
 
+      std::string value;
+      if (pos != std::string::npos)
+        value = param.substr(pos + 1);
+      else
+        value = argv[i+1];
+
+      this->args.emplace(name, value);
+    }
+  }
+  this->UpdateConVars();
+}
+
+void ConVarManager::UpdateConVars()
+{
+  for (auto &arg : this->args)
+  {
+    const auto convar = this->GetByName(arg.first);
+    if (convar != nullptr)
+    {
+      convar->SetValue(arg.second.c_str());
+    }
   }
 }
 

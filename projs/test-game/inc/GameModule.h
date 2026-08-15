@@ -1,6 +1,9 @@
 #pragma once
 
+#include "shadow/core/convar.h"
 #include "shadow/core/Module.h"
+
+extern ConVar var_test;
 
 class GameModule : public SH::Module {
 
